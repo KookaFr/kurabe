@@ -27,6 +27,10 @@
   --mine: #3b3b3b;
   --metal: #b7bec2;
   --prise: #4a4f52;
+  --eau: #7cc0ec;
+  --jus: #f4a742;
+  --the: #9cc265;
+  --lait: #e9d9a6;
 
   --police: "BIZ UDPGothic", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
   --rayon: 18px;
@@ -61,6 +65,10 @@
     --mine: #2a2a2a;
     --metal: #8f989c;
     --prise: #9ba3a6;
+    --eau: #3f8fc4;
+    --jus: #d9862a;
+    --the: #6f9a3c;
+    --lait: #d9d2bd;
     color-scheme: dark;
   }
 }
@@ -90,6 +98,10 @@
   --mine: #2a2a2a;
   --metal: #8f989c;
   --prise: #9ba3a6;
+  --eau: #3f8fc4;
+  --jus: #d9862a;
+  --the: #6f9a3c;
+  --lait: #d9d2bd;
   color-scheme: dark;
 }
 
@@ -1001,6 +1013,313 @@ button.ligne { cursor: pointer; }
 
 /* Smartphone en portrait : le nom passe au-dessus de l'objet,
    pour que l'objet profite de toute la largeur. */
+/* ---------- Onglets de l'accueil : ながさ / おもさ / かさ ---------- */
+
+.themes {
+  display: flex;
+  gap: 10px;
+  margin: 2px 0 -2px;
+}
+
+.theme {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 60px;
+  padding: 6px 10px;
+  border: 3px solid var(--bord);
+  border-radius: var(--rayon);
+  background: var(--surface);
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.theme svg { width: 34px; height: 34px; flex: none; color: var(--encre-douce); }
+.theme[aria-pressed="true"] { background: var(--encre); border-color: var(--encre); color: var(--papier); }
+.theme[aria-pressed="true"] svg { color: var(--papier); }
+
+.sous-titre-reglage { flex-basis: 100%; margin: 10px 0 0; font-weight: 700; color: var(--encre-douce); }
+
+/* ---------- おもさ / かさ : scène commune ---------- */
+
+.etabli.scene-mv { padding: 12px; justify-content: center; align-items: stretch; }
+
+.scene {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.chose { display: inline-block; line-height: 1.12; }
+.chose img { display: block; max-width: 100%; border-radius: 6px; }
+
+.mesure-mv {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--encre);
+  color: var(--papier);
+  font-size: 1.05rem;
+  font-weight: 800;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  animation: apparaitre .35s ease both;
+}
+
+@keyframes apparaitre { from { opacity: 0; transform: translateY(6px); } }
+
+.sans-noms-mv .nom-mv { display: none; }
+
+.nom-mv, .balance-nom {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* Boutons « cibles » : on touche l'objet, le verre ou la はかり pour répondre. */
+.plateau, .devine-objet, .hakari, .verre-col, .contenant-col, .choix-valeur {
+  border: 3px solid transparent;
+  border-radius: 16px;
+  background: transparent;
+  padding: 0;
+  touch-action: manipulation;
+}
+
+@media (hover: hover) {
+  .devine-objet:hover, .hakari:hover, .verre-col:hover, .contenant-col:hover { border-color: var(--bord); }
+}
+
+.juste:is(.devine-objet, .hakari, .verre-col, .contenant-col, .choix-valeur) { border-color: var(--bon); background: var(--bon-fond); }
+.plateau.juste .plateau-charge { border-radius: 14px; background: var(--bon-fond); box-shadow: 0 0 0 3px var(--bon); }
+.essaye:is(.plateau, .devine-objet, .hakari, .verre-col, .contenant-col) { opacity: .4; }
+.choix-valeur.essaye { color: var(--encre-douce); }
+.secoue:is(.plateau, .devine-objet, .hakari, .verre-col, .contenant-col, .choix-valeur) { animation: secouer .35s ease; }
+
+/* ----- Balance à plateaux (上皿てんびん) ----- */
+
+.balance { position: relative; flex: none; }
+
+.balance-socle, .balance-pilier, .balance-cadran, .balance-aiguille, .balance-fleau, .balance-pivot { position: absolute; }
+.balance-socle { height: 14px; border-radius: 7px; background: var(--metal); }
+.balance-pilier { width: 16px; border-radius: 4px 4px 0 0; background: var(--metal); }
+.balance-cadran {
+  width: 60px;
+  height: 12px;
+  border-radius: 6px;
+  background:
+    linear-gradient(var(--repere), var(--repere)) center / 3px 100% no-repeat,
+    var(--surface);
+  border: 2px solid var(--encre-douce);
+}
+.balance-aiguille { width: 4px; border-radius: 2px; background: var(--o1); transform-origin: 50% 0; }
+.balance-fleau { height: 12px; border-radius: 6px; background: var(--encre-douce); transform-origin: 50% 50%; }
+.balance-pivot { width: 18px; height: 18px; border-radius: 50%; background: var(--encre); }
+
+.plateau {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 0;
+  border-radius: 0;
+}
+
+.plateau-charge {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  width: 100%;
+  padding-bottom: 2px;
+  min-height: 0;
+}
+
+.plateau-assiette { width: 100%; height: 10px; border-radius: 5px; background: var(--encre-douce); }
+.plateau-tige { width: 10px; height: 14px; background: var(--encre-douce); }
+
+.balance.anime :is(.balance-fleau, .balance-aiguille, .plateau) {
+  transition: transform 1s cubic-bezier(.3, 1.45, .5, 1);
+}
+
+.balance-nom { position: absolute; }
+
+/* « みためと ちがう » : les objets sur la table, à leur grosseur. */
+.table-devine {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  gap: 12px;
+  width: 100%;
+}
+
+.devine-objet { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; padding: 10px 8px; }
+.planche { display: flex; justify-content: center; padding: 0 14px; border-bottom: 8px solid var(--bois); border-radius: 0 0 4px 4px; }
+
+/* ----- はかり (balance de cuisine à cadran) ----- */
+
+.rangee-mv {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+}
+
+.hakari { display: flex; flex-direction: column; align-items: center; padding: 6px 0; }
+.hakari-charge { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; }
+.hakari-plateau { height: 10px; border-radius: 5px; background: var(--encre-douce); }
+.hakari-corps {
+  display: grid;
+  place-items: center;
+  border-radius: 18px 18px 12px 12px;
+  background: var(--o2);
+}
+
+.cadran { display: block; height: auto; }
+.cadran .face { fill: var(--surface); }
+.cadran line { stroke: var(--encre); stroke-width: 1.4; }
+.cadran line.g { stroke-width: 2.4; }
+.cadran text { font-size: 9px; font-weight: 700; text-anchor: middle; fill: var(--encre); font-family: var(--police); }
+.cadran text.unite { font-size: 10px; fill: var(--encre-douce); }
+.aiguille-hakari { transform-box: view-box; transform-origin: 0 0; }
+.aiguille-hakari line { stroke: var(--o1); stroke-width: 3; stroke-linecap: round; }
+.aiguille-hakari circle { fill: var(--o1); }
+.anime .aiguille-hakari, .mesures .aiguille-hakari { transition: transform 1.1s cubic-bezier(.3, 1.35, .5, 1); }
+
+/* ----- Verres, récipients, verres doseurs ----- */
+
+.verre-col, .contenant-col { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 6px 4px; }
+.verre-ligne { display: flex; align-items: flex-end; gap: 10px; }
+
+.verre {
+  position: relative;
+  display: block;
+  flex: none;
+  border: 4px solid var(--encre-douce);
+  border-top: 0;
+  border-radius: 0 0 14px 14px;
+  background: color-mix(in srgb, var(--surface) 70%, var(--grille));
+  overflow: hidden;
+}
+
+.liquide {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--c, var(--eau));
+  box-shadow: inset 0 5px 0 rgba(255, 255, 255, .35);
+}
+
+.liquide.verse { animation: verser 1.3s ease-out both; }
+.liquide.vide-anime { animation: vider 1.1s ease-in both; }
+@keyframes verser { from { height: 0; } }
+@keyframes vider { from { height: var(--h0); } to { height: 0; } }
+
+.verre.gradue { overflow: visible; }
+.verre.gradue .liquide { border-radius: 0 0 10px 10px; }
+.graduations { position: absolute; inset: 0; pointer-events: none; }
+.graduations .trait { position: absolute; left: 0; width: 10px; height: 2px; margin-bottom: -1px; background: var(--encre); }
+.graduations .trait.grand { width: 20px; }
+.graduations .graduation {
+  position: absolute;
+  right: calc(100% + 10px);
+  transform: translateY(50%);
+  font-size: .85rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.graduations .unite-ml { right: auto; left: calc(100% + 8px); bottom: auto; top: 0; transform: none; color: var(--encre-douce); }
+
+.contenant {
+  position: relative;
+  display: block;
+  flex: none;
+  border: 4px solid var(--encre-douce);
+  border-top: 0;
+  background: color-mix(in srgb, var(--surface) 70%, var(--grille));
+  overflow: hidden;
+}
+.contenant.photo { border: 0; background: none; overflow: visible; }
+.contenant.forme-bin { border-radius: 0 0 10px 10px; border-top: 4px solid var(--encre-douce); border-top-left-radius: 40% 14%; border-top-right-radius: 40% 14%; }
+.contenant.forme-tasse { border-radius: 0 0 22px 22px; }
+.contenant.forme-bol { border-radius: 0 0 50% 50% / 0 0 70% 70%; }
+.contenant.forme-nabe { border-radius: 0 0 12px 12px; }
+.contenant.mini { opacity: .55; }
+
+.ecart.etiquette-dedans span { bottom: auto; top: 50%; transform: translate(-50%, -50%); }
+
+.niveau-ligne {
+  position: absolute;
+  height: 0;
+  border-top: 3px dashed var(--repere);
+  pointer-events: none;
+}
+
+/* ----- Nombres seuls (g, kg, mL, L) ----- */
+
+.rangee-mv.mesures { align-items: stretch; }
+.mesure-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 12px; }
+.mesure-col .verre { margin-left: 52px; }
+.choix-valeur {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 84px;
+  padding: 6px 10px;
+  border-color: var(--bord);
+  background: var(--surface);
+  font-size: clamp(1.8rem, 4.5vw, 2.6rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.choix-valeur .conversion { font-size: .55em; color: var(--action); }
+.avec-conversion .choix-valeur { min-height: 112px; }
+
+/* ----- べんきょう おもさ / かさ ----- */
+
+.zone-etude.plan-balance { cursor: default; display: flex; align-items: center; justify-content: center; }
+.zone-etude.plan-verre { cursor: ns-resize; }
+
+.pile {
+  display: flex;
+  flex-wrap: wrap-reverse;
+  justify-content: center;
+  align-content: flex-start;
+  gap: 2px;
+  width: 100%;
+}
+
+.tsumiki { border-radius: 3px; background: var(--o5); box-shadow: inset -3px -3px 0 rgba(0, 0, 0, .15); }
+.poids {
+  display: grid;
+  place-items: center;
+  border-radius: 5px 5px 3px 3px;
+  background: var(--metal);
+  color: var(--encre);
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: inset -3px -2px 0 rgba(0, 0, 0, .18);
+}
+.poids-grand { background: color-mix(in srgb, var(--metal) 70%, var(--encre-douce)); color: var(--surface); }
+
+.poignee-verre { margin: -24px 0 0 6px; }
+.bulle-etude.bulle-verre { font-size: 1.3rem; padding: 2px 10px; transform: none; white-space: nowrap; }
+.plan-verre.anime .liquide { transition: height .15s ease-out; }
+.plan-verre.anime :is(.poignee-verre, .bulle-verre) { transition: top .15s ease-out; }
+
 @media (max-width: 560px) {
   :root { --cible: 56px; }
   .titre { font-size: 1.6rem; }
@@ -1018,6 +1337,15 @@ button.ligne { cursor: pointer; }
   .phrase { font-size: 1.3rem; }
   .choix-mots { flex-wrap: nowrap; gap: 8px; }
   #ecran-etude { gap: 8px; }
+  .nom-mv, .balance-nom { font-size: .9rem; }
+  .bulle-etude.bulle-verre { font-size: 1.05rem; padding: 2px 8px; }
+  .theme { gap: 6px; min-height: 52px; padding: 4px 6px; font-size: 1.1rem; }
+  .theme svg { width: 26px; height: 26px; }
+  .mesure-mv { font-size: .9rem; padding: 1px 8px; }
+  .choix-valeur { min-height: 70px; font-size: 1.7rem; }
+  .avec-conversion .choix-valeur { min-height: 92px; }
+  .mesure-col .verre { margin-left: 44px; }
+  .graduations .graduation { font-size: .75rem; right: calc(100% + 6px); }
   /* のばして みよう n'a jamais de bouton つぎへ : la place va à la zone du ruban (2 poignées). */
   #ecran-etude.mode-libre .bas { min-height: 52px; }
   .commandes-etude { gap: 6px; }
@@ -1065,6 +1393,9 @@ button.ligne { cursor: pointer; }
   #ecran-question > .phrase { grid-row: 5; font-size: 1.25rem; text-align: left; }
   #ecran-question > .choix-mots { grid-row: 6; justify-content: flex-start; gap: 8px; }
   #ecran-question > .bas { grid-row: 7; align-self: end; flex-wrap: wrap; gap: 8px; min-height: 0; }
+  /* L'explication prend toute la largeur de la colonne, le bouton つぎへ passe dessous. */
+  #ecran-question > .bas .retour { flex-basis: 100%; font-size: .98rem; line-height: 1.35; }
+  #ecran-question > .bas .btn-suivant, #ecran-question > .bas .btn-aide { flex: 1; min-height: 50px; }
   #ecran-question > .etabli { grid-column: 2; grid-row: 1 / -1; padding: 6px 8px 42px; gap: 4px; }
   .progression { gap: 5px; }
   .progression li { width: 12px; height: 12px; border-width: 2px; }

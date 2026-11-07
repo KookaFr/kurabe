@@ -1,8 +1,9 @@
 /* ==========================================================================
-   くらべよう — comparer des longueurs
+   くらべよう — comparer des longueurs, des masses et des quantités de liquide
    --------------------------------------------------------------------------
    Pour les lycéens avec un retard intellectuel (programme « 比較 » :
-   長い / 短い, 〜より長い, 一番長い, comparer avec un modèle).
+   長い / 短い, 〜より長い, 一番長い, comparer avec un modèle ; 重い / 軽い ;
+   多い / 少ない ; unités cm, m, g, kg, mL, L).
 
    Principes repris des plans de cours des enseignants :
    - de vrais objets (photos de la maison), à l'échelle réelle ;
@@ -35,7 +36,8 @@
 
   const CLE_REGLAGES = 'kurabe.reglages';
   const DEFAUT = {
-    activites: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    activites: Array.from({ length: 24 }, (_, i) => i + 1),
+    theme: 'nagasa',        // onglet de l'accueil : ながさ | おもさ | かさ
     nbQuestions: 6,
     ecriture: 'hiragana',   // hiragana | kanji (avec furigana)
     noms: true,             // afficher le nom des objets
@@ -48,7 +50,8 @@
     aide: true,             // bouton « ヒント » / « そろえる »
     nombreMax: 20,          // べんきょう : nombres jusqu'à 10, 20, 50, 100 ou 1000
     compter: true,          // べんきょう : la voix compte à chaque ＋1 / −1
-    version: 3,
+    volumeMax: 500,         // べんきょう かさ : verre doseur de 200, 500 ou 1000 mL
+    version: 4,
     langue: (navigator.language || '').toLowerCase().startsWith('ja') ? 'ja' : 'fr',
   };
 
@@ -62,7 +65,11 @@
       if (stocke.activites && (stocke.version || 1) < 3) {
         stocke.activites = [...new Set([...stocke.activites, 10, 11, 12])];
       }
-      return { ...DEFAUT, ...stocke, version: 3 };
+      // Version 4 : masses (13 à 18) et liquides (19 à 24).
+      if (stocke.activites && (stocke.version || 1) < 4) {
+        stocke.activites = [...new Set([...stocke.activites, ...Array.from({ length: 12 }, (_, i) => i + 13)])];
+      }
+      return { ...DEFAUT, ...stocke, version: 4 };
     } catch {
       return { ...DEFAUT };
     }
@@ -110,6 +117,36 @@
   const KAZU = K('数', 'かず');
   const OOKI = K('大', 'おお');    // 大きい
   const CHIISA = K('小', 'ちい');  // 小さい
+  const OMO = K('重', 'おも');     // 重い
+  const KARU = K('軽', 'かる');    // 軽い
+  const OO_I = K('多', 'おお');    // 多い
+  const SUKU = K('少', 'すく');    // 少ない
+  const SAGA = K('下', 'さ');      // 下がった
+  const AGA = K('上', 'あ');       // 上がった
+  const MI = K('見', 'み');
+
+  // « plus » : 重い / 多い ; « moins » : 軽い / 少ない.
+  const MOTS = {
+    omosa: { plus: [OMO, 'い'], moins: [KARU, 'い'] },
+    kasa: { plus: [OO_I, 'い'], moins: [SUKU, 'ない'] },
+  };
+
+  // Les trois onglets de l'accueil.
+  const ICONE_TRAIT = 'fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"';
+  const THEMES = [
+    {
+      cle: 'nagasa', titre: [NAGA, 'さ'], sous: [NAGA, 'い？ ', MIJIKA, 'い？'],
+      icone: `<svg viewBox="0 0 32 32" ${ICONE_TRAIT} aria-hidden="true"><rect x="3" y="11" width="26" height="10" rx="2"/><path d="M8 11v4M13 11v3M18 11v4M23 11v3"/></svg>`,
+    },
+    {
+      cle: 'omosa', titre: [OMO, 'さ'], sous: [OMO, 'い？ ', KARU, 'い？'],
+      icone: `<svg viewBox="0 0 32 32" ${ICONE_TRAIT} aria-hidden="true"><path d="M16 7v19M10 28h12M5 11l22-2M5 11l-3 8h6zM27 9l-3 8h6z"/></svg>`,
+    },
+    {
+      cle: 'kasa', titre: ['かさ'], sous: [OO_I, 'い？ ', SUKU, 'ない？'],
+      icone: `<svg viewBox="0 0 32 32" ${ICONE_TRAIT} aria-hidden="true"><path d="M8 5h16l-2 23H10z"/><path d="M9.2 15h13.6" /><path d="M10 15l1 12h10l1-12z" fill="currentColor" opacity=".35" stroke="none"/></svg>`,
+    },
+  ];
 
   const nomDe = (o) => (o.kanji ? K(o.kanji, o.yomi) : o.yomi);
 
@@ -399,7 +436,20 @@
     { n: 10, etude: 'libre', titre: ['のばして みよう'], sous: [KAZU, 'が かわるよ'], fr: 'べんきょう : étirer le ruban et voir les nombres changer', barres: 'etude-libre' },
     { n: 11, etude: 'plus', titre: ['たしざん'], sous: ['みぎに のばす（＋）'], fr: 'べんきょう : additionner en tirant vers la droite', barres: 'etude-plus' },
     { n: 12, etude: 'moins', titre: ['ひきざん'], sous: ['ひだりに もどす（−）'], fr: 'べんきょう : soustraire en tirant vers la gauche', barres: 'etude-moins' },
+    { n: 13, theme: 'omosa', titre: ['どっちが ', OMO, 'い？'], sous: ['てんびんで くらべる'], fr: 'Lequel est le plus lourd ? (balance)', barres: 'balance' },
+    { n: 14, theme: 'omosa', titre: [MI, 'ためと ちがう'], sous: ['よそうして、 てんびんで たしかめる'], fr: 'Gros mais léger : deviner, puis vérifier sur la balance', barres: 'devine' },
+    { n: 15, theme: 'omosa', titre: [ICHIBAN, ' ', OMO, 'いのは？'], sous: ['はかりで くらべる'], fr: 'Le plus lourd parmi trois (balances de cuisine)', barres: 'hakari' },
+    { n: 16, theme: 'omosa', titre: ['g で くらべる'], sous: ['300\u00a0g と 250\u00a0g'], fr: 'Nombres en g (300 g ou 250 g ?)', barres: 'g' },
+    { n: 17, theme: 'omosa', titre: ['kg と g'], sous: ['1\u00a0kg ＝ 1000\u00a0g'], fr: 'Kilogrammes et grammes (1 kg ou 800 g ?)', barres: 'kgg' },
+    { n: 18, theme: 'omosa', etude: 'balance', titre: ['つりあわせよう'], sous: ['つみきや おもりを のせる'], fr: 'べんきょう : équilibrer la balance avec des cubes ou des poids', barres: 'etude-balance' },
+    { n: 19, theme: 'kasa', titre: ['どっちが ', OO_I, 'い？'], sous: [ONAJI, 'じ コップで くらべる'], fr: 'Lequel contient le plus ? (verres identiques)', barres: 'verres' },
+    { n: 20, theme: 'kasa', titre: [ICHIBAN, ' ', OO_I, 'いのは？'], sous: ['3つから えらぶ'], fr: 'Le plus rempli parmi trois verres', barres: 'verres3' },
+    { n: 21, theme: 'kasa', titre: ['うつして くらべよう'], sous: ['かたちが ちがう いれもの'], fr: 'Récipients différents : verser dans des verres identiques', barres: 'transvaser' },
+    { n: 22, theme: 'kasa', titre: ['mL で くらべる'], sous: ['200\u00a0mL と 350\u00a0mL'], fr: 'Nombres en mL (200 mL ou 350 mL ?)', barres: 'ml' },
+    { n: 23, theme: 'kasa', titre: ['L と mL'], sous: ['1\u00a0L ＝ 1000\u00a0mL'], fr: 'Litres et millilitres (1 L ou 800 mL ?)', barres: 'lml' },
+    { n: 24, theme: 'kasa', etude: 'verre', titre: ['はかって いれよう'], sous: ['カップの めもりを よむ'], fr: 'べんきょう : remplir un verre doseur jusqu’à la bonne quantité', barres: 'etude-verre' },
   ];
+  const themeDe = (a) => a.theme || 'nagasa';
 
   const animationsReduites = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const entier = (a, b) => Math.floor(aleatoire(a, b + 1));
@@ -440,17 +490,21 @@
     return [valeurM(m), valeurCm(c)];
   }
 
+  // Une photo peut n'avoir qu'un poids ou une contenance : pour les longueurs, il faut des cm.
+  const photosCm = () => photos.filter((p) => Number(p.cm) > 0);
+
   function utiliserPhotos() {
-    if (photos.length < 2 || reglages.photos === 'jamais') return false;
+    if (photosCm().length < 2 || reglages.photos === 'jamais') return false;
     return reglages.photos === 'toujours' || Math.random() < 0.5;
   }
 
   function pairePhotos(rmin, rmax, nomsDifferents) {
+    const liste = photosCm();
     const possibles = [];
-    for (let i = 0; i < photos.length; i++) {
-      for (let j = i + 1; j < photos.length; j++) {
-        const a = photos[i];
-        const b = photos[j];
+    for (let i = 0; i < liste.length; i++) {
+      for (let j = i + 1; j < liste.length; j++) {
+        const a = liste[i];
+        const b = liste[j];
         const r = Math.max(a.cm, b.cm) / Math.min(a.cm, b.cm);
         if (r >= rmin && r <= rmax && (!nomsDifferents || a.yomi !== b.yomi)) possibles.push([a, b]);
       }
@@ -459,7 +513,7 @@
   }
 
   function trioPhotos(rmin) {
-    const t = [...photos].sort((a, b) => a.cm - b.cm);
+    const t = photosCm().sort((a, b) => a.cm - b.cm);
     const possibles = [];
     for (let i = 0; i < t.length; i++) {
       for (let j = i + 1; j < t.length; j++) {
@@ -498,6 +552,7 @@
   const indexMin = (objets) => objets.reduce((m, o, i) => (o.cm < objets[m].cm ? i : m), 0);
 
   function genererQuestion(niveau, derniere, i = 0, n = 6) {
+    if (niveau >= 13) return genererQuestionMV(niveau, derniere, i, n);
     const base = { niveau, essais: new Set(), resolu: false, indices: false };
 
     if (niveau === 6 || niveau === 7) {
@@ -628,7 +683,51 @@
 
   /* ----- Accueil ----- */
 
+  // Petits dessins des cartes おもさ / かさ (même cadre 256 × 64 que les barres des longueurs).
+  function contenuActiviteMV(code) {
+    const trait = 'fill:none;stroke:var(--encre-douce);stroke-width:4;stroke-linecap:round;stroke-linejoin:round';
+    const texte = 'fill:var(--encre);font-size:24px;font-weight:700';
+    const question = '<text x="170" y="44" style="fill:var(--action);font-size:30px;font-weight:700">？</text>';
+    const verre = (x, h, c, w = 34, H = 56) => `<path d="M${x} ${62 - H}v${H}h${w}v${-H}" style="${trait}"/>`
+      + `<rect x="${x + 2}" y="${60 - h}" width="${w - 4}" height="${h}" style="fill:${c}"/>`;
+    const cadran = (x, a) => `<circle cx="${x}" cy="34" r="22" style="${trait};stroke-width:3"/>`
+      + `<line x1="${x}" y1="34" x2="${x + 16 * Math.sin(a)}" y2="${34 - 16 * Math.cos(a)}" style="stroke:var(--o1);stroke-width:4;stroke-linecap:round"/>`;
+    switch (code) {
+      case 'balance':
+        return `<path d="M128 30v28M104 60h48" style="${trait}"/><g transform="rotate(9 128 30)"><path d="M48 30h160M30 22h36M190 22h36" style="${trait}"/>`
+          + '<circle cx="48" cy="12" r="9" style="fill:var(--o5)"/><circle cx="208" cy="9" r="12" style="fill:var(--o2)"/></g>';
+      case 'devine':
+        return '<circle cx="60" cy="30" r="27" style="fill:var(--o6);opacity:.85"/><path d="M60 57v6" style="stroke:var(--encre-douce);stroke-width:2"/>'
+          + '<circle cx="200" cy="46" r="13" style="fill:var(--encre-douce)"/>'
+          + '<text x="116" y="44" style="fill:var(--action);font-size:30px;font-weight:700">？</text>';
+      case 'hakari':
+        return cadran(48, 1.2) + cadran(128, 3.4) + cadran(208, 2.1);
+      case 'g': return `<text x="6" y="27" style="${texte}">300 g</text><text x="6" y="58" style="${texte}">250 g</text>${question}`;
+      case 'kgg': return `<text x="6" y="27" style="${texte}">1 kg</text><text x="6" y="58" style="${texte}">800 g</text>${question}`;
+      case 'ml': return `<text x="6" y="27" style="${texte}">200 mL</text><text x="6" y="58" style="${texte}">350 mL</text>${question}`;
+      case 'lml': return `<text x="6" y="27" style="${texte}">1 L</text><text x="6" y="58" style="${texte}">800 mL</text>${question}`;
+      case 'etude-balance':
+        return `<path d="M128 30v28M104 60h48M48 30h160M30 22h36M190 22h36" style="${trait}"/>`
+          + '<circle cx="48" cy="12" r="9" style="fill:var(--o5)"/>'
+          + [0, 1, 2].map((k) => `<rect x="${195 + k * 9}" y="10" width="8" height="10" rx="1" style="fill:var(--o5)"/>`).join('')
+          + '<rect x="199" y="0" width="8" height="10" rx="1" style="fill:var(--o5)"/>';
+      case 'verres': return verre(70, 22, 'var(--eau)') + verre(150, 44, 'var(--jus)');
+      case 'verres3': return verre(50, 30, 'var(--eau)') + verre(110, 46, 'var(--jus)') + verre(170, 18, 'var(--the)');
+      case 'transvaser':
+        return `<path d="M30 8h18v54H30z" style="${trait}"/><rect x="32" y="20" width="14" height="40" style="fill:var(--eau)"/>`
+          + `<path d="M70 40v20h70V40" style="${trait}"/><rect x="72" y="48" width="66" height="12" style="fill:var(--jus)"/>`
+          + `<path d="M154 34h26M172 26l8 8-8 8" style="${trait}"/>${verre(196, 26, 'var(--eau)', 22)}${verre(224, 40, 'var(--jus)', 22)}`;
+      case 'etude-verre':
+        return `${verre(100, 30, 'var(--eau)', 52)}`
+          + [14, 26, 38, 50].map((y) => `<path d="M102 ${y}h10" style="stroke:var(--encre-douce);stroke-width:2"/>`).join('')
+          + `<path d="M180 52V14M170 24l10-10 10 10" style="${trait};stroke:var(--o3)"/>`;
+      default: return '';
+    }
+  }
+
   function svgActivite(barres) {
+    const mv = typeof barres === 'string' ? contenuActiviteMV(barres) : '';
+    if (mv) return `<svg viewBox="0 0 256 64" preserveAspectRatio="xMinYMid meet" aria-hidden="true">${mv}</svg>`;
     const x0 = 10;
     const L = 236;
     let contenu = `<rect x="4" y="2" width="6" height="60" rx="2" style="fill:var(--repere)"/>`;
@@ -671,12 +770,34 @@
   }
 
   function rendreAccueil() {
-    $('sous-titre').innerHTML = html([NAGA, 'い？ ', MIJIKA, 'い？']);
+    // Onglets ながさ / おもさ / かさ (seulement ceux qui ont des activités choisies par les parents).
+    const avecActivites = THEMES.filter((th) => ACTIVITES.some((a) => themeDe(a) === th.cle && reglages.activites.includes(a.n)));
+    const actif = avecActivites.find((th) => th.cle === reglages.theme) || avecActivites[0] || THEMES[0];
+    $('sous-titre').innerHTML = html(actif.sous);
+    const nav = $('themes');
+    nav.replaceChildren();
+    nav.hidden = avecActivites.length < 2;
+    avecActivites.forEach((th) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'theme';
+      b.setAttribute('aria-pressed', String(th === actif));
+      b.innerHTML = `${th.icone}<span>${html(th.titre)}</span>`;
+      activable(b, () => {
+        if (th === actif) return;
+        ecrireReglages({ theme: th.cle });
+        rendreAccueil();
+        parler(th.titre);
+      });
+      nav.append(b);
+    });
     const zone = $('activites');
     zone.replaceChildren();
+    zone.scrollTop = 0;
+    const duTheme = ACTIVITES.filter((a) => themeDe(a) === actif.cle);
     const groupes = [
-      { titre: ['もんだい'], liste: ACTIVITES.filter((a) => !a.etude) },
-      { titre: [K('勉強', 'べんきょう')], liste: ACTIVITES.filter((a) => a.etude) },
+      { titre: ['もんだい'], liste: duTheme.filter((a) => !a.etude) },
+      { titre: [K('勉強', 'べんきょう')], liste: duTheme.filter((a) => a.etude) },
     ];
     groupes.forEach((groupe) => {
       const visibles = groupe.liste.filter((a) => reglages.activites.includes(a.n));
@@ -715,6 +836,7 @@
   }
 
   function consigneDe(q) {
+    if (estMV(q)) return consigneMV(q);
     if (q.type === 'paire' || q.type === 'nombre' || q.type === 'libre') {
       return q.demande === 'long' ? PHRASES.dotchiNagai : PHRASES.dotchiMijikai;
     }
@@ -751,6 +873,7 @@
 
   // La même règle, en court, affichée sous la consigne après une bonne réponse.
   function rappelDe(q) {
+    if (estMV(q)) return rappelMV(q);
     if (q.type === 'tehon') return [ONAJI, 'じ ', NAGA, 'さ ＝ ', ONAJI, 'じ ', KAZU];
     const sens = q.type === 'phrase' ? q.bonne : q.demande;
     const mot = sens === 'long' ? NAGA : MIJIKA;
@@ -761,6 +884,7 @@
 
   // L'explication donne toujours les longueurs, la règle, puis la conclusion avec l'écart.
   function explication(q) {
+    if (estMV(q)) return explicationMV(q);
     const plus = q.demande === 'long' ? NAGA : MIJIKA;
     if (q.type === 'nombre') {
       const [a, b] = q.valeurs;
@@ -804,7 +928,7 @@
       return;
     }
     if (q.type === 'phrase') parler([...phraseDe(q), '…… ', ...PHRASES.nagaiMijikai]);
-    else if (q.type === 'nombre') parler([segValeur(q.valeurs[0]), 'と ', segValeur(q.valeurs[1]), '、 ', ...consigneDe(q)]);
+    else if (q.type === 'nombre' || q.type === 'mesures') parler([segValeur(q.valeurs[0]), 'と ', segValeur(q.valeurs[1]), '、 ', ...consigneDe(q)]);
     else parler(consigneDe(q));
   }
 
@@ -857,10 +981,17 @@
 
     const etabli = $('etabli');
     etabli.replaceChildren();
-    etabli.classList.remove('libre', 'nombres');
+    etabli.classList.remove('libre', 'nombres', 'scene-mv');
     etabli.classList.toggle('sans-noms', !reglages.noms && q.type !== 'phrase');
     lignes = [];
     libres = [];
+    cibles = [];
+
+    if (estMV(q)) {
+      rendreMV(q, etabli);
+      majBoutonAide();
+      return;
+    }
 
     const zoneReperes = document.createElement('div');
     zoneReperes.className = 'reperes';
@@ -997,6 +1128,11 @@
 
   function afficherPreuve() {
     const q = courante();
+    // おもさ / かさ : la preuve fait partie du dessin.
+    if (estMV(q)) {
+      rendreQuestion();
+      return;
+    }
     const etabli = $('etabli');
     etabli.querySelectorAll('.preuve').forEach((e) => e.remove());
 
@@ -1041,6 +1177,803 @@
       const r = longue.forme.getBoundingClientRect();
       dessinerEcart(etabli, x0 + courte.largeur, x0 + longue.largeur, r.top - base.top - 6, r.height + 12, longue.objet.cm - courte.objet.cm);
     }
+  }
+
+  /* ======================================================================
+     おもさ (masses) et かさ (liquides)
+     Mêmes principes que pour les longueurs : de grosses différences d'abord, la preuve
+     après chaque bonne réponse, et la règle « 重い／多い ＝ 数が大きい ».
+     ====================================================================== */
+
+  const UNITES = {
+    g: { d: 'g', s: 'グラム', facteur: 1 },
+    kg: { d: 'kg', s: 'キログラム', facteur: 1000 },
+    ml: { d: 'mL', s: 'ミリリットル', facteur: 1 },
+    l: { d: 'L', s: 'リットル', facteur: 1000 },
+  };
+  const segU = (x, u) => V(`${x}\u00a0${UNITES[u].d}`, `${x}${UNITES[u].s}`);
+  const uniteDe = (theme) => (theme === 'omosa' ? 'g' : 'ml');
+  const valeurU = (x, u) => ({
+    x, u, val: x * UNITES[u].facteur, grande: UNITES[u].facteur > 1,
+    affichage: `${x}\u00a0${UNITES[u].d}`, lecture: `${x}${UNITES[u].s}`,
+  });
+  const motDe = (theme, sens) => MOTS[theme][sens];
+
+  // Objets à peser. « taille » : grosseur à l'écran (1 = normal). Poids réalistes, en g.
+  const CHOSES = [
+    { yomi: 'ふうせん', kanji: '風船', emoji: '🎈', val: 5, taille: 1.5 },
+    { yomi: 'はね', kanji: '羽', emoji: '🪶', val: 1, taille: 1.15 },
+    { yomi: 'ぬいぐるみ', emoji: '🧸', val: 150, taille: 1.45 },
+    { yomi: 'いし', kanji: '石', emoji: '🪨', val: 700, taille: 0.75 },
+    { yomi: 'かんづめ', kanji: '缶詰', emoji: '🥫', val: 400, taille: 0.7 },
+    { yomi: 'りんご', emoji: '🍎', val: 300, taille: 0.85 },
+    { yomi: 'いちご', emoji: '🍓', val: 20, taille: 0.55 },
+    { yomi: 'たまご', kanji: '卵', emoji: '🥚', val: 60, taille: 0.6 },
+    { yomi: 'ほん', kanji: '本', emoji: '📕', val: 500, taille: 1 },
+    { yomi: 'バナナ', emoji: '🍌', val: 120, taille: 0.95 },
+    { yomi: 'ボール', emoji: '⚽', val: 430, taille: 1.1 },
+    { yomi: 'みかん', emoji: '🍊', val: 100, taille: 0.65 },
+    { yomi: 'かぎ', kanji: '鍵', emoji: '🔑', val: 10, taille: 0.55 },
+    { yomi: 'トマト', emoji: '🍅', val: 200, taille: 0.7 },
+    { yomi: 'くつ', kanji: '靴', emoji: '👟', val: 250, taille: 1.1 },
+  ];
+  const chose = (yomi) => CHOSES.find((c) => c.yomi === yomi);
+  const objetChose = (c) => ({ type: 'chose', ...c });
+  // « みためと ちがう » : [gros mais léger, petit mais lourd]…
+  const PIEGES = [['ふうせん', 'いし'], ['ふうせん', 'かんづめ'], ['ふうせん', 'りんご'], ['はね', 'たまご'],
+    ['はね', 'かぎ'], ['ぬいぐるみ', 'いし'], ['ぬいぐるみ', 'かんづめ'], ['ふうせん', 'トマト'], ['ぬいぐるみ', 'りんご']];
+  // … et quelques paires où le plus gros est aussi le plus lourd (pour ne pas apprendre « gros = léger »).
+  const EVIDENTS = [['ボール', 'いちご'], ['ほん', 'かぎ'], ['くつ', 'いちご'], ['ボール', 'みかん'], ['ほん', 'たまご']];
+
+  const BOISSONS = [
+    { yomi: 'みず', kanji: '水', couleur: 'var(--eau)' },
+    { yomi: 'ジュース', couleur: 'var(--jus)' },
+    { yomi: 'おちゃ', kanji: 'お茶', couleur: 'var(--the)' },
+    { yomi: 'ぎゅうにゅう', kanji: '牛乳', couleur: 'var(--lait)' },
+  ];
+
+  // Récipients de formes différentes (w, h : largeur et hauteur relatives). Contenance ∝ w² × h.
+  const CONTENANTS = {
+    bin: { yomi: 'びん', kanji: '瓶', w: 0.34, h: 1, forme: 'bin' },
+    kappu: { yomi: 'カップ', w: 0.5, h: 0.6, forme: 'tasse' },
+    boru: { yomi: 'ボウル', w: 1, h: 0.42, forme: 'bol' },
+    nabe: { yomi: 'なべ', kanji: '鍋', w: 0.8, h: 0.55, forme: 'nabe' },
+  };
+  const capacite = (c) => Math.round(c.w * c.w * c.h * 2600);
+
+  const idxMaxV = (t) => t.reduce((m, o, i) => (o.val > t[m].val ? i : m), 0);
+  const idxMinV = (t) => t.reduce((m, o, i) => (o.val < t[m].val ? i : m), 0);
+
+  const photosAvec = (cle) => photos.filter((p) => Number(p[cle]) > 0);
+  const objetPhotoMV = (p, cle) => ({ type: 'photo', id: p.id, val: Number(p[cle]), yomi: p.yomi, kanji: p.kanji || null, w: p.w, h: p.h });
+
+  function utiliserPhotosAvec(cle) {
+    if (photosAvec(cle).length < 2 || reglages.photos === 'jamais') return false;
+    return reglages.photos === 'toujours' || Math.random() < 0.5;
+  }
+
+  function pairePhotosAvec(cle, rmin, rmax) {
+    const t = photosAvec(cle);
+    const possibles = [];
+    for (let i = 0; i < t.length; i++) {
+      for (let j = i + 1; j < t.length; j++) {
+        const r = Math.max(t[i][cle], t[j][cle]) / Math.min(t[i][cle], t[j][cle]);
+        if (r >= rmin && r <= rmax && t[i].yomi !== t[j].yomi) possibles.push([t[i], t[j]]);
+      }
+    }
+    return possibles.length ? choisir(possibles).map((p) => objetPhotoMV(p, cle)) : null;
+  }
+
+  function trioPhotosAvec(cle, rmin) {
+    const t = photosAvec(cle).sort((a, b) => a[cle] - b[cle]);
+    const possibles = [];
+    for (let i = 0; i < t.length; i++) {
+      for (let j = i + 1; j < t.length; j++) {
+        for (let k = j + 1; k < t.length; k++) {
+          if (t[j][cle] / t[i][cle] >= rmin && t[k][cle] / t[j][cle] >= rmin && t[k][cle] <= 1000) possibles.push([t[i], t[j], t[k]]);
+        }
+      }
+    }
+    return possibles.length ? choisir(possibles).map((p) => objetPhotoMV(p, cle)) : null;
+  }
+
+  function paireChoses(rmin, rmax) {
+    const possibles = [];
+    for (let i = 0; i < CHOSES.length; i++) {
+      for (let j = i + 1; j < CHOSES.length; j++) {
+        const r = Math.max(CHOSES[i].val, CHOSES[j].val) / Math.min(CHOSES[i].val, CHOSES[j].val);
+        if (r >= rmin && r <= rmax) possibles.push([CHOSES[i], CHOSES[j]]);
+      }
+    }
+    return choisir(possibles).map(objetChose);
+  }
+
+  // Trois objets pour les はかり : au moins 20 g (sinon l'aiguille ne bouge presque pas), au plus 1 kg.
+  function trioChoses(rmin) {
+    const t = CHOSES.filter((c) => c.val >= 20 && c.val <= 1000).sort((a, b) => a.val - b.val);
+    const possibles = [];
+    for (let i = 0; i < t.length; i++) {
+      for (let j = i + 1; j < t.length; j++) {
+        for (let k = j + 1; k < t.length; k++) {
+          if (t[j].val / t[i].val >= rmin && t[k].val / t[j].val >= rmin) possibles.push([t[i], t[j], t[k]]);
+        }
+      }
+    }
+    return choisir(possibles).map(objetChose);
+  }
+
+  // Des nombres seuls (g ou mL). Quelques pièges : chiffres inversés (350 / 530), 2 chiffres contre 3 (90 / 120).
+  function paireNombresMV(theme, i, derniere) {
+    const genre = derniere || i === 0 ? 'facile' : choisir(['facile', 'proche', 'proche', 'piege']);
+    let a;
+    let b;
+    if (genre === 'facile') {
+      a = entier(1, 4) * 50;
+      b = a + entier(4, 10) * 50;
+    } else if (genre === 'proche') {
+      a = entier(10, 85) * 10;
+      b = a + entier(2, 6) * 10;
+    } else if (Math.random() < 0.6) {
+      const c = entier(1, 7);
+      const d = entier(c + 1, 9);
+      a = c * 100 + d * 10;
+      b = d * 100 + c * 10;
+    } else {
+      a = entier(6, 9) * 10;
+      b = entier(10, 15) * 10;
+    }
+    const u = uniteDe(theme);
+    return [valeurU(a, u), valeurU(b, u)];
+  }
+
+  // kg contre g, ou L contre mL : 1 kg contre 800 g (800 est plus grand que 1, mais 1 kg est plus lourd).
+  function paireUnitesMV(theme, derniere) {
+    const [grande, petite] = theme === 'omosa' ? ['kg', 'g'] : ['l', 'ml'];
+    const k = derniere ? 1 : choisir([1, 1, 2, 2, 3]);
+    const grandePlus = derniere || Math.random() < 0.5;
+    const p = grandePlus ? entier(derniere ? 2 : 4, k * 10 - 1) * 100 : entier(k * 10 + 1, k * 10 + 9) * 100;
+    return [valeurU(k, grande), valeurU(p, petite)];
+  }
+
+  // Verres identiques (300 mL) : des quantités bien différentes au début, puis plus proches.
+  function quantitesVerres(n, facile) {
+    const ecartMin = facile ? 90 : 30;
+    for (let essai = 0; essai < 300; essai++) {
+      const t = Array.from({ length: n }, () => entier(3, 27) * 10);
+      const tri = [...t].sort((x, y) => x - y);
+      const espaces = tri.every((v, k) => k === 0 || v - tri[k - 1] >= ecartMin);
+      const proches = facile || tri[n - 1] - tri[0] <= (n === 2 ? 60 : 160);
+      if (espaces && proches) return t;
+    }
+    return n === 2 ? [80, 240] : [60, 150, 250];
+  }
+
+  // Deux récipients de formes différentes. Souvent un piège : le liquide monte plus haut dans le
+  // récipient étroit, mais il y en a moins.
+  function paireContenants(facile) {
+    const piege = !facile && Math.random() < 0.65;
+    for (let essai = 0; essai < 600; essai++) {
+      const A = CONTENANTS[choisir(['bin', 'kappu'])];
+      const B = CONTENANTS[choisir(['boru', 'nabe'])];
+      const ma = entier(2, Math.floor((capacite(A) * 0.88) / 50)) * 50;
+      const mb = entier(2, Math.floor((capacite(B) * 0.88) / 50)) * 50;
+      const hA = (ma / capacite(A)) * A.h;
+      const hB = (mb / capacite(B)) * B.h;
+      const r = Math.max(ma, mb) / Math.min(ma, mb);
+      const coherent = (ma > mb && hA > hB * 1.2) || (mb > ma && hB > hA * 1.2);
+      const ok = piege ? hA > hB * 1.4 && mb >= ma * 1.3 : coherent && r >= (facile ? 1.6 : 1.25);
+      if (ok) return { objets: [{ c: A, val: ma }, { c: B, val: mb }], piege };
+    }
+    return { objets: [{ c: CONTENANTS.bin, val: 250 }, { c: CONTENANTS.boru, val: 500 }], piege: true };
+  }
+
+  const sensMV = (forcePlus) => (!reglages.court || forcePlus ? 'plus' : choisir(['plus', 'moins']));
+
+  function genererQuestionMV(niveau, derniere, i, n) {
+    const base = { niveau, essais: new Set(), resolu: false, indices: false };
+    const facile = derniere || i < Math.ceil(n / 2);
+    const avecBonne = (q, objets) => ({ ...q, bonne: q.demande === 'plus' ? idxMaxV(objets) : idxMinV(objets) });
+
+    if (niveau === 13) {
+      const photosOk = utiliserPhotosAvec('g') && pairePhotosAvec('g', facile ? 2.5 : 1.3, 9999);
+      const objets = melanger(photosOk || paireChoses(facile ? 3 : 1.4, facile ? 9999 : 3));
+      return avecBonne({ ...base, theme: 'omosa', type: 'balance', objets, demande: sensMV(i === 0 || derniere) }, objets);
+    }
+    if (niveau === 14) {
+      // Le plus souvent un piège ; la dernière question est évidente (finir sur une réussite).
+      const piege = !derniere && Math.random() < 0.7;
+      const [gros, petit] = choisir(piege ? PIEGES : EVIDENTS);
+      const objets = melanger([objetChose(chose(gros)), objetChose(chose(petit))]);
+      return avecBonne({ ...base, theme: 'omosa', type: 'devine', etape: 'devine', piege, objets, demande: sensMV(i === 0 || derniere) }, objets);
+    }
+    if (niveau === 15) {
+      const objets = melanger((utiliserPhotosAvec('g') && trioPhotosAvec('g', derniere ? 1.5 : 1.2)) || trioChoses(derniere ? 1.5 : 1.25));
+      return avecBonne({ ...base, theme: 'omosa', type: 'hakari', objets, max: 1000, demande: sensMV(derniere) }, objets);
+    }
+    if (niveau === 16 || niveau === 17 || niveau === 22 || niveau === 23) {
+      const theme = niveau <= 17 ? 'omosa' : 'kasa';
+      const mixte = niveau === 17 || niveau === 23;
+      const valeurs = melanger(mixte ? paireUnitesMV(theme, derniere) : paireNombresMV(theme, i, derniere));
+      const max = Math.max(...valeurs.map((v) => v.val));
+      const paliers = theme === 'omosa' ? [500, 1000, 2000, 3000, 4000, 5000] : [500, 1000, 2000, 3000, 4000];
+      return avecBonne({
+        ...base, theme, type: 'mesures', mixte, valeurs, objets: valeurs,
+        max: paliers.find((p) => p >= max) || 5000,
+        demande: sensMV(derniere), aide: 0, aideMax: mixte ? 2 : 1,
+      }, valeurs);
+    }
+    if (niveau === 19 || niveau === 20) {
+      const nb = niveau === 19 ? 2 : 3;
+      const quantites = quantitesVerres(nb, niveau === 19 ? facile : derniere);
+      const boissons = melanger([...BOISSONS]).slice(0, nb);
+      const objets = quantites.map((val, k) => ({ ...boissons[k], val }));
+      return avecBonne({ ...base, theme: 'kasa', type: 'verres', objets, cap: 300, demande: sensMV(niveau === 19 && (i === 0 || derniere)) }, objets);
+    }
+    // 21 : verser dans des verres identiques pour comparer des récipients différents.
+    const photosOk = utiliserPhotosAvec('ml') && pairePhotosAvec('ml', facile ? 1.6 : 1.2, 9999);
+    let objets;
+    let piege = false;
+    if (photosOk) {
+      objets = photosOk.map((o) => ({ ...o, couleur: 'var(--eau)' }));
+    } else {
+      const p = paireContenants(facile);
+      piege = p.piege;
+      const boissons = melanger([...BOISSONS]).slice(0, 2);
+      objets = melanger(p.objets.map((o, k) => ({ yomi: o.c.yomi, kanji: o.c.kanji || null, contenant: o.c, val: o.val, couleur: boissons[k].couleur })));
+    }
+    const maxV = Math.max(...objets.map((o) => o.val));
+    return avecBonne({
+      ...base, theme: 'kasa', type: 'transvaser', etape: 'avant', piege, objets,
+      cap: [300, 500, 1000, 2000].find((c) => c >= maxV) || maxV, demande: sensMV(derniere),
+    }, objets);
+  }
+
+  /* ----- Phrases, règles et explications ----- */
+
+  const POSITIONS_MV = { 2: ['ひだり', 'みぎ'], 3: ['ひだり', 'まんなか', 'みぎ'] };
+
+  function referenceMV(q, i) {
+    const t = q.objets;
+    const nomsDistincts = new Set(t.map((o) => o.yomi)).size === t.length;
+    if (q.type !== 'mesures' && reglages.noms && nomsDistincts && t[i].yomi) return nomDe(t[i]);
+    if (q.type === 'mesures') return segValeur(t[i]);
+    return (POSITIONS_MV[t.length] || [])[i] || 'これ';
+  }
+
+  function regleMV(theme, sens, superlatif) {
+    const mot = motDe(theme, sens);
+    const taille = sens === 'plus' ? [OOKI, 'きい'] : [CHIISA, 'さい'];
+    return superlatif
+      ? [ICHIBAN, ' ', ...mot, 'のは ', KAZU, 'が ', ICHIBAN, ' ', ...taille, ' ほう。 ']
+      : [...mot, 'のは ', KAZU, 'が ', ...taille, ' ほう。 '];
+  }
+
+  const regleBalance = (sens) => (sens === 'plus'
+    ? [SAGA, 'がった ほうが ', OMO, 'い。 ']
+    : [AGA, 'がった ほうが ', KARU, 'い。 ']);
+
+  const regleVerres = (sens) => (sens === 'plus'
+    ? [ONAJI, 'じ コップなら、 たかい ほうが ', OO_I, 'い。 ']
+    : [ONAJI, 'じ コップなら、 ひくい ほうが ', SUKU, 'ない。 ']);
+
+  function consigneMV(q) {
+    const mot = motDe(q.theme, q.demande);
+    if (q.type === 'devine' && q.etape === 'devine') return ['どっちが ', ...mot, 'と おもう？'];
+    if (q.objets.length === 3) return [ICHIBAN, ' ', ...mot, 'のは どれ？'];
+    return ['どっちが ', ...mot, '？'];
+  }
+
+  function rappelMV(q) {
+    const mot = motDe(q.theme, q.demande);
+    const taille = q.demande === 'plus' ? [OOKI, 'きい'] : [CHIISA, 'さい'];
+    if (q.type === 'balance' || q.type === 'devine') {
+      return q.demande === 'plus' ? [SAGA, 'がった ほう ＝ ', OMO, 'い'] : [AGA, 'がった ほう ＝ ', KARU, 'い'];
+    }
+    if (q.objets.length === 3) return [ICHIBAN, ' ', ...mot, ' ＝ ', KAZU, 'が ', ICHIBAN, ' ', ...taille];
+    return [...mot, ' ＝ ', KAZU, 'が ', ...taille];
+  }
+
+  function explicationMV(q) {
+    const mot = motDe(q.theme, q.demande);
+    const u = uniteDe(q.theme);
+    const t = q.objets;
+    if (q.type === 'mesures') {
+      const [a, b] = q.valeurs;
+      const fin = [...regleMV(q.theme, q.demande), segValeur(q.valeurs[q.bonne]), 'の ほうが ', segU(Math.abs(a.val - b.val), u), ' ', ...mot, 'ね。'];
+      if (!q.mixte) return fin;
+      // On ne compare les nombres qu'une fois dans la même unité.
+      const g = q.valeurs.find((v) => v.grande);
+      const p = q.valeurs.find((v) => !v.grande);
+      return [segValeur(g), 'は ', segU(g.val, u), '。 ', segU(g.val, u), 'と ', segU(p.val, u), '。 ', ...fin];
+    }
+    const mesures = [];
+    t.forEach((o, k) => mesures.push(referenceMV(q, k), 'は ', segU(o.val, u), k < t.length - 1 ? '、 ' : '。 '));
+    if (t.length === 3) {
+      const aiguille = q.demande === 'plus'
+        ? ['はりが ', ICHIBAN, ' すすんだ ものが ', ICHIBAN, ' ', OMO, 'い。 ']
+        : ['はりが ', ICHIBAN, ' すすまない ものが ', ICHIBAN, ' ', KARU, 'い。 '];
+      const debut = q.type === 'hakari' ? aiguille : regleVerres(q.demande);
+      return [...debut, ...mesures, ...regleMV(q.theme, q.demande, true), referenceMV(q, q.bonne), 'だね。'];
+    }
+    const lourd = idxMaxV(t);
+    const leger = 1 - lourd;
+    let debut = [];
+    if (q.type === 'balance' || q.type === 'devine') {
+      debut = ['てんびんは ', referenceMV(q, lourd), 'の ほうに ', SAGA, 'がったね。 ', ...regleBalance(q.demande)];
+      if (q.type === 'devine' && q.piege) {
+        debut.push(referenceMV(q, leger), 'は ', OOKI, 'きい けど ', KARU, 'いね。 ');
+      }
+    } else if (q.type === 'verres') {
+      debut = regleVerres(q.demande);
+    } else if (q.type === 'transvaser') {
+      debut = [ONAJI, 'じ コップに うつすと、 ', referenceMV(q, lourd), 'の ほうが たかいね。 '];
+      if (q.piege) debut.push(referenceMV(q, leger), 'は たかく ', MI, 'えた けど、 ', SUKU, 'なかったね。 ');
+    }
+    const ecart = Math.abs(t[0].val - t[1].val);
+    return [...debut, ...mesures, ...regleMV(q.theme, q.demande), referenceMV(q, q.bonne), 'の ほうが ', segU(ecart, u), ' ', ...mot, 'ね。'];
+  }
+
+  function messageErreurMV(q) {
+    if (q.type === 'balance' || q.type === 'devine') {
+      return q.type === 'devine' && q.etape === 'balance' && q.essais.size === 1
+        ? ['おしい！ てんびんで たしかめよう。 ', ...regleBalance(q.demande)]
+        : ['おしい！ ', ...regleBalance(q.demande)];
+    }
+    if (q.type === 'hakari') return ['おしい！ はりを よく ', MI, 'てね。'];
+    if (q.type === 'transvaser' && q.versePourErreur) {
+      q.versePourErreur = false;
+      return ['おしい！ ', ONAJI, 'じ コップに うつして くらべよう。'];
+    }
+    return ['おしい！ たかさを よく ', MI, 'てね。'];
+  }
+
+  /* ----- Dessins : objets, balance, はかり, verres et récipients ----- */
+
+  let cibles = [];   // ce que l'élève touche pour répondre (plateaux, はかり, verres…) : { el, index }
+
+  function cible(el, index, label) {
+    const q = courante();
+    el.setAttribute('aria-label', label);
+    if (q.resolu && index === q.bonne) el.classList.add('juste');
+    if (q.essais.has(index)) el.classList.add('essaye');
+    activable(el, () => repondre(index));
+    cibles.push({ el, index });
+  }
+
+  function creerChose(o, px) {
+    const el = document.createElement('span');
+    el.className = 'chose';
+    if (o.type === 'photo') {
+      const p = photos.find((x) => x.id === o.id);
+      const img = document.createElement('img');
+      img.alt = '';
+      img.draggable = false;
+      if (p) img.src = urlPhoto(p);
+      const r = o.w / o.h;
+      img.style.height = `${Math.round(Math.min(px * 1.2, (px * 1.8) / r))}px`;
+      el.append(img);
+    } else {
+      el.textContent = o.emoji;
+      el.style.fontSize = `${Math.round(px * (o.taille || 1))}px`;
+    }
+    return el;
+  }
+
+  function etiquetteMesure(texte) {
+    const pill = document.createElement('span');
+    pill.className = 'mesure-mv';
+    pill.textContent = texte;
+    return pill;
+  }
+
+  const ANGLE_MAX = 14;
+
+  // Inclinaison du fléau (degrés, positif : le plateau de droite descend). Dans les questions, une
+  // vraie balance penche franchement ; en べんきょう, elle penche un peu moins quand on approche.
+  function angleBalance(gauche, droite, progressif) {
+    const d = droite - gauche;
+    if (!d) return 0;
+    if (!progressif) return Math.sign(d) * ANGLE_MAX;
+    const r = Math.abs(d) / Math.max(gauche, droite);
+    return Math.sign(d) * Math.max(2.5, Math.min(ANGLE_MAX, ANGLE_MAX * r * 2.5));
+  }
+
+  // Balance à plateaux (上皿てんびん) : un fléau sur un pied, une aiguille au centre.
+  function creerBalance(W, H, { interactif = false, noms = true } = {}) {
+    const Wb = Math.max(220, Math.min(W, 820));
+    const Lb = Wb * 0.62;
+    const Pw = Math.min(Wb * 0.36, 270);
+    const amp = (Lb / 2) * Math.sin((ANGLE_MAX * Math.PI) / 180);
+    const hNom = noms ? 34 : 0;
+    const hPied = Math.max(34, Math.min(90, H * 0.17));
+    const hCharge = Math.max(50, H - (24 + amp + hPied + 14 + hNom));
+    const yPivot = hCharge + 24 + amp;
+    // Objet le plus gros : 1,5 × taille, ×1,12 de hauteur de ligne, plus l'étiquette « 300 g » au-dessus.
+    const taille = Math.max(18, Math.min((hCharge - 34) / (1.5 * 1.12), Pw * 0.45));
+    const b = document.createElement('div');
+    b.className = 'balance';
+    b.style.width = `${Wb}px`;
+    b.style.height = `${yPivot + hPied + 14 + hNom}px`;
+    b.innerHTML = `<span class="balance-socle" style="left:${Wb / 2 - Wb * 0.17}px;top:${yPivot + hPied}px;width:${Wb * 0.34}px"></span>`
+      + `<span class="balance-pilier" style="left:${Wb / 2 - 8}px;top:${yPivot}px;height:${hPied}px"></span>`
+      + `<span class="balance-cadran" style="left:${Wb / 2 - 30}px;top:${yPivot + hPied * 0.74 - 6}px"></span>`
+      + `<span class="balance-aiguille" style="left:${Wb / 2 - 2}px;top:${yPivot}px;height:${hPied * 0.8}px"></span>`
+      + `<span class="balance-fleau" style="left:${Wb / 2 - Lb / 2}px;top:${yPivot - 6}px;width:${Lb}px"></span>`
+      + `<span class="balance-pivot" style="left:${Wb / 2 - 9}px;top:${yPivot - 9}px"></span>`;
+    const plateaux = [0, 1].map((k) => {
+      const el = document.createElement(interactif ? 'button' : 'div');
+      if (interactif) el.type = 'button';
+      el.className = `plateau ${k ? 'droite' : 'gauche'}`;
+      const x = Wb / 2 + (k ? 1 : -1) * (Lb / 2);
+      el.style.left = `${x - Pw / 2}px`;
+      el.style.top = `${yPivot - 24 - hCharge}px`;
+      el.style.width = `${Pw}px`;
+      el.style.height = `${hCharge + 24}px`;
+      el.innerHTML = '<span class="plateau-charge"></span><span class="plateau-assiette"></span><span class="plateau-tige"></span>';
+      b.append(el);
+      return { el, charge: el.querySelector('.plateau-charge') };
+    });
+    const etiquettes = [0, 1].map((k) => {
+      const n = document.createElement('span');
+      n.className = 'balance-nom';
+      const x = Wb / 2 + (k ? 1 : -1) * (Lb / 2);
+      n.style.left = `${x - Pw / 2}px`;
+      n.style.width = `${Pw}px`;
+      n.style.top = `${yPivot + hPied + 18}px`;
+      n.hidden = !noms;
+      b.append(n);
+      return n;
+    });
+    b.geo = { Wb, Lb, Pw, hCharge, taille };
+    b.plateaux = plateaux;
+    b.noms = etiquettes;
+    return b;
+  }
+
+  function incliner(b, angle) {
+    const dy = (b.geo.Lb / 2) * Math.sin((angle * Math.PI) / 180);
+    b.querySelector('.balance-fleau').style.transform = `rotate(${angle}deg)`;
+    b.querySelector('.balance-aiguille').style.transform = `rotate(${angle}deg)`;
+    b.plateaux[0].el.style.transform = `translateY(${-dy}px)`;
+    b.plateaux[1].el.style.transform = `translateY(${dy}px)`;
+  }
+
+  // La balance part à plat puis penche : l'élève voit le mouvement (une seule fois par question).
+  function poserBalance(b, angle, q) {
+    if (q.vuBalance || animationsReduites()) {
+      incliner(b, angle);
+      q.vuBalance = true;
+      return;
+    }
+    q.vuBalance = true;
+    incliner(b, 0);
+    setTimeout(() => {
+      b.classList.add('anime');
+      incliner(b, angle);
+      if (angle) setTimeout(() => note(150, { duree: 0.18, volume: 0.12, type: 'triangle' }), 650);
+    }, 450);
+  }
+
+  // Cadran d'une はかり de cuisine : 0 en haut, l'aiguille tourne dans le sens des aiguilles d'une montre.
+  function svgCadran(max) {
+    const arc = 300;
+    let traits = '';
+    for (let k = 0; k <= 20; k++) {
+      const a = ((k / 20) * arc * Math.PI) / 180;
+      const grand = k % 5 === 0;
+      const [s, c] = [Math.sin(a), Math.cos(a)];
+      traits += `<line x1="${(s * 44).toFixed(1)}" y1="${(-c * 44).toFixed(1)}" x2="${(s * (grand ? 35 : 39)).toFixed(1)}" y2="${(-c * (grand ? 35 : 39)).toFixed(1)}"${grand ? ' class="g"' : ''}/>`;
+      if (grand && k < 20) traits += `<text x="${(s * 25).toFixed(1)}" y="${(-c * 25 + 3.4).toFixed(1)}">${(max * k) / 20}</text>`;
+    }
+    return `<svg class="cadran" viewBox="-50 -50 100 100" aria-hidden="true"><circle class="face" r="48"/>${traits}`
+      + '<text class="unite" x="-13" y="-17">g</text><g class="aiguille-hakari"><line x1="0" y1="8" x2="0" y2="-40"/><circle r="4.5"/></g></svg>';
+  }
+
+  function tournerAiguille(svg, val, max) {
+    svg.querySelector('.aiguille-hakari').style.transform = `rotate(${(Math.min(val, max) / max) * 300}deg)`;
+  }
+
+  function creerHakari(D, max) {
+    const corps = document.createElement('span');
+    corps.className = 'hakari-corps';
+    corps.style.width = `${D * 1.12}px`;
+    corps.style.height = `${D * 1.08}px`;
+    corps.innerHTML = svgCadran(max);
+    corps.querySelector('svg').style.width = `${D}px`;
+    return corps;
+  }
+
+  function creerVerre(w, h, ml, cap, couleur) {
+    const v = document.createElement('span');
+    v.className = 'verre';
+    v.style.width = `${w}px`;
+    v.style.height = `${h}px`;
+    const l = document.createElement('span');
+    l.className = 'liquide';
+    l.style.setProperty('--c', couleur);
+    l.style.height = `${Math.min(100, (ml / cap) * 100)}%`;
+    v.append(l);
+    return v;
+  }
+
+  // Pas des graduations : un nombre tous les « etiquette » mL, un trait tous les « trait » mL.
+  function pasGraduation(max, hauteur) {
+    const etiquette = [10, 20, 50, 100, 200, 250, 500, 1000].find((p) => (p / max) * hauteur >= 34) || 1000;
+    const trait = [10, 20, 50, 100, 200, 250].find((p) => (p / max) * hauteur >= 7 && etiquette % p === 0) || etiquette;
+    return { etiquette, trait };
+  }
+
+  // Verre doseur : le verre « cap » mL de haut, des graduations jusqu'à « max ».
+  function creerVerreGradue(w, h, ml, cap, max, couleur) {
+    const v = creerVerre(w, h, ml, cap, couleur);
+    v.classList.add('gradue');
+    const interieur = h - 4;
+    const { etiquette, trait } = pasGraduation(cap, interieur);
+    let html2 = '';
+    for (let x = trait; x <= max; x += trait) {
+      const y = (x / cap) * 100;
+      const grand = x % etiquette === 0;
+      html2 += `<span class="trait${grand ? ' grand' : ''}" style="bottom:${y}%"></span>`;
+      if (grand) html2 += `<span class="graduation" style="bottom:${y}%">${x}</span>`;
+    }
+    const g = document.createElement('span');
+    g.className = 'graduations';
+    g.innerHTML = `${html2}<span class="graduation unite-ml" style="bottom:100%">mL</span>`;
+    v.append(g);
+    return v;
+  }
+
+  function creerContenant(o, S) {
+    const el = document.createElement('span');
+    if (!o.contenant) {
+      el.className = 'contenant photo';
+      el.append(creerChose(o, S * 0.7));
+      return el;
+    }
+    const c = o.contenant;
+    el.className = `contenant forme-${c.forme}`;
+    el.style.width = `${c.w * S}px`;
+    el.style.height = `${c.h * S}px`;
+    const l = document.createElement('span');
+    l.className = 'liquide';
+    l.style.setProperty('--c', o.couleur);
+    l.style.height = `${(o.val / capacite(c)) * 100}%`;
+    el.append(l);
+    return el;
+  }
+
+  function nomMV(o) {
+    const n = document.createElement('span');
+    n.className = 'nom-mv';
+    n.innerHTML = html([nomDe(o)]);
+    n.hidden = !reglages.noms;
+    return n;
+  }
+
+  /* ----- Rendu des questions おもさ / かさ ----- */
+
+  const estMV = (q) => Boolean(q && q.theme && q.theme !== 'nagasa');
+
+  function rendreMV(q, etabli) {
+    etabli.classList.add('scene-mv');
+    // Place réelle (les marges de l'établi changent avec l'écran : paysage, téléphone…).
+    const style = getComputedStyle(etabli);
+    const W = etabli.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+    const H = etabli.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+    const scene = document.createElement('div');
+    scene.className = 'scene';
+    etabli.append(scene);
+    if (q.type === 'devine' && q.etape === 'devine') rendreDevine(q, scene, W, H);
+    else if (q.type === 'balance' || q.type === 'devine') rendreBalanceQ(q, scene, W, H);
+    else if (q.type === 'hakari') rendreHakariQ(q, scene, W, H);
+    else if (q.type === 'verres') rendreVerresQ(q, scene, W, H, q.objets.map((o) => o));
+    else if (q.type === 'transvaser') rendreTransvaserQ(q, scene, W, H);
+    else rendreMesuresQ(q, scene, W, H);
+  }
+
+  function rendreBalanceQ(q, scene, W, H) {
+    const b = creerBalance(W, H, { interactif: true, noms: reglages.noms });
+    q.objets.forEach((o, k) => {
+      const { el, charge } = b.plateaux[k];
+      if (q.preuve) charge.append(etiquetteMesure(`${o.val}\u00a0g`));
+      charge.append(creerChose(o, b.geo.taille));
+      b.noms[k].innerHTML = html([nomDe(o)]);
+      cible(el, k, `${POSITIONS_MV[2][k]} ${o.yomi}`);
+    });
+    scene.append(b);
+    poserBalance(b, angleBalance(q.objets[0].val, q.objets[1].val), q);
+  }
+
+  // « みためと ちがう » : d'abord deviner, objets posés sur la table, à leur grosseur.
+  function rendreDevine(q, scene, W, H) {
+    const table = document.createElement('div');
+    table.className = 'table-devine';
+    const px = Math.max(24, Math.min((H - 60) / 1.5, W * 0.22));
+    q.objets.forEach((o, k) => {
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.className = 'devine-objet';
+      const planche = document.createElement('span');
+      planche.className = 'planche';
+      planche.append(creerChose(o, px));
+      el.append(planche, nomMV(o));
+      cible(el, k, o.yomi);
+      table.append(el);
+    });
+    scene.append(table);
+  }
+
+  function rendreHakariQ(q, scene, W, H) {
+    const n = q.objets.length;
+    const colW = Math.min(260, (W - 14 * (n - 1)) / n);
+    // Écran très bas (téléphone, explication affichée) : on garde la place pour l'objet plutôt que pour son nom.
+    const avecNoms = reglages.noms && H >= 220;
+    const hNom = avecNoms ? 30 : 0;
+    const D = Math.max(40, Math.min(colW * 0.86, H * 0.4, 190));
+    const hCharge = Math.max(30, H - D * 1.08 - 10 - hNom - 20);
+    const px = Math.max(14, Math.min((hCharge - 34) / (1.5 * 1.12), colW * 0.5));
+    const rangee = document.createElement('div');
+    rangee.className = 'rangee-mv';
+    rangee.classList.toggle('sans-noms-mv', !avecNoms);
+    const cadrans = [];
+    q.objets.forEach((o, k) => {
+      const col = document.createElement('button');
+      col.type = 'button';
+      col.className = 'hakari';
+      col.style.width = `${colW}px`;
+      const charge = document.createElement('span');
+      charge.className = 'hakari-charge';
+      charge.style.height = `${hCharge}px`;
+      if (q.preuve) charge.append(etiquetteMesure(`${o.val}\u00a0g`));
+      charge.append(creerChose(o, px));
+      const plateau = document.createElement('span');
+      plateau.className = 'hakari-plateau';
+      plateau.style.width = `${D * 1.02}px`;
+      const corps = creerHakari(D, q.max);
+      cadrans.push(corps.querySelector('svg'));
+      col.append(charge, plateau, corps, nomMV(o));
+      cible(col, k, `${k + 1}ばんめ ${o.yomi}`);
+      rangee.append(col);
+    });
+    scene.append(rangee);
+    const poser = () => cadrans.forEach((svg, k) => tournerAiguille(svg, q.objets[k].val, q.max));
+    if (q.vuAiguilles || animationsReduites()) {
+      poser();
+    } else {
+      setTimeout(() => { scene.classList.add('anime'); poser(); }, 400);
+    }
+    q.vuAiguilles = true;
+  }
+
+  // Verres identiques (aussi après avoir versé, activité 21). « avant » : petits récipients vides à côté.
+  function rendreVerresQ(q, scene, W, H, objets, avant) {
+    const n = objets.length;
+    const colW = Math.min(250, (W - 16 * (n - 1)) / n);
+    const hNom = reglages.noms ? 30 : 0;
+    const h = Math.max(70, Math.min(H - hNom - 64, 330));
+    const wMini = avant ? Math.min(colW * 0.3, 70) : 0;
+    const w = Math.max(40, Math.min((colW - wMini) * 0.6, h * 0.55, 150));
+    const rangee = document.createElement('div');
+    rangee.className = 'rangee-mv';
+    const verser = !q.vuVerres && !animationsReduites();
+    objets.forEach((o, k) => {
+      const col = document.createElement('button');
+      col.type = 'button';
+      col.className = 'verre-col';
+      col.style.width = `${colW}px`;
+      const pill = etiquetteMesure(`${o.val}\u00a0mL`);
+      pill.style.visibility = q.preuve ? 'visible' : 'hidden';
+      const ligne = document.createElement('span');
+      ligne.className = 'verre-ligne';
+      if (avant) {
+        // Le récipient d'origine, maintenant vide (il se vide pendant qu'on verse).
+        const mini = creerContenant(o, Math.min(wMini * 1.4, h * 0.45));
+        mini.classList.add('mini');
+        const liq = mini.querySelector('.liquide');
+        if (liq) {
+          liq.style.setProperty('--h0', liq.style.height);
+          liq.style.height = '0%';
+          if (verser) liq.classList.add('vide-anime');
+        }
+        ligne.append(mini);
+      }
+      const v = creerVerre(w, h, o.val, q.cap, o.couleur);
+      if (verser) v.querySelector('.liquide').classList.add('verse');
+      ligne.append(v);
+      col.append(pill, ligne, nomMV(o));
+      cible(col, k, `${POSITIONS_MV[n]?.[k] || ''} ${o.yomi}`);
+      rangee.append(col);
+    });
+    q.vuVerres = true;
+    scene.append(rangee);
+    if (q.preuve) preuveVerres(q, scene, objets);
+  }
+
+  // Preuve : un trait au niveau le plus bas, et la partie en plus dans le verre le plus rempli.
+  function preuveVerres(q, scene, objets) {
+    const verres = [...scene.querySelectorAll('.verre')];
+    if (verres.length < 2) return;
+    const base = scene.getBoundingClientRect();
+    const niveaux = verres.map((v, k) => {
+      const r = v.getBoundingClientRect();
+      return { r, y: r.bottom - 4 - (objets[k].val / q.cap) * (r.height - 4) - base.top };
+    });
+    const bas = niveaux.reduce((m, x) => (x.y > m.y ? x : m));
+    const trait = document.createElement('span');
+    trait.className = 'niveau-ligne';
+    trait.style.left = `${niveaux[0].r.left - base.left - 10}px`;
+    trait.style.width = `${niveaux[niveaux.length - 1].r.right - niveaux[0].r.left + 20}px`;
+    trait.style.top = `${bas.y}px`;
+    scene.append(trait);
+    if (objets.length === 2) {
+      const haut = niveaux.reduce((m, x) => (x.y < m.y ? x : m));
+      const ecart = Math.abs(objets[0].val - objets[1].val);
+      dessinerEcart(scene, haut.r.left - base.left, haut.r.right - base.left, haut.y, bas.y - haut.y, ecart, `${ecart}\u00a0mL`);
+      // Assez de place : l'écart s'écrit dans la bande (il ne cache pas l'étiquette du verre au-dessus).
+      const bande = scene.querySelector('.ecart:last-of-type');
+      if (bande && bas.y - haut.y >= 30) bande.classList.add('etiquette-dedans');
+    }
+  }
+
+  function rendreTransvaserQ(q, scene, W, H) {
+    if (q.etape === 'apres') {
+      rendreVerresQ(q, scene, W, H, q.objets, true);
+      return;
+    }
+    const hNom = reglages.noms ? 30 : 0;
+    const formes = q.objets.map((o) => o.contenant || { w: 0.8, h: 0.8 });
+    const S = Math.max(50, Math.min((H - hNom - 30) / Math.max(...formes.map((c) => c.h)), (W - 60) / formes.reduce((s, c) => s + c.w * 1.15, 0), 380));
+    const rangee = document.createElement('div');
+    rangee.className = 'rangee-mv';
+    q.objets.forEach((o, k) => {
+      const col = document.createElement('button');
+      col.type = 'button';
+      col.className = 'contenant-col';
+      col.append(creerContenant(o, S), nomMV(o));
+      cible(col, k, `${POSITIONS_MV[2][k]} ${o.yomi}`);
+      rangee.append(col);
+    });
+    scene.append(rangee);
+  }
+
+  // Nombres seuls (g, kg, mL, L). L'aide convertit dans la même unité, puis montre はかり ou verres doseurs.
+  function rendreMesuresQ(q, scene, W, H) {
+    const jauges = q.aide >= q.aideMax;
+    const u = uniteDe(q.theme);
+    const colW = Math.min(330, (W - 20) / 2);
+    const rangee = document.createElement('div');
+    rangee.className = 'rangee-mv mesures';
+    // Mêmes hauteurs de boutons, que la conversion (＝ 1000 g) soit affichée ou non : les jauges restent alignées.
+    rangee.classList.toggle('avec-conversion', q.mixte && q.aide >= 1);
+    const hJauge = Math.max(60, H - (q.mixte && q.aide >= 1 ? 112 : 84) - 28);
+    const cadrans = [];
+    q.valeurs.forEach((v, k) => {
+      const col = document.createElement('div');
+      col.className = 'mesure-col';
+      col.style.width = `${colW}px`;
+      const bouton = document.createElement('button');
+      bouton.type = 'button';
+      bouton.className = 'choix-valeur';
+      bouton.innerHTML = `<span class="valeur-texte">${echapper(v.affichage)}</span>`;
+      if (v.grande && q.aide >= 1) bouton.innerHTML += `<span class="conversion">＝ ${v.val}\u00a0${UNITES[u].d}</span>`;
+      cible(bouton, k, v.lecture);
+      col.append(bouton);
+      if (jauges) {
+        if (q.theme === 'omosa') {
+          const corps = creerHakari(Math.max(50, Math.min(colW * 0.62, hJauge / 1.1, 200)), q.max);
+          cadrans.push([corps.querySelector('svg'), v.val]);
+          col.append(corps);
+        } else {
+          const h = Math.max(60, Math.min(hJauge, 300));
+          const verre = creerVerreGradue(Math.min(colW * 0.4, h * 0.6, 130), h, v.val, q.max * 1.1, q.max, 'var(--eau)');
+          col.append(verre);
+        }
+      }
+      rangee.append(col);
+    });
+    scene.append(rangee);
+    cadrans.forEach(([svg, val]) => tournerAiguille(svg, val, q.max));
+    if (q.preuve && q.theme === 'kasa' && jauges) preuveVerres({ cap: q.max * 1.1 }, scene, q.valeurs);
   }
 
   /* ----- Objets décalés ou penchés (activités 8 et 9) ----- */
@@ -1153,6 +2086,13 @@
   /* ----- Bouton d'aide : « ヒント » (nombres) ou « そろえる » (objets libres) ----- */
 
   function messageAide(q) {
+    if (q.type === 'mesures') {
+      if (q.mixte && q.aide === 1) {
+        const g = q.valeurs.find((v) => v.grande);
+        return [segValeur(g), 'は ', segU(g.val, uniteDe(q.theme)), '。'];
+      }
+      return q.theme === 'omosa' ? ['はかりで くらべて ', MI, 'よう。'] : ['カップで くらべて ', MI, 'よう。'];
+    }
     if (q.mixte && q.aide === 1) {
       const m = q.valeurs.find((v) => v.m);
       return [segValeur(m), 'は ', segValeur(valeurCm(m.cm)), '。'];
@@ -1165,8 +2105,9 @@
     const bouton = $('btn-aide');
     let texte = '';
     if (reglages.aide && !q.resolu) {
-      if (q.type === 'nombre' && q.aide < q.aideMax) texte = 'ヒント';
+      if ((q.type === 'nombre' || q.type === 'mesures') && q.aide < q.aideMax) texte = 'ヒント';
       if (q.type === 'libre' && !q.aligne) texte = 'そろえる';
+      if (q.type === 'transvaser' && q.etape === 'avant') texte = 'うつす';
     }
     bouton.textContent = texte;
     bouton.hidden = !texte;
@@ -1182,7 +2123,17 @@
       parler(PHRASES.soroeta);
       return;
     }
-    if (q.type !== 'nombre' || q.aide >= q.aideMax) return;
+    if (q.type === 'transvaser') {
+      if (q.etape !== 'avant') return;
+      q.etape = 'apres';
+      rendreQuestion();
+      const m = [ONAJI, 'じ コップに うつしたよ。'];
+      $('retour').innerHTML = htmlMots(m);
+      $('retour').classList.remove('ok');
+      parler(m);
+      return;
+    }
+    if ((q.type !== 'nombre' && q.type !== 'mesures') || q.aide >= q.aideMax) return;
     q.aide += 1;
     rendreQuestion();
     const message = messageAide(q);
@@ -1266,6 +2217,9 @@
     if (reponse === q.bonne) {
       q.resolu = true;
       q.preuve = true;
+      // Deviner / verser : la balance ou les verres identiques montrent pourquoi c'est juste.
+      if (q.type === 'devine') q.etape = 'balance';
+      if (q.type === 'transvaser') q.etape = 'apres';
       sons.succes();
       const message = [...PHRASES.seikai, ...explication(q)];
       q.messageFinal = message;
@@ -1274,7 +2228,7 @@
       afficherRappel(q);
       parler(message);
       // Même trouvé du premier coup, on montre pourquoi c'est juste.
-      if (q.type === 'nombre' && q.aide < q.aideMax) {
+      if ((q.type === 'nombre' || q.type === 'mesures') && q.aide < q.aideMax) {
         q.aide = q.aideMax;
         rendreQuestion();
       }
@@ -1295,10 +2249,21 @@
     sons.oups();
     let message = q.type === 'tehon' ? PHRASES.oshiiTehon : PHRASES.oshii;
     if (q.type === 'libre') message = PHRASES.oshiiSoroe;
-    if (q.type === 'nombre' && q.aide < q.aideMax) {
+    if (estMV(q)) {
+      // Après une erreur : la balance se montre, ou l'on verse dans des verres identiques.
+      if (q.type === 'devine' && q.etape === 'devine') q.etape = 'balance';
+      if (q.type === 'transvaser' && q.etape === 'avant') {
+        q.etape = 'apres';
+        q.versePourErreur = true;
+      }
+      message = q.type === 'mesures' ? ['おしい！ ', ...regleMV(q.theme, q.demande)] : messageErreurMV(q);
+    }
+    if ((q.type === 'nombre' || q.type === 'mesures') && q.aide < q.aideMax) {
       // Après une erreur, l'aide avance d'une étape (conversion, puis barres).
       q.aide += 1;
       message = ['おしい！ ', ...messageAide(q)];
+      rendreQuestion();
+    } else if (q.type === 'devine' || q.type === 'transvaser') {
       rendreQuestion();
     }
     $('retour').innerHTML = htmlMots(message);
@@ -1314,6 +2279,18 @@
   function rendreApresReponse(erreur) {
     const q = courante();
     rendreProgression();
+    if (estMV(q)) {
+      cibles.forEach((c) => {
+        c.el.classList.toggle('juste', q.resolu && c.index === q.bonne);
+        c.el.classList.toggle('essaye', q.essais.has(c.index));
+        if (erreur === c.index) {
+          c.el.classList.remove('secoue');
+          void c.el.offsetWidth;
+          c.el.classList.add('secoue');
+        }
+      });
+      return;
+    }
     if (q.type === 'libre') {
       libres.forEach((item) => {
         item.el.classList.toggle('juste', q.resolu && item.index === q.bonne);
@@ -1378,6 +2355,11 @@
   function demarrerEtude(mode) {
     etude = { mode, index: 0, total: Number(reglages.nbQuestions) || 6 };
     $('ecran-etude').classList.toggle('mode-libre', mode === 'libre');
+    const plan = $('etude-plan');
+    plan.classList.toggle('plan-balance', mode === 'balance');
+    plan.classList.toggle('plan-verre', mode === 'verre');
+    plan.classList.remove('anime');
+    plan.replaceChildren();
     montrer('etude');
     rendreChoixMax();
     nouveauProbleme();
@@ -1390,7 +2372,9 @@
     e.resolu = false;
     // Jusqu'à 20, le 2e nombre reste un chiffre ; au-delà, il va jusqu'à la moitié de la limite.
     const pasMax = Math.floor((max <= 20 ? Math.min(9, max - 1) : max / 2) / petit);
-    if (e.mode === 'libre') {
+    if (estEtudeMV()) {
+      nouveauProblemeMV(e);
+    } else if (e.mode === 'libre') {
       e.base = Math.round(max / 2 / petit) * petit;
       e.pas = null;
       e.cible = null;
@@ -1408,12 +2392,16 @@
     $('etude-retour').textContent = '';
     $('etude-retour').classList.remove('ok');
     $('etude-suivant').hidden = true;
+    if (estEtudeMV()) $('etude-plan').replaceChildren();
     rendreEtude();
     parler(consigneEtude(true));
   }
 
   // Pas des boutons et du glisser : ±1 et ±10, ou ±10 et ±100 quand on va jusqu'à 1000.
   function pasBoutons() {
+    if (etude && etude.mode === 'verre') {
+      return { petit: 10, grand: volumeMax() <= 200 ? 50 : 100, avecGrand: true };
+    }
     const max = Number(reglages.nombreMax) || 20;
     return { petit: max >= 1000 ? 10 : 1, grand: max >= 1000 ? 100 : 10, avecGrand: max >= 50 };
   }
@@ -1424,17 +2412,20 @@
   function rendreChoixMax() {
     const zone = $('choix-max');
     zone.replaceChildren();
+    // Verre doseur : sa taille (200 mL, 500 mL, 1 L). Sinon : la limite des nombres.
+    const verre = etude && etude.mode === 'verre';
+    const cle = verre ? 'volumeMax' : 'nombreMax';
     const etiquette = document.createElement('span');
-    etiquette.textContent = 'かず：';
+    etiquette.textContent = verre ? 'カップ：' : 'かず：';
     zone.append(etiquette);
-    LIMITES.forEach((v) => {
+    (verre ? LIMITES_VOLUME : LIMITES).forEach((v) => {
       const b = document.createElement('button');
       b.type = 'button';
-      b.textContent = `〜${v}`;
-      b.setAttribute('aria-pressed', String(Number(reglages.nombreMax) === v));
+      b.textContent = verre ? (v >= 1000 ? '1\u00a0L' : `${v}\u00a0mL`) : `〜${v}`;
+      b.setAttribute('aria-pressed', String(Number(reglages[cle]) === v));
       activable(b, () => {
-        if (Number(reglages.nombreMax) === v) return;
-        ecrireReglages({ nombreMax: v });
+        if (Number(reglages[cle]) === v) return;
+        ecrireReglages({ [cle]: v });
         rendreChoixMax();
         nouveauProbleme();
       });
@@ -1443,6 +2434,7 @@
   }
 
   function bornesEtude() {
+    if (etude.mode === 'verre') return [0, volumeMax()];
     const max = Number(reglages.nombreMax) || 20;
     if (etude.mode === 'plus') return [etude.base, max];
     if (etude.mode === 'moins') return [0, etude.base];
@@ -1451,6 +2443,7 @@
 
   function consigneEtude(pourVoix) {
     const e = etude;
+    if (estEtudeMV()) return consigneEtudeMV();
     if (e.mode === 'libre') return ['テープを ひっぱって みよう。 ', KAZU, 'が かわるよ。'];
     const geste = e.mode === 'plus' ? ['みぎに ', String(e.pas), ' のばそう。'] : ['ひだりに ', String(e.pas), ' もどそう。'];
     if (!pourVoix) return geste;
@@ -1462,6 +2455,7 @@
   // ajoutés en vert, « − n » et les blocs retirés en violet, le résultat en pastille comme la bulle.
   function equationEtude() {
     const e = etude;
+    if (estEtudeMV()) return equationEtudeMV();
     if (e.mode === 'libre') {
       const d = e.valeur - e.depart;
       const delta = d ? ` <span class="${d > 0 ? 'terme-plus' : 'terme-moins'}">${d > 0 ? '＋' : '−'}${Math.abs(d)}</span>` : '';
@@ -1475,7 +2469,7 @@
   // La consigne, avec le nombre à ajouter ou à retirer dans sa couleur.
   function consigneEtudeHtml() {
     const e = etude;
-    if (e.mode === 'libre') return htmlMots(consigneEtude(false));
+    if (e.mode === 'libre' || estEtudeMV()) return htmlMots(consigneEtude(false));
     const [debut, fin, classe] = e.mode === 'plus' ? ['みぎに', 'のばそう。', 'terme-plus'] : ['ひだりに', 'もどそう。', 'terme-moins'];
     return `<span class="mot">${debut}</span> <span class="mot ${classe}">${e.pas}</span> <span class="mot">${fin}</span>`;
   }
@@ -1485,9 +2479,16 @@
     const e = etude;
     const activite = ACTIVITES.find((a) => a.etude === e.mode);
     const compte = e.mode === 'libre' ? '' : `<small>${e.index + 1} / ${e.total}</small>`;
-    $('etude-titre').innerHTML = html(activite.titre) + compte;
+    $('etude-titre').innerHTML = htmlMots(activite.titre) + compte;
     $('etude-consigne').innerHTML = consigneEtudeHtml();
     const plan = $('etude-plan');
+    if (estEtudeMV()) {
+      // Redessiné entièrement (taille de l'écran) : sans animation.
+      plan.classList.remove('anime');
+      plan.replaceChildren();
+      dessinerEtudeMV();
+      return;
+    }
     plan.replaceChildren();
     const max = Number(reglages.nombreMax) || 20;
     const x0 = 27;
@@ -1685,7 +2686,15 @@
         `${e.mode === 'plus' ? '＋' : '−'}${e.pas}`, e.mode === 'plus' ? 'ecart-plus' : 'ecart-moins');
     }
 
-    $('etude-valeur').textContent = String(e.valeur);
+    majCommandesEtude();
+  }
+
+  // Nombre affiché, égalité, boutons (pas de ±1 / ±10…, grisés aux bornes), bouton つぎへ.
+  function majCommandesEtude() {
+    const e = etude;
+    const mv = estEtudeMV();
+    const unite = e.mode === 'verre' ? '\u00a0mL' : e.mode === 'balance' ? (enTsumiki() ? 'こ' : '\u00a0g') : '';
+    $('etude-valeur').textContent = `${e.valeur}${unite}`;
     $('etude-equation').innerHTML = equationEtude();
     const [min, max] = bornesEtude();
     const { petit, grand, avecGrand } = pasBoutons();
@@ -1693,10 +2702,11 @@
     $('etude-plus').textContent = `＋${petit}`;
     $('etude-moins-grand').textContent = `−${grand}`;
     $('etude-plus-grand').textContent = `＋${grand}`;
-    $('etude-moins').setAttribute('aria-label', petit === 1 ? 'ひとつ もどす' : `${petit} もどす`);
-    $('etude-plus').setAttribute('aria-label', petit === 1 ? 'ひとつ のばす' : `${petit} のばす`);
-    $('etude-moins-grand').setAttribute('aria-label', `${grand} もどす`);
-    $('etude-plus-grand').setAttribute('aria-label', `${grand} のばす`);
+    const [moins, plus] = mv ? ['へらす', 'ふやす'] : ['もどす', 'のばす'];
+    $('etude-moins').setAttribute('aria-label', petit === 1 ? `ひとつ ${moins}` : `${petit} ${moins}`);
+    $('etude-plus').setAttribute('aria-label', petit === 1 ? `ひとつ ${plus}` : `${petit} ${plus}`);
+    $('etude-moins-grand').setAttribute('aria-label', `${grand} ${moins}`);
+    $('etude-plus-grand').setAttribute('aria-label', `${grand} ${plus}`);
     $('etude-moins-grand').hidden = !avecGrand;
     $('etude-moins-grand').parentElement.classList.toggle('avec-grand', avecGrand);
     $('etude-plus-grand').hidden = !avecGrand;
@@ -1714,9 +2724,10 @@
     if (nouvelle === etude.valeur) return false;
     const monte = nouvelle > etude.valeur;
     etude.valeur = nouvelle;
-    note((monte ? 440 : 400) + Math.min(nouvelle, 60) * 9, { duree: 0.08, volume: 0.09, type: 'triangle' });
+    const hauteur = estEtudeMV() ? (nouvelle / max) * 60 : Math.min(nouvelle, 60);
+    note((monte ? 440 : 400) + hauteur * 9, { duree: 0.08, volume: 0.09, type: 'triangle' });
     if (reglages.sons && navigator.vibrate) navigator.vibrate(8);
-    dessinerRuban();
+    if (estEtudeMV()) dessinerEtudeMV(); else dessinerRuban();
     if (voix && reglages.compter) parler(String(nouvelle));
     return true;
   }
@@ -1754,6 +2765,10 @@
   // Après un geste ou un appui : bravo, « encore N », ou « trop, reviens de N ».
   function verifierEtude(parlerSiRien) {
     const e = etude;
+    if (estEtudeMV()) {
+      verifierEtudeMV(parlerSiRien);
+      return;
+    }
     if (e.mode === 'libre') {
       const d = e.valeur - e.depart;
       const message = d > 0 ? [String(e.valeur), '。 ', String(d), ' ふえたね。']
@@ -1784,10 +2799,223 @@
     e.resolu = true;
     sons.succes();
     const op = e.mode === 'plus' ? ' たす ' : ' ひく ';
-    const message = [...PHRASES.seikai, String(e.base), op, String(e.pas), ' は ', String(e.cible), '。'];
+    const message = estEtudeMV() ? reussirEtudeMV() : [...PHRASES.seikai, String(e.base), op, String(e.pas), ' は ', String(e.cible), '。'];
     messageEtude(message, true);
     parler(message);
-    dessinerRuban();
+    if (estEtudeMV()) dessinerEtudeMV(); else dessinerRuban();
+  }
+
+  /* ======================================================================
+     べんきょう おもさ : équilibrer un objet avec des cubes (つみき) ou des poids.
+     べんきょう かさ : remplir un verre doseur (glisser vers le haut ou le bas).
+     ====================================================================== */
+
+  const LIMITES_VOLUME = [200, 500, 1000];
+  const estEtudeMV = () => Boolean(etude && (etude.mode === 'balance' || etude.mode === 'verre'));
+  const enTsumiki = () => (Number(reglages.nombreMax) || 20) <= 20;
+  const volumeMax = () => Number(reglages.volumeMax) || 500;
+  // Le verre doseur est un peu plus haut que sa dernière graduation.
+  const hauteurVerre = () => volumeMax() * 1.12;
+
+  function nouveauProblemeMV(e) {
+    const { petit } = pasBoutons();
+    if (e.mode === 'balance') {
+      const max = Number(reglages.nombreMax) || 20;
+      const autre = (c) => !e.objet || c.yomi !== e.objet.yomi;
+      if (enTsumiki()) {
+        // Cubes : une unité choisie (« つみき なんこ ぶん »), avec des objets assez lourds pour en demander plusieurs.
+        e.objet = choisir(CHOSES.filter((c) => c.val >= 100 && autre(c)));
+        e.cible = entier(2, max);
+      } else {
+        // Grammes : un objet dont le vrai poids tient dans la limite, à 15 % près (une tomate ne pèse pas 18 g).
+        const possibles = CHOSES.filter((c) => c.val >= Math.max(petit * 2, max / 20) && c.val <= max && autre(c));
+        e.objet = choisir(possibles.length ? possibles : CHOSES.filter((c) => c.val <= max));
+        e.cible = Math.max(petit, Math.min(max, Math.round((e.objet.val * aleatoire(0.85, 1.15)) / petit) * petit));
+      }
+      e.base = 0;
+    } else {
+      const cap = volumeMax();
+      const fin = cap >= 1000 ? 50 : 10;
+      const n = cap / fin;
+      e.cible = entier(Math.ceil(n * 0.15), n) * fin;
+      // D'abord un verre vide ; ensuite il contient déjà quelque chose : on ajoute ou on enlève.
+      if (e.index < Math.ceil(e.total / 2)) {
+        e.base = 0;
+      } else {
+        do { e.base = entier(1, n - 1) * fin; } while (Math.abs(e.base - e.cible) < fin * 2);
+      }
+    }
+    e.etat = null;
+  }
+
+  const texteBalance = (n) => (enTsumiki() ? V(`つみき ${n}こ`, `つみき ${n}こ`) : segU(n, 'g'));
+
+  function consigneEtudeMV() {
+    const e = etude;
+    if (e.mode === 'balance') {
+      return [nomDe(e.objet), 'と つりあう ように、 ', enTsumiki() ? 'つみき' : 'おもり', 'を のせよう。'];
+    }
+    if (!e.base) return [segU(e.cible, 'ml'), ' いれよう。'];
+    return ['いま ', segU(e.base, 'ml'), '。 ', segU(e.cible, 'ml'), 'に しよう。'];
+  }
+
+  function equationEtudeMV() {
+    const e = etude;
+    if (e.mode === 'balance') {
+      const nom = html([nomDe(e.objet)]);
+      const val = e.resolu ? `<span class="resultat">${e.cible}</span>` : '<span class="resultat inconnu">？</span>';
+      return enTsumiki() ? `${nom} ＝ つみき ${val}こ` : `${nom} ＝ ${val} g`;
+    }
+    const d = e.cible - e.base;
+    const signe = d > 0 ? '＋' : '−';
+    const delta = e.resolu
+      ? `<span class="${d > 0 ? 'terme-plus' : 'terme-moins'}">${signe}${Math.abs(d)}</span>`
+      : `<span class="${d > 0 ? 'terme-plus' : 'terme-moins'}">${signe}</span> ？`;
+    return `<span class="terme-base">${e.base}</span> ${delta} → <span class="resultat">${e.cible}</span> mL`;
+  }
+
+  function dessinerEtudeMV() {
+    const plan = $('etude-plan');
+    if (etude.mode === 'balance') dessinerEtudeBalance(plan);
+    else dessinerEtudeVerre(plan);
+    majCommandesEtude();
+  }
+
+  function remplirPile(pile, valeur, geo) {
+    pile.replaceChildren();
+    const s = Math.max(14, Math.min(30, geo.Pw / 6.5));
+    const ajouter = (classe, l, h, texte) => {
+      const p = document.createElement('span');
+      p.className = classe;
+      p.style.width = `${l}px`;
+      p.style.height = `${h}px`;
+      p.style.fontSize = `${Math.max(9, s * 0.42)}px`;
+      if (texte) p.textContent = texte;
+      pile.append(p);
+    };
+    if (enTsumiki()) {
+      for (let k = 0; k < valeur; k++) ajouter('tsumiki', s, s);
+      return;
+    }
+    const { petit, grand } = pasBoutons();
+    const nGrand = Math.floor(valeur / grand);
+    const nPetit = Math.round((valeur - nGrand * grand) / petit);
+    for (let k = 0; k < nGrand; k++) ajouter('poids poids-grand', s * 1.1, s * 1.3, String(grand));
+    for (let k = 0; k < nPetit; k++) ajouter('poids poids-petit', s * 0.8, s * 0.9, String(petit));
+  }
+
+  function dessinerEtudeBalance(plan) {
+    const e = etude;
+    let b = plan.querySelector('.balance');
+    if (!b) {
+      plan.replaceChildren();
+      b = creerBalance(plan.clientWidth - 16, plan.clientHeight - 12, { noms: true });
+      b.plateaux[0].charge.append(creerChose(objetChose(e.objet), b.geo.taille));
+      const pile = document.createElement('span');
+      pile.className = 'pile';
+      b.plateaux[1].charge.append(pile);
+      b.noms[0].innerHTML = html([nomDe(e.objet)]);
+      plan.append(b);
+      incliner(b, angleBalance(e.cible, e.valeur, true));
+      requestAnimationFrame(() => requestAnimationFrame(() => b.classList.add('anime')));
+    }
+    remplirPile(b.querySelector('.pile'), e.valeur, b.geo);
+    b.noms[1].innerHTML = html([texteBalance(e.valeur)]);
+    b.querySelector('.plateau.gauche .mesure-mv')?.remove();
+    if (e.resolu) b.plateaux[0].charge.prepend(etiquetteMesure(texteBalance(e.cible).d));
+    incliner(b, angleBalance(e.cible, e.valeur, true));
+  }
+
+  function dessinerEtudeVerre(plan) {
+    const e = etude;
+    const cap = hauteurVerre();
+    let v = plan.querySelector('.verre');
+    if (!v || Number(plan.dataset.cap) !== cap) {
+      plan.replaceChildren();
+      plan.dataset.cap = String(cap);
+      const H = plan.clientHeight;
+      const W = plan.clientWidth;
+      // Le verre prend presque toute la hauteur ; à droite : la poignée puis la bulle (≈ 150 px).
+      const h = Math.max(100, H - 26);
+      const w = Math.max(64, Math.min(200, W * 0.3, h * 0.72));
+      const gauche = Math.max(48, Math.min((W - w) / 2, W - w - 150));
+      v = creerVerreGradue(w, h, e.valeur, cap, volumeMax(), 'var(--eau)');
+      v.style.position = 'absolute';
+      v.style.left = `${gauche}px`;
+      v.style.top = `${H - h - 12}px`;
+      const poignee = document.createElement('span');
+      poignee.className = 'poignee-etude poignee-verre';
+      poignee.innerHTML = '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8l5-5 5 5M7 16l5 5 5-5M12 3v18"/></svg>';
+      const bulle = document.createElement('span');
+      bulle.className = 'bulle-etude bulle-verre';
+      plan.append(v, poignee, bulle);
+      e.geo = { ppm: (h - 4) / cap, bas: H - 12 - 4, gauche, w };
+      requestAnimationFrame(() => requestAnimationFrame(() => plan.classList.add('anime')));
+    }
+    const { ppm, bas, gauche, w } = e.geo;
+    const y = bas - e.valeur * ppm;
+    v.querySelector('.liquide').style.height = `${(e.valeur / cap) * 100}%`;
+    const poignee = plan.querySelector('.poignee-verre');
+    poignee.style.left = `${gauche + w}px`;
+    poignee.style.top = `${y}px`;
+    const bulle = plan.querySelector('.bulle-verre');
+    bulle.textContent = `${e.valeur} mL`;
+    // À droite de la poignée, à la hauteur du niveau (sans la cacher).
+    bulle.style.left = `${gauche + w + 62}px`;
+    bulle.style.top = `${y - 19}px`;
+    plan.querySelectorAll('.ecart').forEach((x) => x.remove());
+    if (e.resolu && e.base) {
+      const yBase = bas - e.base * ppm;
+      const d = e.cible - e.base;
+      dessinerEcart(plan, gauche + 4, gauche + w - 4, Math.min(y, yBase), Math.abs(yBase - y), Math.abs(d),
+        `${d > 0 ? '＋' : '−'}${Math.abs(d)}`, d > 0 ? 'ecart-plus' : 'ecart-moins');
+    }
+  }
+
+  function verifierEtudeMV(parlerSiRien) {
+    const e = etude;
+    if (e.valeur === e.cible) {
+      reussirEtude();
+      return;
+    }
+    if (e.mode === 'balance') {
+      const etat = e.valeur < e.cible ? 'leger' : 'lourd';
+      const unite = enTsumiki() ? 'つみき' : 'おもり';
+      const message = etat === 'leger'
+        ? [nomDe(e.objet), 'の ほうが ', OMO, 'い。 ', unite, 'を ふやそう。']
+        : [unite, 'の ほうが ', OMO, 'い。 へらそう。'];
+      messageEtude(message);
+      if (parlerSiRien || etat !== e.etat) parler(message);
+      e.etat = etat;
+      return;
+    }
+    const ecart = segU(Math.abs(e.valeur - e.cible), 'ml');
+    const remplir = e.cible > e.base;
+    let message;
+    let trop = false;
+    if (e.valeur < e.cible) {
+      trop = !remplir;
+      message = remplir ? ['あと ', ecart, ' いれよう。'] : ['すてすぎ！ ', ecart, ' いれよう。'];
+    } else {
+      trop = remplir;
+      message = remplir ? ['いれすぎ！ ', ecart, ' すてよう。'] : ['あと ', ecart, ' すてよう。'];
+    }
+    messageEtude(message);
+    if (trop || parlerSiRien) parler(message);
+  }
+
+  function reussirEtudeMV() {
+    const e = etude;
+    let message;
+    if (e.mode === 'balance') {
+      message = ['つりあった！ ', nomDe(e.objet), 'は ', texteBalance(e.cible), '。'];
+    } else if (!e.base) {
+      message = [...PHRASES.seikai, segU(e.cible, 'ml'), '。'];
+    } else {
+      const d = e.cible - e.base;
+      message = [...PHRASES.seikai, segU(e.base, 'ml'), d > 0 ? ' たす ' : ' ひく ', segU(Math.abs(d), 'ml'), ' は ', segU(e.cible, 'ml'), '。'];
+    }
+    return message;
   }
 
   // Glisser n'importe où sur la zone : le ruban suit le mouvement du doigt, sans sauter.
@@ -1804,16 +3032,20 @@
     };
 
     plan.addEventListener('pointerdown', (ev) => {
-      if (!etude || etude.resolu) return;
+      if (!etude || etude.resolu || etude.mode === 'balance') return;
       ev.preventDefault();
       plan.setPointerCapture(ev.pointerId);
       const cible = presDuDepart(ev) ? 'depart' : 'fin';
-      geste = { id: ev.pointerId, x: ev.clientX, v: etude.valeur, a: etude.depart, cible };
+      geste = { id: ev.pointerId, x: ev.clientX, y: ev.clientY, v: etude.valeur, a: etude.depart, cible };
       plan.classList.add(cible === 'depart' ? 'en-glisse-depart' : 'en-glisse');
     });
     plan.addEventListener('pointermove', (ev) => {
       if (!geste || ev.pointerId !== geste.id) return;
       const { petit } = pasBoutons();
+      if (etude.mode === 'verre') {
+        changerValeur(geste.v + Math.round((geste.y - ev.clientY) / etude.geo.ppm / petit) * petit, false);
+        return;
+      }
       const pas = Math.round((ev.clientX - geste.x) / etude.geo.ppc / petit) * petit;
       if (geste.cible === 'depart') changerDepart(geste.a + pas);
       else changerValeur(geste.v + pas, false);
@@ -1824,7 +3056,7 @@
       const cible = geste.cible;
       geste = null;
       plan.classList.remove('en-glisse', 'en-glisse-depart');
-      if (!bouge) dessinerRuban();
+      if (!bouge) { if (estEtudeMV()) dessinerEtudeMV(); else dessinerRuban(); }
       else if (cible === 'depart') annoncerDepart();
       else verifierEtude(true);
     };
@@ -1909,13 +3141,17 @@
       etudeAide: 'Dans « べんきょう », votre enfant tire le ruban (n’importe où sur la zone, pas seulement sur la poignée) ou utilise les gros boutons ＋1 / −1. Chaque centimètre ajouté ou retiré apparaît comme un bloc numéroté. Dans « のばして みよう », la poignée bleue sous le ruban change le premier nombre sans changer le second. Avec des nombres plus grands, le geste doit être plus précis.',
       aide: 'Bouton d’aide (ヒント, そろえる)',
       aideAide: 'Activités 6 et 7 : l’aide convertit d’abord dans la même unité (1 m ＝ 100 cm), puis dessine des barres à l’échelle. Activités 8 et 9 : elle fait glisser les objets jusqu’à la ligne de départ. Elle apparaît aussi d’elle-même après une erreur.',
+      aideMV: 'Masses et liquides : activités 16, 17, 22 et 23, l’aide convertit d’abord dans la même unité (1 kg ＝ 1000 g, 1 L ＝ 1000 mL), puis montre des balances de cuisine ou des verres doseurs. Activité 14 : l’élève devine d’abord (un gros objet peut être léger), puis la balance vérifie. Activité 21 : le bouton « うつす » (ou une erreur) verse les deux récipients dans des verres identiques. Dans « つりあわせよう », on pose des cubes jusqu’à 20 (« つみき なんこ ぶん »), puis des poids en g ; la balance penche moins quand on approche. Dans « はかって いれよう », on glisse le doigt vers le haut ou le bas ; la taille du verre doseur (200 mL, 500 mL, 1 L) se choisit en haut de l’écran.',
+      theme_nagasa: 'Longueurs (ながさ)',
+      theme_omosa: 'Masses (おもさ)',
+      theme_kasa: 'Liquides (かさ)',
       noms: 'Afficher le nom des objets',
       court: 'Demander aussi « le plus court » (短い)',
       courtAide: 'Les élèves confondent souvent « long » et « court » : activez-le quand « long » est acquis.',
       oui: 'Oui',
       non: 'Non',
       photos: 'Photos d’objets de la maison',
-      photosAide: 'Posez l’objet à l’horizontale sur un fond uni (une feuille blanche) et photographiez-le d’au-dessus. Mesurez-le avec une règle : l’outil l’affiche ensuite à la bonne échelle. Variez les longueurs (par exemple 5, 10, 15 et 25 cm) : les questions faciles demandent des objets très différents.',
+      photosAide: 'Posez l’objet à l’horizontale sur un fond uni (une feuille blanche) et photographiez-le d’au-dessus. Mesurez-le avec une règle : l’outil l’affiche ensuite à la bonne échelle. Variez les longueurs (par exemple 5, 10, 15 et 25 cm) : les questions faciles demandent des objets très différents. Vous pouvez aussi le peser sur la balance de cuisine (en g), ou noter la contenance écrite sur une bouteille ou une brique (en mL) : la photo apparaîtra alors aussi dans les questions sur les masses ou les liquides.',
       photosUsage: 'Utiliser les photos dans les questions',
       jamais: 'Jamais',
       melange: 'Avec les dessins',
@@ -1949,13 +3185,20 @@
       suivant: 'Suivant',
       retour: 'Retour',
       enregistrer: 'Enregistrer',
-      infos: 'Nom et longueur de l’objet',
+      infos: 'Nom et mesures de l’objet',
       yomi: 'Nom en hiragana (obligatoire)',
       kanjiChamp: 'Nom en kanji (facultatif)',
       cm: 'Longueur réelle en cm',
-      cmAide: 'Mesurez l’objet avec une règle, d’un bout à l’autre.',
+      cmAide: 'Mesurez l’objet avec une règle, d’un bout à l’autre (facultatif si vous indiquez un poids ou une contenance).',
       erreurYomi: 'Écrivez le nom de l’objet en hiragana.',
       erreurCm: 'Indiquez une longueur entre 1 et 300 cm.',
+      erreurMesure: 'Indiquez au moins une mesure : longueur, poids ou contenance.',
+      erreurG: 'Indiquez un poids entre 1 et 5000 g.',
+      erreurMl: 'Indiquez une contenance entre 10 et 5000 mL.',
+      g: 'Poids en g (balance de cuisine)',
+      gAide: 'Facultatif : pour les questions sur les masses.',
+      ml: 'Contenance en mL (écrite sur l’étiquette)',
+      mlAide: 'Facultatif : pour l’activité 21 (verser dans des verres identiques).',
       erreurImage: 'Cette image n’a pas pu être lue. Essayez une autre photo.',
     },
     ja: {
@@ -1973,13 +3216,17 @@
       etudeAide: '「べんきょう」では テープを ひっぱるか（どこからでも）、＋1・−1 の ボタンを つかいます。たしたり ひいたり した 1cm ずつが ばんごうつきの ブロックで みえます。「のばして みよう」では テープの 下の あおい ●で さいしょの かずを かえられます（2つめの かずは そのまま）。かずが 大きいと こまかい うごきが ひつようです。',
       aide: 'ヒントの ボタン（ヒント・そろえる）',
       aideAide: '6・7：まず おなじ たんいに なおし（1m＝100cm）、つぎに ぼうで しめします。8・9：ものの はしを そろえます。まちがえたときは じどうで でます。',
+      aideMV: 'おもさ・かさ：16・17・22・23 は まず おなじ たんいに なおし（1kg＝1000g、1L＝1000mL）、つぎに はかりや けいりょうカップで しめします。14 は まず よそうして（大きくても かるい ものが あります）、てんびんで たしかめます。21 は「うつす」ボタン（または まちがい）で おなじ コップに うつします。「つりあわせよう」は 20までは つみき（つみき なんこ ぶん）、それより 大きいと g の おもりです。ちかづくと てんびんの かたむきが 小さく なります。「はかって いれよう」は ゆびを 上下に うごかします。カップの 大きさ（200mL・500mL・1L）は がめんの 上で えらべます。',
+      theme_nagasa: 'ながさ',
+      theme_omosa: 'おもさ',
+      theme_kasa: 'かさ',
       noms: 'ものの なまえを ひょうじする',
       court: '「短い」も きく',
       courtAide: '「長い」と「短い」は まちがえやすいので、「長い」が できてから つかいましょう。',
       oui: 'はい',
       non: 'いいえ',
       photos: 'いえの ものの しゃしん',
-      photosAide: 'ものを よこむきに むじの かみの 上に おき、まうえから とってください。じょうぎで ながさを はかると、ただしい 大きさで ひょうじされます。ながさの ちがう ものを えらびましょう（れい：5・10・15・25cm）。',
+      photosAide: 'ものを よこむきに むじの かみの 上に おき、まうえから とってください。じょうぎで ながさを はかると、ただしい 大きさで ひょうじされます。ながさの ちがう ものを えらびましょう（れい：5・10・15・25cm）。キッチンスケールで おもさ（g）を はかったり、ボトルや パックの かさ（mL）を いれたり すると、おもさ・かさの もんだいにも でます。',
       photosUsage: 'もんだいに しゃしんを つかう',
       jamais: 'つかわない',
       melange: 'イラストと まぜる',
@@ -2013,13 +3260,20 @@
       suivant: 'つぎへ',
       retour: 'もどる',
       enregistrer: 'ほぞん',
-      infos: 'ものの なまえと ながさ',
+      infos: 'ものの なまえと ながさ・おもさ・かさ',
       yomi: 'なまえ（ひらがな・ひっす）',
       kanjiChamp: 'なまえ（漢字・なくても よい）',
       cm: 'ほんとうの ながさ（cm）',
-      cmAide: 'じょうぎで はしから はしまで はかってください。',
+      cmAide: 'じょうぎで はしから はしまで はかってください（おもさか かさを いれたら なくても よい）。',
       erreurYomi: 'なまえを ひらがなで かいてください。',
       erreurCm: '1〜300cm の ながさを いれてください。',
+      erreurMesure: 'ながさ・おもさ・かさの どれか 1つを いれてください。',
+      erreurG: '1〜5000g の おもさを いれてください。',
+      erreurMl: '10〜5000mL の かさを いれてください。',
+      g: 'おもさ（g・キッチンスケールで）',
+      gAide: 'なくても よい：おもさの もんだいに つかいます。',
+      ml: 'かさ（mL・ラベルに かいてある）',
+      mlAide: 'なくても よい：21（おなじ コップに うつす）に つかいます。',
       erreurImage: 'この しゃしんは よみこめませんでした。ほかの しゃしんで ためしてください。',
     },
   };
@@ -2071,7 +3325,15 @@
   function groupeActivites() {
     const zone = document.createElement('div');
     zone.className = 'options';
+    let themePrecedent = null;
     ACTIVITES.forEach((a) => {
+      if (themeDe(a) !== themePrecedent) {
+        themePrecedent = themeDe(a);
+        const titre = document.createElement('p');
+        titre.className = 'sous-titre-reglage';
+        titre.textContent = t(`theme_${themePrecedent}`);
+        zone.append(titre);
+      }
       const label = document.createElement('label');
       const input = document.createElement('input');
       input.type = 'checkbox';
@@ -2101,7 +3363,7 @@
       liste.append(p);
       return liste;
     }
-    [...photos].sort((a, b) => a.cm - b.cm).forEach((p) => {
+    [...photos].sort((a, b) => (a.cm || 0) - (b.cm || 0)).forEach((p) => {
       const ligne = document.createElement('div');
       ligne.className = 'photo-ligne';
       const img = document.createElement('img');
@@ -2109,7 +3371,8 @@
       img.alt = '';
       const infos = document.createElement('div');
       infos.className = 'infos';
-      infos.innerHTML = `<strong>${echapper(p.kanji ? `${p.kanji}（${p.yomi}）` : p.yomi)}</strong><span>${echapper(String(p.cm))} cm</span>`;
+      const mesures = [p.cm ? `${p.cm} cm` : '', p.g ? `${p.g} g` : '', p.ml ? `${p.ml} mL` : ''].filter(Boolean).join(' · ');
+      infos.innerHTML = `<strong>${echapper(p.kanji ? `${p.kanji}（${p.yomi}）` : p.yomi)}</strong><span>${echapper(mesures)}</span>`;
       const actions = document.createElement('div');
       actions.className = 'actions';
       const effacer = document.createElement('button');
@@ -2175,7 +3438,9 @@
     );
     const etudeAide = document.createElement('p');
     etudeAide.textContent = t('etudeAide');
-    bActivites.append(etudeAide);
+    const aideMV = document.createElement('p');
+    aideMV.textContent = t('aideMV');
+    bActivites.append(etudeAide, aideMV);
     const aideCourt = document.createElement('p');
     aideCourt.textContent = t('courtAide');
     bActivites.append(aideCourt);
@@ -2361,6 +3626,10 @@
     $('lbl-kanji').textContent = t('kanjiChamp');
     $('lbl-cm').textContent = t('cm');
     $('aide-cm').textContent = t('cmAide');
+    $('lbl-g').textContent = t('g');
+    $('aide-g').textContent = t('gAide');
+    $('lbl-ml').textContent = t('ml');
+    $('aide-ml').textContent = t('mlAide');
   }
 
   async function chargerPhoto(ev) {
@@ -2391,6 +3660,8 @@
     $('champ-yomi').value = '';
     $('champ-kanji').value = '';
     $('champ-cm').value = '';
+    $('champ-g').value = '';
+    $('champ-ml').value = '';
     montrer('photo');
     etapePhoto('recadrage');
   }
@@ -2513,22 +3784,30 @@
 
     const yomi = $('champ-yomi').value.trim();
     const kanji = $('champ-kanji').value.trim();
-    const cm = Number(String($('champ-cm').value).replace(',', '.'));
-    if (!yomi) {
-      $('erreur-photo').textContent = t('erreurYomi');
-      $('champ-yomi').focus();
-      return;
-    }
-    if (!Number.isFinite(cm) || cm < 1 || cm > 300) {
-      $('erreur-photo').textContent = t('erreurCm');
-      $('champ-cm').focus();
-      return;
-    }
+    // Longueur, poids, contenance : au moins une des trois (les autres peuvent rester vides).
+    const lire = (id) => {
+      const brut = String($(id).value).trim().replace(',', '.');
+      return brut === '' ? null : Number(brut);
+    };
+    const cm = lire('champ-cm');
+    const g = lire('champ-g');
+    const ml = lire('champ-ml');
+    const erreur = (cle, id) => {
+      $('erreur-photo').textContent = t(cle);
+      $(id).focus();
+    };
+    if (!yomi) return erreur('erreurYomi', 'champ-yomi');
+    if (cm === null && g === null && ml === null) return erreur('erreurMesure', 'champ-cm');
+    if (cm !== null && (!Number.isFinite(cm) || cm < 1 || cm > 300)) return erreur('erreurCm', 'champ-cm');
+    if (g !== null && (!Number.isFinite(g) || g < 1 || g > 5000)) return erreur('erreurG', 'champ-g');
+    if (ml !== null && (!Number.isFinite(ml) || ml < 10 || ml > 5000)) return erreur('erreurMl', 'champ-ml');
     const objet = {
       id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
       yomi,
       kanji: kanji || null,
-      cm: Math.round(cm * 10) / 10,
+      cm: cm === null ? null : Math.round(cm * 10) / 10,
+      g: g === null ? null : Math.round(g),
+      ml: ml === null ? null : Math.round(ml),
       w: photoRecadree.w,
       h: photoRecadree.h,
       blob: photoRecadree.blob,

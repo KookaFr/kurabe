@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>くらべよう</title>
   <meta name="claude:viewport-fit-sides" content="cover">
-  <meta name="description" content="ながさを くらべる れんしゅう。Comparer des longueurs, pour les élèves avec un retard intellectuel.">
+  <meta name="description" content="ながさ・おもさ・かさを くらべる れんしゅう。Comparer des longueurs, des masses et des liquides, pour les élèves avec un retard intellectuel.">
   <meta name="theme-color" content="#f6f7f2">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -27,6 +27,7 @@
         <h1 class="titre">くらべよう<small id="sous-titre"></small></h1>
         <button type="button" class="btn btn-parents" id="btn-parents">おうちの人<span>ながおし</span></button>
       </header>
+      <nav class="themes" id="themes" aria-label="ながさ・おもさ・かさ"></nav>
       <div class="activites" id="activites"></div>
     </section>
 
@@ -139,6 +140,14 @@
         <label class="champ"><span id="lbl-cm"></span>
           <input type="number" id="champ-cm" inputmode="decimal" min="1" max="300" step="0.5">
           <span class="aide" id="aide-cm"></span>
+        </label>
+        <label class="champ"><span id="lbl-g"></span>
+          <input type="number" id="champ-g" inputmode="decimal" min="1" max="5000" step="1">
+          <span class="aide" id="aide-g"></span>
+        </label>
+        <label class="champ"><span id="lbl-ml"></span>
+          <input type="number" id="champ-ml" inputmode="decimal" min="10" max="5000" step="1">
+          <span class="aide" id="aide-ml"></span>
         </label>
         <p class="erreur" id="erreur-photo" role="alert"></p>
       </form>

@@ -1,10 +1,10 @@
 # くらべよう
 
-ながさを くらべる れんしゅうの アプリです。タブレットや スマートフォンで つかえます。
+ながさ・おもさ・かさを くらべる れんしゅうの アプリです。タブレットや スマートフォンで つかえます。
 
-Une petite application pour s'entraîner à comparer des longueurs (長い・短い), pensée pour les élèves avec un retard intellectuel. Elle fonctionne sur tablette et sur smartphone (iPad, Android).
+Une petite application pour s'entraîner à comparer des longueurs (長い・短い), des masses (重い・軽い) et des quantités de liquide (多い・少ない), pensée pour les élèves avec un retard intellectuel. Elle fonctionne sur tablette et sur smartphone (iPad, Android). L'accueil a trois onglets : ながさ, おもさ, かさ.
 
-## もんだい / Activités
+## ながさ / Longueurs
 
 1. どっちが 長い？（やさしい）: deux objets, avec une différence très marquée
 2. どっちが 長い？（むずかしい）: une différence plus fine, et aussi 「短い」
@@ -24,7 +24,7 @@ Après chaque bonne réponse, même trouvée du premier coup, l'application mont
 
 L'explication rappelle aussi la règle : « ながいのは かずが おおきい ほう » (le plus long, c'est le plus grand nombre), « みじかいのは かずが ちいさい ほう ». Elle s'affiche sous la consigne.
 
-## べんきょう / Apprendre
+### べんきょう / Apprendre
 
 10. のばして みよう: on tire un ruban sur la règle, vers la droite ou la gauche, et on voit le nombre changer (« 3 ふえたね », « 2 へったね »)
 11. たしざん: par exemple 8 ＋ 5. On tire vers la droite ; chaque centimètre ajouté apparaît comme un bloc numéroté 1, 2, 3…, et l'égalité se complète.
@@ -38,9 +38,33 @@ La limite des nombres (〜10, 〜20, 〜50, 〜100, 〜1000) se choisit en haut 
 - les boutons ＋10 / −10 s'ajoutent (＋10 / ＋100 pour 1000, où l'on compte en dizaines) ;
 - le 2e nombre peut aller jusqu'à la moitié de la limite (37 ＋ 25, 480 ＋ 390…).
 
+## おもさ / Masses
+
+13. どっちが 重い？: deux objets sur une balance à plateaux (上皿てんびん). Elle part à plat, puis penche : 「下がった ほうが 重い」
+14. 見ためと ちがう: deux objets posés sur la table, souvent un gros mais léger (ふうせん) et un petit mais lourd (いし). L'élève devine d'abord, puis la balance vérifie
+15. 一番 重いのは？: trois objets sur trois balances de cuisine à cadran (はかり) ; l'aiguille la plus avancée montre le plus lourd
+16. g で くらべる: deux masses écrites en g (300 g / 250 g), avec des pièges comme 350 g / 530 g
+17. kg と g: 1 kg / 800 g. « ヒント » convertit (1 kg ＝ 1000 g), puis montre deux balances de cuisine
+
+べんきょう : 18. つりあわせよう — un objet sur un plateau ; on pose des cubes (つみき, jusqu'à 20 : « つみき なんこ ぶん ») ou des poids de 1 / 10 g ou 10 / 100 g sur l'autre, jusqu'à ce que la balance soit à l'équilibre. Elle penche moins quand on approche, et la voix dit de quel côté c'est plus lourd. Les objets ont leur vrai poids, à 15 % près.
+
+## かさ / Liquides
+
+19. どっちが 多い？: deux verres identiques ; 「同じ コップなら、たかい ほうが 多い」
+20. 一番 多いのは？: trois verres identiques
+21. うつして くらべよう: deux récipients de formes différentes (びん, カップ, ボウル, なべ). Souvent un piège : le liquide monte plus haut dans le récipient étroit, mais il y en a moins. Le bouton « うつす » (ou une erreur) verse les deux dans des verres identiques pour comparer
+22. mL で くらべる: deux quantités en mL (200 mL / 350 mL)
+23. L と mL: 1 L / 800 mL. « ヒント » convertit (1 L ＝ 1000 mL), puis montre deux verres doseurs gradués
+
+べんきょう : 24. はかって いれよう — remplir un verre doseur gradué jusqu'à la quantité demandée, en glissant le doigt vers le haut ou le bas, ou avec les boutons. Ensuite, le verre contient déjà du liquide : on ajoute ou on en enlève (« いま 120 mL。200 mL に しよう »). La taille du verre doseur (200 mL, 500 mL, 1 L) se choisit en haut de l'écran.
+
+Comme pour les longueurs, chaque bonne réponse est suivie d'une preuve (masses en g sur les plateaux, niveau le plus bas tracé sur les verres avec la quantité en plus) et de la règle : « 重いのは 数が 大きい ほう », « 少ないのは 数が 小さい ほう ».
+
 ## おうちの人へ / Pour les parents
 
-Appuyez 2 secondes sur « おうちの人 » pour ouvrir les réglages, en japonais ou en français. Vous pourrez y ajouter des photos d'objets de la maison, qui seront affichés à leur vraie longueur, et y choisir les activités, l'écriture (hiragana, ou kanji avec furigana) et la sensibilité au toucher.
+Appuyez 2 secondes sur « おうちの人 » pour ouvrir les réglages, en japonais ou en français. Vous pourrez y choisir les activités, l'écriture (hiragana, ou kanji avec furigana) et la sensibilité au toucher.
+
+Vous pourrez aussi y ajouter des photos d'objets de la maison. Avec leur longueur en cm, ils sont affichés à leur vraie taille dans les questions de longueur. Avec leur poids en g (balance de cuisine), ils apparaissent sur la balance et sur les はかり. Avec la contenance écrite sur l'étiquette (mL), ils apparaissent dans « うつして くらべよう ». Une seule de ces trois mesures suffit.
 
 Les photos et les réglages restent sur l'appareil. Aucun compte n'est nécessaire, et rien n'est envoyé sur Internet.
 

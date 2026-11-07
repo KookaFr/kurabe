@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>くらべよう</title>
+  <meta name="claude:viewport-fit-sides" content="cover">
+  <meta name="description" content="ながさを くらべる れんしゅう。Comparer des longueurs, pour les élèves avec un retard intellectuel.">
+  <meta name="theme-color" content="#f6f7f2">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="くらべよう">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icone.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icone-180.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
+  <link rel="stylesheet" href="kurabe.css">
+</head>
+<body>
+  <div class="app">
+
+    <!-- Accueil de l'élève -->
+    <section class="ecran" id="ecran-accueil">
+      <header class="haut">
+        <h1 class="titre">くらべよう<small id="sous-titre"></small></h1>
+        <button type="button" class="btn btn-parents" id="btn-parents">おうちの人<span>ながおし</span></button>
+      </header>
+      <div class="activites" id="activites"></div>
+    </section>
+
+    <!-- Question -->
+    <section class="ecran" id="ecran-question" hidden>
+      <header class="haut">
+        <button type="button" class="btn-rond" id="btn-quitter" aria-label="おわる">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+        <ol class="progression" id="progression" aria-label="すすみぐあい"></ol>
+        <button type="button" class="btn-rond" id="btn-ecouter" aria-label="もういちど きく">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg>
+        </button>
+      </header>
+      <div class="confirmation" id="confirmation-quitter" hidden>
+        <p>おわりに する？</p>
+        <button type="button" class="btn btn-petit" id="quitter-oui">はい</button>
+        <button type="button" class="btn btn-petit btn-principal" id="quitter-non">つづける</button>
+      </div>
+      <h2 class="consigne" id="consigne"></h2>
+      <p class="phrase" id="phrase" hidden></p>
+      <div class="etabli" id="etabli"></div>
+      <div class="choix-mots" id="choix-mots" hidden></div>
+      <div class="bas">
+        <p class="retour" id="retour" aria-live="polite"></p>
+        <button type="button" class="btn btn-principal btn-suivant" id="btn-suivant" hidden>つぎへ</button>
+      </div>
+    </section>
+
+    <!-- Fin de la série -->
+    <section class="ecran" id="ecran-fin" hidden>
+      <div class="fin">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <circle cx="60" cy="60" r="54" fill="var(--bon-fond)" stroke="var(--bon)" stroke-width="6"/>
+          <path d="M34 62l17 17 36-38" fill="none" stroke="var(--bon)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h2 id="fin-titre"></h2>
+        <p id="fin-texte"></p>
+        <div class="actions">
+          <button type="button" class="btn" id="btn-recommencer">もういちど</button>
+          <button type="button" class="btn btn-principal" id="btn-menu">ほかの もんだい</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Espace parents -->
+    <section class="ecran" id="ecran-parents" hidden>
+      <header class="haut">
+        <h2 class="titre" id="parents-titre"></h2>
+        <button type="button" class="btn" id="btn-fermer-parents"></button>
+      </header>
+      <div class="parents" id="parents"></div>
+    </section>
+
+    <!-- Ajout d'une photo -->
+    <section class="ecran" id="ecran-photo" hidden>
+      <header class="haut">
+        <h2 class="titre" id="photo-titre"></h2>
+      </header>
+      <p id="photo-consigne"></p>
+      <div class="recadrage" id="etape-recadrage">
+        <div class="zone-toile" id="zone-toile">
+          <canvas id="toile"></canvas>
+          <div class="cadre" id="cadre">
+            <span class="poignee" data-coin="nw"></span>
+            <span class="poignee" data-coin="ne"></span>
+            <span class="poignee" data-coin="sw"></span>
+            <span class="poignee" data-coin="se"></span>
+          </div>
+        </div>
+      </div>
+      <form class="bloc" id="etape-infos" hidden novalidate>
+        <img class="apercu-photo" id="apercu-photo" alt="">
+        <label class="champ"><span id="lbl-yomi"></span>
+          <input type="text" id="champ-yomi" autocomplete="off" maxlength="20">
+        </label>
+        <label class="champ"><span id="lbl-kanji"></span>
+          <input type="text" id="champ-kanji" autocomplete="off" maxlength="20">
+        </label>
+        <label class="champ"><span id="lbl-cm"></span>
+          <input type="number" id="champ-cm" inputmode="decimal" min="1" max="300" step="0.5">
+          <span class="aide" id="aide-cm"></span>
+        </label>
+        <p class="erreur" id="erreur-photo" role="alert"></p>
+      </form>
+      <div class="barre-actions">
+        <button type="button" class="btn pousser" id="btn-photo-annuler"></button>
+        <button type="button" class="btn" id="btn-photo-tourner"></button>
+        <label class="btn" id="btn-photo-autre" for="fichier-photo" tabindex="0"></label>
+        <button type="button" class="btn btn-principal" id="btn-photo-suivant"></button>
+      </div>
+    </section>
+
+    <input type="file" id="fichier-photo" class="cache-visuel" accept="image/*" tabindex="-1" aria-hidden="true">
+  </div>
+
+  <script src="kurabe.js"></script>
+</body>
+</html>

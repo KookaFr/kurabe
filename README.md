@@ -11,6 +11,12 @@ Une petite application pour s'entraîner à comparer des longueurs (長い・短
 3. 一番 長いのは？: trouver le plus long ou le plus court parmi trois
 4. ことばで いおう: compléter « A は B より 長い / 短い »
 5. 手本と 同じ: retrouver la même longueur que le modèle
+6. cm で くらべる: comparer deux longueurs écrites en cm (10 cm / 43 cm), avec des pièges comme 34 cm / 43 cm
+7. m と cm: comparer des mètres et des centimètres (1 m / 75 cm)
+8. ずれている: objets décalés, d'abord alignés à droite, puis pas alignés du tout
+9. ななめ: objets penchés
+
+Pour les activités 6 et 7, le bouton « ヒント » convertit d'abord dans la même unité (1 m ＝ 100 cm), puis dessine des barres à l'échelle. Pour les activités 8 et 9, le bouton « そろえる » fait glisser les objets (et les redresse) jusqu'à la ligne de départ. Ces aides s'affichent aussi d'elles-mêmes après une erreur.
 
 Les objets sont alignés sur une ligne de départ et affichés à l'échelle. En cas d'erreur, il n'y a pas de pénalité : des repères montrent le bout de chaque objet, et l'élève réessaie. La dernière question de chaque série est facile, pour finir sur une réussite.
 

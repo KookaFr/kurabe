@@ -425,6 +425,73 @@ button.ligne { cursor: pointer; }
 
 @keyframes apparaitre { from { opacity: 0; } to { opacity: 1; } }
 
+/* Nombres et unités (activités 6 et 7) */
+.etabli.nombres .etiquette {
+  width: auto;
+  min-width: 6.2em;
+  padding: 0 18px;
+  font-size: 2rem;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+
+.etabli.nombres .ligne { min-height: 96px; }
+
+.conversion {
+  display: block;
+  margin-top: 2px;
+  font-size: .62em;
+  font-weight: 700;
+  color: var(--action);
+}
+
+/* Une valeur déjà essayée reste lisible : sa conversion est l'indice principal. */
+.etabli.nombres .ligne.essaye .etiquette { opacity: 1; color: var(--encre-douce); }
+
+/* Objets décalés ou penchés (activités 8 et 9) */
+.etabli.libre { display: block; }
+
+.objet-libre {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  background: none;
+  line-height: 0;
+  transform-origin: 50% 50%;
+  transition: left .8s ease, top .8s ease, transform .8s ease, opacity .2s ease;
+  touch-action: manipulation;
+}
+
+/* Zone de toucher plus grande que l'objet */
+.objet-libre::before { content: ""; position: absolute; inset: -20px -10px; }
+
+.objet-libre svg, .objet-libre img { display: block; width: 100%; height: 100%; border-radius: 4px; }
+.objet-libre.essaye { opacity: .4; }
+.objet-libre.juste { outline: 4px solid var(--bon); outline-offset: 8px; border-radius: 6px; }
+
+.objet-libre.juste::after {
+  content: "";
+  position: absolute;
+  top: -24px;
+  right: -24px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--bon) center / 20px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12.5l5 5L20 6.5'/%3E%3C/svg%3E");
+}
+
+.depart-libre {
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  width: 7px;
+  border-radius: 3px;
+  background: var(--repere);
+  animation: apparaitre .5s ease;
+}
+
+.btn-aide { min-height: 64px; min-width: 6em; font-size: 1.2rem; border-color: var(--action); color: var(--action); }
+
 /* Phrase à compléter (palier 4) */
 .phrase {
   margin: 0;
@@ -648,6 +715,11 @@ button.ligne { cursor: pointer; }
   .piste { min-height: 52px; }
   .ligne.juste::after { top: 4px; right: 6px; width: 32px; height: 32px; margin-top: 0; background-size: 20px; }
   .zone-modele { padding: 0 0 8px; }
+  .bas { flex-wrap: wrap; gap: 8px; min-height: 0; }
+  .retour { flex-basis: 100%; font-size: 1.15rem; }
+  .bas .btn-suivant, .bas .btn-aide { flex: 1; min-height: 60px; }
+  .etabli.nombres .etiquette { font-size: 1.6rem; padding: 0 44px 0 14px; }
+  .etabli.nombres .ligne { min-height: 0; }
   .photo-ligne { grid-template-columns: 80px 1fr; }
   .photo-ligne img { width: 80px; }
   .photo-ligne .actions { grid-column: 1 / -1; }
@@ -686,6 +758,9 @@ button.ligne { cursor: pointer; }
   .choix-mots .btn { min-width: 5.5em; min-height: 52px; font-size: 1.2rem; }
   .retour { font-size: 1.05rem; }
   .btn-suivant { min-width: 6em; min-height: 52px; font-size: 1.15rem; }
+  .btn-aide { min-height: 52px; font-size: 1.05rem; }
+  .etabli.nombres .etiquette { font-size: 1.5rem; }
+  .etabli.nombres .ligne { min-height: 60px; }
   .fin svg { width: 90px; }
   .fin h2 { font-size: 1.8rem; }
   .fin p { font-size: 1.2rem; }

@@ -35,7 +35,7 @@
 
   const CLE_REGLAGES = 'kurabe.reglages';
   const DEFAUT = {
-    activites: [1, 2, 3, 4, 5],
+    activites: [1, 2, 3, 4, 5, 6, 7, 8, 9],
     nbQuestions: 6,
     ecriture: 'hiragana',   // hiragana | kanji (avec furigana)
     noms: true,             // afficher le nom des objets
@@ -45,12 +45,19 @@
     sons: true,
     dureeAppui: 0,          // ms : le doigt doit rester posé ce temps
     antiRebond: 0,          // ms : touchers suivants ignorés
+    aide: true,             // bouton « ヒント » / « そろえる »
+    version: 2,
     langue: (navigator.language || '').toLowerCase().startsWith('ja') ? 'ja' : 'fr',
   };
 
   function lireReglages() {
     try {
-      return { ...DEFAUT, ...JSON.parse(localStorage.getItem(CLE_REGLAGES) || '{}') };
+      const stocke = JSON.parse(localStorage.getItem(CLE_REGLAGES) || '{}');
+      // Réglages d'une version précédente : on ajoute les nouvelles activités (6 à 9).
+      if (stocke.activites && (stocke.version || 1) < 2) {
+        stocke.activites = [...new Set([...stocke.activites, 6, 7, 8, 9])];
+      }
+      return { ...DEFAUT, ...stocke, version: 2 };
     } catch {
       return { ...DEFAUT };
     }
@@ -69,10 +76,13 @@
      ====================================================================== */
 
   const K = (k, y) => ({ k, y });
+  // Valeur avec unité : affichée « 10 cm », lue « 10センチ ».
+  const V = (d, s) => ({ d, s });
 
   function html(segments) {
     return segments.map((s) => {
       if (typeof s === 'string' || typeof s === 'number') return echapper(s);
+      if (s.d !== undefined) return echapper(s.d);
       if (reglages.ecriture === 'kanji' && s.k) return `<ruby>${echapper(s.k)}<rt>${echapper(s.y)}</rt></ruby>`;
       return echapper(s.y);
     }).join('');
@@ -84,7 +94,7 @@
   }
 
   function lecture(segments) {
-    return segments.map((s) => (typeof s === 'object' ? s.y : String(s))).join('');
+    return segments.map((s) => (typeof s === 'object' ? (s.s ?? s.y) : String(s))).join('');
   }
 
   const NAGA = K('長', 'なが');
@@ -105,6 +115,9 @@
     seikai: [K('正解', 'せいかい'), '！ '],
     oshii: ['おしい！ はしを よく ', K('見', 'み'), 'てね。'],
     oshiiTehon: ['おしい！ ', TEHON, 'の はしと くらべてね。'],
+    oshiiSoroe: ['おしい！ はしを そろえて ', K('見', 'み'), 'よう。'],
+    barres: ['ぼうで くらべて ', K('見', 'み'), 'よう。'],
+    soroeta: ['はしを そろえたよ。'],
     otsukare: ['おつかれさま！'],
   };
 
@@ -371,7 +384,48 @@
     { n: 3, titre: [ICHIBAN, ' ', NAGA, 'いのは？'], sous: ['3つから えらぶ'], fr: 'Le plus long parmi trois', barres: [0.62, 1, 0.8] },
     { n: 4, titre: ['ことばで いおう'], sous: ['〇〇は △△より …'], fr: 'La phrase « A は B より 長い »', barres: [1, 0.55] },
     { n: 5, titre: [TEHON, 'と ', ONAJI, 'じ'], sous: [ONAJI, 'じ ', NAGA, 'さを さがす'], fr: 'Même longueur que le modèle', barres: 'tehon' },
+    { n: 6, titre: ['cm で くらべる'], sous: ['10\u00a0cm と 43\u00a0cm'], fr: 'Nombres en cm (10 cm ou 43 cm ?)', barres: 'cm' },
+    { n: 7, titre: ['m と cm'], sous: ['1\u00a0m ＝ 100\u00a0cm'], fr: 'Mètres et centimètres (1 m ou 75 cm ?)', barres: 'mcm' },
+    { n: 8, titre: ['ずれている'], sous: ['はしが そろっていない'], fr: 'Objets décalés (pas alignés à gauche)', barres: 'decale' },
+    { n: 9, titre: ['ななめ'], sous: ['かたむいている'], fr: 'Objets penchés', barres: 'incline' },
   ];
+
+  const animationsReduites = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const entier = (a, b) => Math.floor(aleatoire(a, b + 1));
+  const valeurCm = (c) => ({ cm: c, m: null, affichage: `${c}\u00a0cm`, lecture: `${c}センチ` });
+  const valeurM = (m) => ({ cm: m * 100, m, affichage: `${m}\u00a0m`, lecture: `${m}メートル` });
+  const segValeur = (v) => V(v.affichage, v.lecture);
+
+  // Activité 6 : deux longueurs en cm. Quelques pièges : chiffres inversés (34 / 43), 1 chiffre contre 2 (9 / 12).
+  function paireCm(i, derniere) {
+    const genre = derniere || i === 0 ? 'facile' : choisir(['facile', 'proche', 'proche', 'piege']);
+    let a;
+    let b;
+    if (genre === 'facile') {
+      a = entier(4, 40);
+      b = a + entier(20, 50);
+    } else if (genre === 'proche') {
+      a = entier(12, 85);
+      b = a + entier(3, 9);
+    } else if (Math.random() < 0.6) {
+      const d = entier(1, 7);
+      const u = entier(d + 1, 9);
+      a = d * 10 + u;
+      b = u * 10 + d;
+    } else {
+      a = entier(6, 9);
+      b = entier(10, 15);
+    }
+    return [valeurCm(a), valeurCm(b)];
+  }
+
+  // Activité 7 : des mètres contre des centimètres (1 m contre 75 cm : 75 est plus grand que 1, mais 1 m est plus long).
+  function paireMCm(derniere) {
+    const m = derniere ? 1 : choisir([1, 1, 2, 2, 3]);
+    const mPlusLong = derniere || Math.random() < 0.5;
+    const c = mPlusLong ? entier(derniere ? 20 : 40, m * 100 - 10) : entier(m * 100 + 10, m * 100 + 90);
+    return [valeurM(m), valeurCm(c)];
+  }
 
   function utiliserPhotos() {
     if (photos.length < 2 || reglages.photos === 'jamais') return false;
@@ -426,8 +480,71 @@
   const indexMax = (objets) => objets.reduce((m, o, i) => (o.cm > objets[m].cm ? i : m), 0);
   const indexMin = (objets) => objets.reduce((m, o, i) => (o.cm < objets[m].cm ? i : m), 0);
 
-  function genererQuestion(niveau, derniere) {
+  function genererQuestion(niveau, derniere, i = 0, n = 6) {
     const base = { niveau, essais: new Set(), resolu: false, indices: false };
+
+    if (niveau === 6 || niveau === 7) {
+      const mixte = niveau === 7;
+      const valeurs = melanger(mixte ? paireMCm(derniere) : paireCm(i, derniere));
+      const [c1, c2] = couleurs(2);
+      valeurs[0].couleur = c1;
+      valeurs[1].couleur = c2;
+      const demande = !reglages.court || derniere ? 'long' : choisir(['long', 'court']);
+      return {
+        ...base,
+        type: 'nombre',
+        mixte,
+        valeurs,
+        objets: [],
+        demande,
+        aide: 0,                 // étape d'aide atteinte
+        aideMax: mixte ? 2 : 1,  // 7 : conversion puis barres ; 6 : barres
+        bonne: demande === 'long' ? indexMax(valeurs) : indexMin(valeurs),
+      };
+    }
+
+    if (niveau === 8 || niveau === 9) {
+      const facile = derniere;
+      const [rmin, rmax] = facile ? [1.8, 2.4] : [1.25, 1.6];
+      const objets = melanger((utiliserPhotos() && pairePhotos(facile ? 1.6 : 1.2, facile ? 99 : 1.8, false)) || paireDessinee(rmin, rmax, false));
+      const demande = !reglages.court || derniere ? 'long' : choisir(['long', 'court']);
+      const long = indexMax(objets);
+      const court = 1 - long;
+      const cmMax = objets[long].cm;
+      const pos = [];   // pour chaque objet : centre (en cm) et angle (en degrés)
+      let espaceCm;
+
+      if (niveau === 8) {
+        // D'abord alignés à droite, puis décalés (souvent avec le piège : le plus court dépasse plus loin).
+        if (derniere || i < Math.ceil(n / 2)) {
+          espaceCm = cmMax;
+          objets.forEach((o, k) => { pos[k] = { cx: cmMax - o.cm / 2, angle: 0 }; });
+        } else {
+          espaceCm = cmMax * 1.5;
+          const Ll = objets[long].cm;
+          const Lc = objets[court].cm;
+          const gaucheLong = aleatoire(0, cmMax * 0.12);
+          const minPiege = gaucheLong + Ll - Lc + cmMax * 0.06;
+          const gaucheCourt = Math.random() < 0.7 && minPiege < espaceCm - Lc
+            ? aleatoire(minPiege, espaceCm - Lc)
+            : aleatoire(0, espaceCm - Lc);
+          pos[long] = { cx: gaucheLong + Ll / 2, angle: 0 };
+          pos[court] = { cx: gaucheCourt + Lc / 2, angle: 0 };
+        }
+      } else {
+        espaceCm = cmMax * 1.3;
+        const angles = derniere ? [aleatoire(4, 10), aleatoire(4, 10)] : melanger([aleatoire(18, 32), aleatoire(0, 10)]);
+        objets.forEach((o, k) => {
+          const angle = angles[k] * (Math.random() < 0.5 ? -1 : 1);
+          const largeur = o.cm * Math.cos((angle * Math.PI) / 180);
+          pos[k] = { cx: aleatoire(largeur / 2, espaceCm - largeur / 2), angle };
+        });
+      }
+      return {
+        ...base, type: 'libre', objets, demande, pos, espaceCm, aligne: false,
+        bonne: demande === 'long' ? long : court,
+      };
+    }
 
     if (niveau === 1 || niveau === 2) {
       const facile = niveau === 1 || derniere;
@@ -494,7 +611,18 @@
     const x0 = 10;
     const L = 236;
     let contenu = `<rect x="4" y="2" width="6" height="60" rx="2" style="fill:var(--repere)"/>`;
-    if (barres === 'tehon') {
+    if (barres === 'cm' || barres === 'mcm') {
+      const [a, b] = barres === 'cm' ? ['10 cm', '43 cm'] : ['1 m', '75 cm'];
+      const style = 'fill:var(--encre);font-size:24px;font-weight:700';
+      contenu = `<text x="6" y="27" style="${style}">${a}</text><text x="6" y="58" style="${style}">${b}</text>`
+        + `<text x="150" y="44" style="fill:var(--action);font-size:30px;font-weight:700">？</text>`;
+    } else if (barres === 'decale') {
+      contenu = `<rect x="70" y="10" width="170" height="16" rx="3" style="fill:var(--o2)"/>`
+        + `<rect x="12" y="38" width="190" height="16" rx="3" style="fill:var(--o5)"/>`;
+    } else if (barres === 'incline') {
+      contenu = `<rect x="20" y="10" width="200" height="14" rx="3" transform="rotate(8 120 17)" style="fill:var(--o4)"/>`
+        + `<rect x="40" y="40" width="160" height="14" rx="3" transform="rotate(-10 120 47)" style="fill:var(--o3)"/>`;
+    } else if (barres === 'tehon') {
       contenu += `<rect x="${x0}" y="4" width="${L * 0.66}" height="14" rx="3" style="fill:none;stroke:var(--encre-douce);stroke-width:2.5;stroke-dasharray:6 4"/>`;
       contenu += `<rect x="${x0}" y="27" width="${L * 0.66}" height="12" rx="3" style="fill:var(--o3)"/>`;
       contenu += `<rect x="${x0}" y="47" width="${L * 0.92}" height="12" rx="3" style="fill:var(--o5)"/>`;
@@ -534,7 +662,7 @@
     const n = Number(reglages.nbQuestions) || 6;
     session = {
       niveau,
-      questions: Array.from({ length: n }, (_, i) => genererQuestion(niveau, i === n - 1)),
+      questions: Array.from({ length: n }, (_, i) => genererQuestion(niveau, i === n - 1, i, n)),
       index: 0,
     };
     montrer('question');
@@ -542,7 +670,9 @@
   }
 
   function consigneDe(q) {
-    if (q.type === 'paire') return q.demande === 'long' ? PHRASES.dotchiNagai : PHRASES.dotchiMijikai;
+    if (q.type === 'paire' || q.type === 'nombre' || q.type === 'libre') {
+      return q.demande === 'long' ? PHRASES.dotchiNagai : PHRASES.dotchiMijikai;
+    }
     if (q.type === 'trio') return q.demande === 'long' ? PHRASES.ichibanNagai : PHRASES.ichibanMijikai;
     if (q.type === 'tehon') return PHRASES.tehon;
     return PHRASES.nagaiMijikai;
@@ -556,6 +686,14 @@
   }
 
   function explication(q) {
+    const plus = q.demande === 'long' ? NAGA : MIJIKA;
+    if (q.type === 'nombre') {
+      const fin = [segValeur(q.valeurs[q.bonne]), 'の ほうが ', plus, 'いね。'];
+      if (!q.mixte) return fin;
+      const m = q.valeurs.find((v) => v.m);
+      return [segValeur(m), 'は ', segValeur(valeurCm(m.cm)), '。 だから ', ...fin];
+    }
+    if (q.type === 'libre') return ['こっちの ほうが ', plus, 'いね。'];
     const memesNoms = new Set(q.objets.map((o) => o.yomi)).size < q.objets.length;
     const o = q.objets[q.bonne];
     if (q.type === 'paire') {
@@ -583,6 +721,7 @@
   function parlerConsigne() {
     const q = courante();
     if (q.type === 'phrase') parler([...phraseDe(q), '…… ', ...PHRASES.nagaiMijikai]);
+    else if (q.type === 'nombre') parler([segValeur(q.valeurs[0]), 'と ', segValeur(q.valeurs[1]), '、 ', ...consigneDe(q)]);
     else parler(consigneDe(q));
   }
 
@@ -620,7 +759,7 @@
     }
     piste.append(forme);
     el.append(etiq, piste);
-    return { el, piste, forme, objet, largeur: 0 };
+    return { el, etiq, piste, forme, objet, largeur: 0 };
   }
 
   function rendreQuestion() {
@@ -635,8 +774,50 @@
 
     const etabli = $('etabli');
     etabli.replaceChildren();
+    etabli.classList.remove('libre', 'nombres');
     etabli.classList.toggle('sans-noms', !reglages.noms && q.type !== 'phrase');
     lignes = [];
+    libres = [];
+
+    const zoneReperes = document.createElement('div');
+    zoneReperes.className = 'reperes';
+    zoneReperes.id = 'reperes';
+
+    if (q.type === 'libre') {
+      rendreLibre(q, etabli);
+      etabli.append(zoneReperes);
+      if (q.indices && q.aligne) afficherReperesLibre();
+      majBoutonAide();
+      return;
+    }
+
+    if (q.type === 'nombre') {
+      etabli.classList.add('nombres');
+      etabli.classList.remove('sans-noms');
+      const barres = q.aide >= q.aideMax;
+      q.valeurs.forEach((v, i) => {
+        const l = creerLigne(objetDessine('tepu', v.cm, v.couleur), true, [segValeur(v)]);
+        l.index = i;
+        if (v.m && q.aide >= 1) {
+          const conversion = document.createElement('span');
+          conversion.className = 'conversion';
+          conversion.textContent = `＝ ${v.cm}\u00a0cm`;
+          l.etiq.append(conversion);
+        }
+        l.piste.hidden = !barres;
+        l.el.setAttribute('aria-label', v.lecture);
+        if (q.resolu && i === q.bonne) l.el.classList.add('juste');
+        if (q.essais.has(i)) l.el.classList.add('essaye');
+        activable(l.el, () => repondre(i));
+        etabli.append(l.el);
+        lignes.push(l);
+      });
+      etabli.append(zoneReperes);
+      if (barres) dimensionner();
+      if (q.indices && barres) afficherReperes();
+      majBoutonAide();
+      return;
+    }
 
     if (q.type === 'tehon') {
       const zone = document.createElement('div');
@@ -663,15 +844,159 @@
       lignes.push(l);
     });
 
-    const reperes = document.createElement('div');
-    reperes.className = 'reperes';
-    reperes.id = 'reperes';
-    etabli.append(reperes);
+    etabli.append(zoneReperes);
 
     dimensionner();
 
     if (q.type === 'phrase') rendrePhrase();
     if (q.indices) afficherReperes();
+    majBoutonAide();
+  }
+
+  /* ----- Objets décalés ou penchés (activités 8 et 9) ----- */
+
+  let libres = [];          // { el, objet, index, L, h, finX }
+  let geometrie = null;     // { offsetX, ppc, couloir, marge }
+
+  function rendreLibre(q, etabli) {
+    etabli.classList.add('libre');
+    const marge = 16;
+    const W = etabli.clientWidth - 2 * marge;
+    const H = etabli.clientHeight - 2 * marge;
+    const couloir = H / q.objets.length;
+    const grossir = window.innerWidth >= 700 && window.innerHeight >= 520 ? 1.45 : 1;
+    let ppc = W / q.espaceCm;
+    q.objets.forEach((o, i) => {
+      const a = (Math.abs(q.pos[i].angle) * Math.PI) / 180;
+      const sin = Math.sin(a);
+      const cos = Math.cos(a);
+      if (o.type === 'photo') {
+        const r = o.h / o.w;
+        ppc = Math.min(ppc, (couloir - 14) / (o.cm * (sin + r * cos)), Math.min(112, couloir - 14) / (o.cm * r));
+      } else if (sin > 0.001) {
+        const h = SORTES[o.sorte].hauteur * grossir;
+        ppc = Math.min(ppc, (couloir - 14 - h * cos) / (o.cm * sin));
+      }
+    });
+    ppc = Math.max(ppc, 1);
+    const offsetX = marge + (W - q.espaceCm * ppc) / 2;
+    geometrie = { offsetX, ppc, couloir, marge };
+
+    const depart = document.createElement('span');
+    depart.className = 'depart-libre';
+    depart.id = 'depart-libre';
+    depart.style.left = `${offsetX - 7}px`;
+    depart.hidden = !q.aligne;
+    etabli.append(depart);
+
+    libres = q.objets.map((o, i) => {
+      const L = Math.max(8, o.cm * ppc);
+      const h = o.type === 'photo' ? L * (o.h / o.w) : SORTES[o.sorte].hauteur * grossir;
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.className = 'objet-libre';
+      el.style.width = `${L}px`;
+      el.style.height = `${h}px`;
+      if (o.type === 'dessin') {
+        el.innerHTML = SORTES[o.sorte].dessin(Math.round(L), `var(--o${o.couleur})`, Math.round(h));
+      } else {
+        const p = photos.find((x) => x.id === o.id);
+        const img = document.createElement('img');
+        img.alt = '';
+        img.draggable = false;
+        if (p) img.src = urlPhoto(p);
+        el.append(img);
+      }
+      el.setAttribute('aria-label', `${i + 1}ばんめ${reglages.noms ? ` ${o.yomi}` : ''}`);
+      if (q.resolu && i === q.bonne) el.classList.add('juste');
+      if (q.essais.has(i)) el.classList.add('essaye');
+      activable(el, () => repondre(i));
+      const item = { el, objet: o, index: i, L, h };
+      placerLibre(q, item);
+      etabli.append(el);
+      return item;
+    });
+  }
+
+  function placerLibre(q, item) {
+    const { offsetX, ppc, couloir, marge } = geometrie;
+    const p = q.pos[item.index];
+    const cx = q.aligne ? item.objet.cm / 2 : p.cx;
+    const angle = q.aligne ? 0 : p.angle;
+    const centreX = offsetX + cx * ppc;
+    const centreY = marge + couloir * (item.index + 0.5);
+    item.el.style.left = `${centreX - item.L / 2}px`;
+    item.el.style.top = `${centreY - item.h / 2}px`;
+    item.el.style.transform = `rotate(${angle}deg)`;
+    item.finX = offsetX + item.objet.cm * ppc;
+  }
+
+  // Fait glisser (et redresse) les objets jusqu'à la ligne de départ.
+  function aligner() {
+    const q = courante();
+    if (q.type !== 'libre' || q.aligne) return;
+    q.aligne = true;
+    libres.forEach((item) => placerLibre(q, item));
+    $('depart-libre').hidden = false;
+    majBoutonAide();
+    setTimeout(() => {
+      if (courante() === q && q.indices && ecranActuel === 'question') afficherReperesLibre();
+    }, animationsReduites() ? 0 : 850);
+  }
+
+  function afficherReperesLibre() {
+    const zone = $('reperes');
+    if (!zone) return;
+    zone.replaceChildren();
+    libres.forEach((item) => {
+      const trait = document.createElement('span');
+      trait.className = 'repere-fin';
+      trait.style.left = `${item.finX}px`;
+      const o = item.objet;
+      trait.style.setProperty('--c', o.type === 'dessin' ? `var(--o${o.couleur})` : 'var(--encre)');
+      zone.append(trait);
+    });
+  }
+
+  /* ----- Bouton d'aide : « ヒント » (nombres) ou « そろえる » (objets libres) ----- */
+
+  function messageAide(q) {
+    if (q.mixte && q.aide === 1) {
+      const m = q.valeurs.find((v) => v.m);
+      return [segValeur(m), 'は ', segValeur(valeurCm(m.cm)), '。'];
+    }
+    return PHRASES.barres;
+  }
+
+  function majBoutonAide() {
+    const q = courante();
+    const bouton = $('btn-aide');
+    let texte = '';
+    if (reglages.aide && !q.resolu) {
+      if (q.type === 'nombre' && q.aide < q.aideMax) texte = 'ヒント';
+      if (q.type === 'libre' && !q.aligne) texte = 'そろえる';
+    }
+    bouton.textContent = texte;
+    bouton.hidden = !texte;
+  }
+
+  function avancerAide() {
+    const q = courante();
+    if (q.resolu) return;
+    if (q.type === 'libre') {
+      aligner();
+      $('retour').innerHTML = htmlMots(PHRASES.soroeta);
+      $('retour').classList.remove('ok');
+      parler(PHRASES.soroeta);
+      return;
+    }
+    if (q.type !== 'nombre' || q.aide >= q.aideMax) return;
+    q.aide += 1;
+    rendreQuestion();
+    const message = messageAide(q);
+    $('retour').innerHTML = htmlMots(message);
+    $('retour').classList.remove('ok');
+    parler(message);
   }
 
   function dimensionner() {
@@ -680,6 +1005,7 @@
     const reserve = window.matchMedia('(max-width: 560px)').matches ? 10 : 56;
     const largeurPiste = lignes[lignes.length - 1].piste.clientWidth - 7 - reserve;
     const objets = lignes.map((l) => l.objet);
+    if (lignes.every((l) => l.piste.hidden)) return;
     const cmMax = Math.max(...objets.map((o) => o.cm));
     let ppc = Math.max(1, largeurPiste) / cmMax;
     const hauteurMax = window.innerWidth < 560 || window.innerHeight < 520 ? 72 : 112;
@@ -709,6 +1035,7 @@
     zone.replaceChildren();
     const base = $('etabli').getBoundingClientRect().left;
     lignes.forEach((l) => {
+      if (l.piste.hidden) return;
       const x = l.piste.getBoundingClientRect().left - base + 7 + l.largeur;
       const trait = document.createElement('span');
       trait.className = 'repere-fin';
@@ -751,6 +1078,12 @@
       $('retour').classList.add('ok');
       parler(message);
       rendreApresReponse();
+      if (q.type === 'libre') {
+        // Une fois trouvé, on aligne quand même : il voit pourquoi c'était le bon.
+        q.indices = true;
+        if (q.aligne) afficherReperesLibre(); else aligner();
+      }
+      majBoutonAide();
       $('btn-suivant').hidden = false;
       return;
     }
@@ -758,16 +1091,34 @@
     q.essais.add(reponse);
     q.indices = true;
     sons.oups();
-    const message = q.type === 'tehon' ? PHRASES.oshiiTehon : PHRASES.oshii;
+    let message = q.type === 'tehon' ? PHRASES.oshiiTehon : PHRASES.oshii;
+    if (q.type === 'libre') message = PHRASES.oshiiSoroe;
+    if (q.type === 'nombre' && q.aide < q.aideMax) {
+      // Après une erreur, l'aide avance d'une étape (conversion, puis barres).
+      q.aide += 1;
+      message = ['おしい！ ', ...messageAide(q)];
+      rendreQuestion();
+    }
     $('retour').innerHTML = htmlMots(message);
     $('retour').classList.remove('ok');
     parler(message);
     rendreApresReponse(reponse);
+    if (q.type === 'libre') {
+      if (q.aligne) afficherReperesLibre(); else aligner();
+    }
+    majBoutonAide();
   }
 
   function rendreApresReponse(erreur) {
     const q = courante();
     rendreProgression();
+    if (q.type === 'libre') {
+      libres.forEach((item) => {
+        item.el.classList.toggle('juste', q.resolu && item.index === q.bonne);
+        item.el.classList.toggle('essaye', q.essais.has(item.index));
+      });
+      return;
+    }
     lignes.forEach((l) => {
       if (l.modele || l.index === undefined || q.type === 'phrase') return;
       l.el.classList.toggle('juste', q.resolu && l.index === q.bonne);
@@ -802,6 +1153,7 @@
   }
 
   activable($('btn-suivant'), suivant);
+  activable($('btn-aide'), avancerAide);
   activable($('btn-ecouter'), parlerConsigne, { garde: false });
   activable($('btn-quitter'), () => { $('confirmation-quitter').hidden = false; });
   $('quitter-oui').addEventListener('click', () => { rendreAccueil(); montrer('accueil'); });
@@ -833,6 +1185,8 @@
       ecriture: 'Écriture',
       hiragana: 'Hiragana seuls',
       kanji: 'Kanji avec furigana',
+      aide: 'Bouton d’aide (ヒント, そろえる)',
+      aideAide: 'Activités 6 et 7 : l’aide convertit d’abord dans la même unité (1 m ＝ 100 cm), puis dessine des barres à l’échelle. Activités 8 et 9 : elle fait glisser les objets jusqu’à la ligne de départ. Elle apparaît aussi d’elle-même après une erreur.',
       noms: 'Afficher le nom des objets',
       court: 'Demander aussi « le plus court » (短い)',
       courtAide: 'Les élèves confondent souvent « long » et « court » : activez-le quand « long » est acquis.',
@@ -892,6 +1246,8 @@
       ecriture: 'もじ',
       hiragana: 'ひらがな',
       kanji: '漢字＋ふりがな',
+      aide: 'ヒントの ボタン（ヒント・そろえる）',
+      aideAide: '6・7：まず おなじ たんいに なおし（1m＝100cm）、つぎに ぼうで しめします。8・9：ものの はしを そろえます。まちがえたときは じどうで でます。',
       noms: 'ものの なまえを ひょうじする',
       court: '「短い」も きく',
       courtAide: '「長い」と「短い」は まちがえやすいので、「長い」が できてから つかいましょう。',
@@ -1083,7 +1439,11 @@
       groupeChoix('ecriture', t('ecriture'), [['hiragana', t('hiragana')], ['kanji', t('kanji')]]),
       groupeChoix('noms', t('noms'), [[true, t('oui')], [false, t('non')]]),
       groupeChoix('court', t('court'), [[true, t('oui')], [false, t('non')]]),
+      groupeChoix('aide', t('aide'), [[true, t('oui')], [false, t('non')]]),
     );
+    const aideAide = document.createElement('p');
+    aideAide.textContent = t('aideAide');
+    bActivites.append(aideAide);
     const aideCourt = document.createElement('p');
     aideCourt.textContent = t('courtAide');
     bActivites.append(aideCourt);

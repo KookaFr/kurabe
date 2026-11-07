@@ -645,8 +645,8 @@
         + `<rect x="40" y="40" width="160" height="14" rx="3" transform="rotate(-10 120 47)" style="fill:var(--o3)"/>`;
     } else if (barres === 'etude-libre') {
       contenu += `<rect x="10" y="26" width="140" height="18" rx="3" style="fill:var(--o2)"/>`
-        + `<circle cx="150" cy="35" r="14" style="fill:var(--surface);stroke:var(--action);stroke-width:4"/>`
-        + `<path d="M176 35h60M228 27l8 8-8 8M184 27l-8 8 8 8" style="fill:none;stroke:var(--action);stroke-width:3"/>`;
+        + `<circle cx="150" cy="35" r="14" style="fill:var(--surface);stroke:var(--encre);stroke-width:4"/>`
+        + `<path d="M176 35h60M228 27l8 8-8 8M184 27l-8 8 8 8" style="fill:none;stroke:var(--encre);stroke-width:3"/>`;
     } else if (barres === 'etude-plus') {
       contenu += `<rect x="10" y="26" width="110" height="18" rx="3" style="fill:var(--o2)"/>`;
       for (let k = 0; k < 5; k++) contenu += `<rect x="${122 + k * 22}" y="26" width="20" height="18" rx="2" style="fill:var(--o3)"/>`;
@@ -1494,7 +1494,9 @@
       return el;
     };
 
-    // Des blocs d'1 cm, numérotés 1, 2, 3… pour compter ce qu'on ajoute ou ce qu'on enlève.
+    // Des blocs d'1 cm, numérotés 1, 2, 3… pour compter le départ, ce qu'on ajoute ou ce qu'on enlève.
+    // Le plus grand numéro de chaque couleur est souligné : c'est le nombre de l'opération.
+    const COULEURS_COMPTE = { '': 'var(--o2)', '＋': 'var(--o3)', '−': 'var(--o4)' };
     const blocs = (de, a, classeDe, numero, signe) => {
       if (a <= de) return;
       if (!blocsVisibles) {
@@ -1511,6 +1513,7 @@
           const n = document.createElement('span');
           n.className = 'numero-bloc';
           n.textContent = numero(i);
+          if (n.textContent === String(a - de)) n.classList.add('numero-fin');
           el.append(n);
         }
       }
@@ -1519,20 +1522,21 @@
         const zone = segment(de, a, 'zone-compte');
         const total = document.createElement('span');
         total.className = 'compte-segment';
-        total.style.color = signe === '＋' ? 'var(--o3)' : 'var(--o4)';
+        total.style.color = COULEURS_COMPTE[signe];
         total.textContent = `${signe}${a - de}`;
         zone.append(total);
       }
     };
 
+    const depart = (jusque) => blocs(0, jusque, () => 'ruban-base', (i) => String(i + 1), '');
     if (e.mode === 'plus') {
-      segment(0, e.base, 'ruban-base');
+      depart(e.base);
       blocs(e.base, e.valeur, (i) => (i >= e.cible ? 'ruban-ajout trop' : 'ruban-ajout'), (i) => String(i - e.base + 1), '＋');
     } else if (e.mode === 'moins') {
-      segment(0, e.valeur, 'ruban-base');
+      depart(e.valeur);
       blocs(e.valeur, e.base, (i) => (i < e.cible ? 'ruban-retire trop' : 'ruban-retire'), (i) => String(e.base - i), '−');
     } else {
-      segment(0, Math.min(e.valeur, e.depart), 'ruban-base');
+      depart(Math.min(e.valeur, e.depart));
       blocs(e.depart, e.valeur, () => 'ruban-ajout', (i) => String(i - e.depart + 1), '＋');
       blocs(e.valeur, e.depart, () => 'ruban-retire', (i) => String(e.depart - i), '−');
     }

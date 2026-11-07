@@ -659,9 +659,18 @@ button.ligne { cursor: pointer; }
 }
 
 .numero-bloc { left: 0; right: 0; text-align: center; }
+.ruban-base .numero-bloc, .ruban-base .compte-segment { color: var(--o2); }
 .ruban-ajout .numero-bloc, .ruban-ajout .compte-segment { color: var(--o3); }
 .ruban-retire .numero-bloc, .ruban-retire .compte-segment { color: var(--o4); }
 .trop .numero-bloc { color: var(--o5); }
+
+/* Le dernier numéro d'une couleur = le nombre de l'opération : souligné. */
+.numero-bloc.numero-fin {
+  font-size: 1rem;
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 4px;
+}
 .compte-segment { left: 50%; transform: translateX(-50%); font-size: 1rem; }
 
 .poignee-etude {
@@ -671,10 +680,10 @@ button.ligne { cursor: pointer; }
   width: 54px;
   height: 54px;
   margin: -27px 0 0 -27px;
-  border: 4px solid var(--action);
+  border: 4px solid var(--encre);
   border-radius: 50%;
   background: var(--surface);
-  color: var(--action);
+  color: var(--encre);
   pointer-events: none;
 }
 

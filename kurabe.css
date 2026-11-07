@@ -663,6 +663,23 @@ button.ligne { cursor: pointer; }
 .ruban-ajout .numero-bloc, .ruban-ajout .compte-segment { color: var(--o3); }
 .ruban-retire .numero-bloc, .ruban-retire .compte-segment { color: var(--o4); }
 .trop .numero-bloc { color: var(--o5); }
+.numero-bloc.numero-bleu, .compte-segment.numero-bleu { color: var(--o2); }
+
+/* Blocs retirés : leur numéro violet est écrit à l'intérieur (compté depuis le bout). */
+.numero-dedans {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: .95rem;
+  font-weight: 800;
+  color: var(--o4);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+.trop .numero-dedans { color: var(--o5); }
+.numero-dedans.numero-fin { text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 3px; }
 
 /* Le dernier numéro d'une couleur = le nombre de l'opération : souligné. */
 .numero-bloc.numero-fin {
@@ -677,9 +694,9 @@ button.ligne { cursor: pointer; }
   position: absolute;
   display: grid;
   place-items: center;
-  width: 54px;
-  height: 54px;
-  margin: -27px 0 0 -27px;
+  width: 48px;
+  height: 48px;
+  margin: -24px 0 0 -24px;
   border: 4px solid var(--encre);
   border-radius: 50%;
   background: var(--surface);
@@ -687,7 +704,25 @@ button.ligne { cursor: pointer; }
   pointer-events: none;
 }
 
-.en-glisse .poignee-etude { transform: scale(1.12); }
+.en-glisse .poignee-etude:not(.poignee-depart),
+.en-glisse-depart .poignee-depart { transform: scale(1.12); }
+
+/* Mode libre : poignée du 1er nombre, en bleu comme lui, sous la jonction bleu / vert */
+.poignee-depart {
+  width: 46px;
+  height: 46px;
+  margin: -23px 0 0 -23px;
+  border-color: var(--o2);
+  color: var(--o2);
+}
+
+.tige-depart {
+  position: absolute;
+  width: 3px;
+  margin-left: -1.5px;
+  background: var(--o2);
+  pointer-events: none;
+}
 
 .bulle-etude {
   position: absolute;

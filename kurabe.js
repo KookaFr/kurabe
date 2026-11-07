@@ -1476,7 +1476,12 @@
     const couche = $('couche-ruban');
     couche.replaceChildren();
     const haut = Math.min(56, Math.max(30, plan.clientHeight * 0.14));
-    const y = Math.max(haut / 2 + 64, (plan.clientHeight - reserveRegle()) / 2 + 10);
+    // Place sous le ruban : les numéros des blocs, et en mode libre la poignée du 1er nombre.
+    const dessous = e.mode === 'libre' ? 78 : 28;
+    const y = Math.max(haut / 2 + 80, Math.min(
+      (plan.clientHeight - reserveRegle()) / 2 + 10,
+      plan.clientHeight - reserveRegle() - dessous - haut / 2,
+    ));
     e.geo.y = y;
     e.geo.haut = haut;
     const blocsVisibles = ppc >= 8;   // assez large pour voir chaque centimètre
@@ -1529,29 +1534,83 @@
     };
 
     const depart = (jusque) => blocs(0, jusque, () => 'ruban-base', (i) => String(i + 1), '');
+
+    const ecrire = (el, texte, classe, souligne) => {
+      const n = document.createElement('span');
+      n.className = classe;
+      if (souligne) n.classList.add('numero-fin');
+      n.textContent = texte;
+      el.append(n);
+    };
+
+    // Soustraction : le 1er nombre reste compté en bleu sous tout le ruban de départ (pointillés
+    // compris), et les blocs retirés portent leur numéro violet à l'intérieur, depuis le bout.
+    // Ce qui reste est donné par la bulle et le résultat.
+    const retrait = (reste, total, classeDe) => {
+      const retires = total - reste;
+      if (blocsVisibles) {
+        for (let i = 0; i < total; i++) {
+          const retire = i >= reste;
+          const el = segment(i, i + 1, retire ? `${classeDe(i)} bloc-cm` : 'ruban-base bloc-cm');
+          if (!numeros) continue;
+          ecrire(el, String(i + 1), 'numero-bloc numero-bleu', i + 1 === total);
+          if (retire) ecrire(el, String(total - i), 'numero-dedans', total - i === retires);
+        }
+      } else {
+        segment(0, reste, 'ruban-base');
+        segment(reste, total, classeDe(reste));
+      }
+      if (!numeros) {
+        const tout = segment(0, total, 'zone-compte');
+        ecrire(tout, String(total), 'compte-segment numero-bleu');
+        if (retires > 0) ecrire(segment(reste, total, 'zone-compte'), `−${retires}`, 'numero-dedans');
+      }
+    };
+
     if (e.mode === 'plus') {
       depart(e.base);
       blocs(e.base, e.valeur, (i) => (i >= e.cible ? 'ruban-ajout trop' : 'ruban-ajout'), (i) => String(i - e.base + 1), '＋');
     } else if (e.mode === 'moins') {
-      depart(e.valeur);
-      blocs(e.valeur, e.base, (i) => (i < e.cible ? 'ruban-retire trop' : 'ruban-retire'), (i) => String(e.base - i), '−');
-    } else {
-      depart(Math.min(e.valeur, e.depart));
+      retrait(e.valeur, e.base, (i) => (i < e.cible ? 'ruban-retire trop' : 'ruban-retire'));
+    } else if (e.valeur >= e.depart) {
+      depart(e.depart);
       blocs(e.depart, e.valeur, () => 'ruban-ajout', (i) => String(i - e.depart + 1), '＋');
-      blocs(e.valeur, e.depart, () => 'ruban-retire', (i) => String(e.depart - i), '−');
+    } else {
+      retrait(e.valeur, e.depart, () => 'ruban-retire');
     }
 
     const poignee = document.createElement('span');
     poignee.className = 'poignee-etude';
     poignee.style.left = `${x0 + e.valeur * ppc}px`;
-    poignee.style.top = `${y}px`;
+    // Sur le bord haut du ruban : elle ne cache pas les numéros écrits dans les blocs.
+    poignee.style.top = `${y - haut / 2}px`;
     poignee.innerHTML = '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M3 12h18"/></svg>';
     const bulle = document.createElement('span');
     bulle.className = 'bulle-etude';
     bulle.textContent = String(e.valeur);
     bulle.style.left = `${x0 + e.valeur * ppc}px`;
-    bulle.style.top = `${y - haut / 2 - 58}px`;
+    bulle.style.top = `${y - haut / 2 - 74}px`;
     couche.append(poignee, bulle);
+
+    // Mode libre : une seconde poignée, bleue, sous la jonction bleu / vert.
+    // Elle change le 1er nombre sans changer le 2e (la partie verte ou violette glisse avec elle).
+    if (e.mode === 'libre') {
+      const xDepart = x0 + e.depart * ppc;
+      // Sous les numéros des blocs, mais au-dessus de la règle (petits écrans).
+      const yDepart = Math.max(y + haut / 2 + 30, Math.min(y + haut / 2 + 50, plan.clientHeight - 66));
+      e.geo.yDepart = yDepart;
+      const tige = document.createElement('span');
+      tige.className = 'tige-depart';
+      tige.style.left = `${xDepart}px`;
+      tige.style.top = `${y + haut / 2}px`;
+      tige.style.height = `${Math.max(0, yDepart - 23 - (y + haut / 2))}px`;
+      const poigneeDepart = document.createElement('span');
+      poigneeDepart.className = 'poignee-etude poignee-depart';
+      poigneeDepart.style.left = `${xDepart}px`;
+      poigneeDepart.style.top = `${yDepart}px`;
+      poigneeDepart.innerHTML = poignee.innerHTML;
+      couche.append(tige, poigneeDepart);
+    }
 
     if (e.resolu) {
       const debut = Math.min(e.base, e.cible);
@@ -1580,6 +1639,31 @@
     dessinerRuban();
     if (voix && reglages.compter) parler(String(nouvelle));
     return true;
+  }
+
+  // Mode libre : change le 1er nombre (partie bleue) ; le 2e nombre ne change pas.
+  function changerDepart(a) {
+    const e = etude;
+    const max = Number(reglages.nombreMax) || 20;
+    const b = e.valeur - e.depart;
+    const nouveau = Math.max(Math.max(0, -b), Math.min(max, max - b, a));
+    if (nouveau === e.depart) return;
+    const monte = nouveau > e.depart;
+    e.depart = nouveau;
+    e.valeur = nouveau + b;
+    note((monte ? 440 : 400) + Math.min(nouveau, 60) * 9, { duree: 0.08, volume: 0.09, type: 'triangle' });
+    if (reglages.sons && navigator.vibrate) navigator.vibrate(8);
+    dessinerRuban();
+  }
+
+  function annoncerDepart() {
+    const e = etude;
+    const b = e.valeur - e.depart;
+    const message = b === 0
+      ? [String(e.depart), '。']
+      : [String(e.depart), b > 0 ? ' たす ' : ' ひく ', String(Math.abs(b)), ' は ', String(e.valeur), '。'];
+    messageEtude(message);
+    parler(message);
   }
 
   function messageEtude(segments, ok) {
@@ -1630,25 +1714,38 @@
   (() => {
     const plan = $('etude-plan');
     let geste = null;
+    // Le doigt est-il posé près de la poignée bleue (mode libre) ?
+    const presDuDepart = (ev) => {
+      if (etude.mode !== 'libre' || etude.geo.yDepart === undefined) return false;
+      const r = plan.getBoundingClientRect();
+      const cx = r.left + plan.clientLeft + etude.geo.x0 + etude.depart * etude.geo.ppc;
+      const cy = r.top + plan.clientTop + etude.geo.yDepart;
+      return Math.hypot(ev.clientX - cx, ev.clientY - cy) < 46;
+    };
+
     plan.addEventListener('pointerdown', (ev) => {
       if (!etude || etude.resolu) return;
       ev.preventDefault();
       plan.setPointerCapture(ev.pointerId);
-      if (etude.mode === 'libre') etude.depart = etude.valeur;
-      geste = { id: ev.pointerId, x: ev.clientX, v: etude.valeur };
-      plan.classList.add('en-glisse');
+      const cible = presDuDepart(ev) ? 'depart' : 'fin';
+      geste = { id: ev.pointerId, x: ev.clientX, v: etude.valeur, a: etude.depart, cible };
+      plan.classList.add(cible === 'depart' ? 'en-glisse-depart' : 'en-glisse');
     });
     plan.addEventListener('pointermove', (ev) => {
       if (!geste || ev.pointerId !== geste.id) return;
-      changerValeur(geste.v + Math.round((ev.clientX - geste.x) / etude.geo.ppc), false);
+      const pas = Math.round((ev.clientX - geste.x) / etude.geo.ppc);
+      if (geste.cible === 'depart') changerDepart(geste.a + pas);
+      else changerValeur(geste.v + pas, false);
     });
     const finGeste = (ev) => {
       if (!geste || ev.pointerId !== geste.id) return;
-      const bouge = etude.valeur !== geste.v;
+      const bouge = etude.valeur !== geste.v || etude.depart !== geste.a;
+      const cible = geste.cible;
       geste = null;
-      plan.classList.remove('en-glisse');
-      if (bouge) verifierEtude(true);
-      else dessinerRuban();
+      plan.classList.remove('en-glisse', 'en-glisse-depart');
+      if (!bouge) dessinerRuban();
+      else if (cible === 'depart') annoncerDepart();
+      else verifierEtude(true);
     };
     plan.addEventListener('pointerup', finGeste);
     plan.addEventListener('pointercancel', finGeste);
@@ -1726,7 +1823,7 @@
       kanji: 'Kanji avec furigana',
       nombreMax: 'べんきょう : nombres jusqu’à',
       compter: 'べんきょう : la voix compte à chaque ＋1 / −1',
-      etudeAide: 'Dans « べんきょう », votre enfant tire le ruban (n’importe où sur la zone, pas seulement sur la poignée) ou utilise les gros boutons ＋1 / −1. Chaque centimètre ajouté ou retiré apparaît comme un bloc numéroté. Avec des nombres plus grands, le geste doit être plus précis.',
+      etudeAide: 'Dans « べんきょう », votre enfant tire le ruban (n’importe où sur la zone, pas seulement sur la poignée) ou utilise les gros boutons ＋1 / −1. Chaque centimètre ajouté ou retiré apparaît comme un bloc numéroté. Dans « のばして みよう », la poignée bleue sous le ruban change le premier nombre sans changer le second. Avec des nombres plus grands, le geste doit être plus précis.',
       aide: 'Bouton d’aide (ヒント, そろえる)',
       aideAide: 'Activités 6 et 7 : l’aide convertit d’abord dans la même unité (1 m ＝ 100 cm), puis dessine des barres à l’échelle. Activités 8 et 9 : elle fait glisser les objets jusqu’à la ligne de départ. Elle apparaît aussi d’elle-même après une erreur.',
       noms: 'Afficher le nom des objets',
@@ -1790,7 +1887,7 @@
       kanji: '漢字＋ふりがな',
       nombreMax: 'べんきょう：かずの はんい',
       compter: 'べんきょう：＋1・−1 で かずを よみあげる',
-      etudeAide: '「べんきょう」では テープを ひっぱるか（どこからでも）、＋1・−1 の ボタンを つかいます。たしたり ひいたり した 1cm ずつが ばんごうつきの ブロックで みえます。かずが 大きいと こまかい うごきが ひつようです。',
+      etudeAide: '「べんきょう」では テープを ひっぱるか（どこからでも）、＋1・−1 の ボタンを つかいます。たしたり ひいたり した 1cm ずつが ばんごうつきの ブロックで みえます。「のばして みよう」では テープの 下の あおい ●で さいしょの かずを かえられます（2つめの かずは そのまま）。かずが 大きいと こまかい うごきが ひつようです。',
       aide: 'ヒントの ボタン（ヒント・そろえる）',
       aideAide: '6・7：まず おなじ たんいに なおし（1m＝100cm）、つぎに ぼうで しめします。8・9：ものの はしを そろえます。まちがえたときは じどうで でます。',
       noms: 'ものの なまえを ひょうじする',

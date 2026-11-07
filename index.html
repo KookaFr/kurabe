@@ -47,6 +47,7 @@
         <button type="button" class="btn btn-petit btn-principal" id="quitter-non">つづける</button>
       </div>
       <h2 class="consigne" id="consigne"></h2>
+      <p class="rappel" id="rappel" hidden></p>
       <p class="phrase" id="phrase" hidden></p>
       <div class="etabli" id="etabli"></div>
       <div class="choix-mots" id="choix-mots" hidden></div>
@@ -54,6 +55,31 @@
         <p class="retour" id="retour" aria-live="polite"></p>
         <button type="button" class="btn btn-aide" id="btn-aide" hidden></button>
         <button type="button" class="btn btn-principal btn-suivant" id="btn-suivant" hidden>つぎへ</button>
+      </div>
+    </section>
+
+    <!-- べんきょう : tirer le ruban et voir les nombres changer -->
+    <section class="ecran" id="ecran-etude" hidden>
+      <header class="haut">
+        <button type="button" class="btn-rond" id="etude-quitter" aria-label="おわる">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+        <h2 class="titre-etude" id="etude-titre"></h2>
+        <button type="button" class="btn-rond" id="etude-ecouter" aria-label="もういちど きく">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg>
+        </button>
+      </header>
+      <p class="consigne consigne-etude" id="etude-consigne"></p>
+      <p class="equation" id="etude-equation" aria-live="polite"></p>
+      <div class="etabli zone-etude" id="etude-plan" aria-label="テープ"></div>
+      <div class="commandes-etude">
+        <button type="button" class="btn btn-pas" id="etude-moins" aria-label="ひとつ もどす">−1</button>
+        <p class="valeur-etude" id="etude-valeur" aria-live="polite"></p>
+        <button type="button" class="btn btn-pas" id="etude-plus" aria-label="ひとつ のばす">＋1</button>
+      </div>
+      <div class="bas">
+        <p class="retour" id="etude-retour" aria-live="polite"></p>
+        <button type="button" class="btn btn-principal btn-suivant" id="etude-suivant" hidden>つぎへ</button>
       </div>
     </section>
 

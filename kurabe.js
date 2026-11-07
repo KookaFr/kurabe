@@ -35,7 +35,7 @@
 
   const CLE_REGLAGES = 'kurabe.reglages';
   const DEFAUT = {
-    activites: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    activites: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
     nbQuestions: 6,
     ecriture: 'hiragana',   // hiragana | kanji (avec furigana)
     noms: true,             // afficher le nom des objets
@@ -46,7 +46,9 @@
     dureeAppui: 0,          // ms : le doigt doit rester posé ce temps
     antiRebond: 0,          // ms : touchers suivants ignorés
     aide: true,             // bouton « ヒント » / « そろえる »
-    version: 2,
+    nombreMax: 20,          // べんきょう : nombres jusqu'à 10, 20, 50 ou 100
+    compter: true,          // べんきょう : la voix compte à chaque ＋1 / −1
+    version: 3,
     langue: (navigator.language || '').toLowerCase().startsWith('ja') ? 'ja' : 'fr',
   };
 
@@ -57,7 +59,10 @@
       if (stocke.activites && (stocke.version || 1) < 2) {
         stocke.activites = [...new Set([...stocke.activites, 6, 7, 8, 9])];
       }
-      return { ...DEFAUT, ...stocke, version: 2 };
+      if (stocke.activites && (stocke.version || 1) < 3) {
+        stocke.activites = [...new Set([...stocke.activites, 10, 11, 12])];
+      }
+      return { ...DEFAUT, ...stocke, version: 3 };
     } catch {
       return { ...DEFAUT };
     }
@@ -102,6 +107,9 @@
   const ICHIBAN = K('一番', 'いちばん');
   const TEHON = K('手本', 'てほん');
   const ONAJI = K('同', 'おな');
+  const KAZU = K('数', 'かず');
+  const OOKI = K('大', 'おお');    // 大きい
+  const CHIISA = K('小', 'ちい');  // 小さい
 
   const nomDe = (o) => (o.kanji ? K(o.kanji, o.yomi) : o.yomi);
 
@@ -388,6 +396,9 @@
     { n: 7, titre: ['m と cm'], sous: ['1\u00a0m ＝ 100\u00a0cm'], fr: 'Mètres et centimètres (1 m ou 75 cm ?)', barres: 'mcm' },
     { n: 8, titre: ['ずれている'], sous: ['はしが そろっていない'], fr: 'Objets décalés (pas alignés à gauche)', barres: 'decale' },
     { n: 9, titre: ['ななめ'], sous: ['かたむいている'], fr: 'Objets penchés', barres: 'incline' },
+    { n: 10, etude: 'libre', titre: ['のばして みよう'], sous: [KAZU, 'が かわるよ'], fr: 'べんきょう : étirer le ruban et voir les nombres changer', barres: 'etude-libre' },
+    { n: 11, etude: 'plus', titre: ['たしざん'], sous: ['みぎに のばす（＋）'], fr: 'べんきょう : additionner en tirant vers la droite', barres: 'etude-plus' },
+    { n: 12, etude: 'moins', titre: ['ひきざん'], sous: ['ひだりに もどす（−）'], fr: 'べんきょう : soustraire en tirant vers la gauche', barres: 'etude-moins' },
   ];
 
   const animationsReduites = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -606,7 +617,7 @@
      Écrans
      ====================================================================== */
 
-  const ECRANS = ['accueil', 'question', 'fin', 'parents', 'photo'];
+  const ECRANS = ['accueil', 'question', 'etude', 'fin', 'parents', 'photo'];
   let ecranActuel = 'accueil';
 
   function montrer(nom) {
@@ -632,6 +643,18 @@
     } else if (barres === 'incline') {
       contenu = `<rect x="20" y="10" width="200" height="14" rx="3" transform="rotate(8 120 17)" style="fill:var(--o4)"/>`
         + `<rect x="40" y="40" width="160" height="14" rx="3" transform="rotate(-10 120 47)" style="fill:var(--o3)"/>`;
+    } else if (barres === 'etude-libre') {
+      contenu += `<rect x="10" y="26" width="140" height="18" rx="3" style="fill:var(--o2)"/>`
+        + `<circle cx="150" cy="35" r="14" style="fill:var(--surface);stroke:var(--action);stroke-width:4"/>`
+        + `<path d="M176 35h60M228 27l8 8-8 8M184 27l-8 8 8 8" style="fill:none;stroke:var(--action);stroke-width:3"/>`;
+    } else if (barres === 'etude-plus') {
+      contenu += `<rect x="10" y="26" width="110" height="18" rx="3" style="fill:var(--o2)"/>`;
+      for (let k = 0; k < 5; k++) contenu += `<rect x="${122 + k * 22}" y="26" width="20" height="18" rx="2" style="fill:var(--o3)"/>`;
+      contenu += `<text x="150" y="18" style="fill:var(--o3);font-size:18px;font-weight:700">＋5</text>`;
+    } else if (barres === 'etude-moins') {
+      contenu += `<rect x="10" y="26" width="140" height="18" rx="3" style="fill:var(--o2)"/>`;
+      for (let k = 0; k < 4; k++) contenu += `<rect x="${152 + k * 22}" y="27" width="19" height="16" rx="2" style="fill:none;stroke:var(--o2);stroke-width:2;stroke-dasharray:4 3"/>`;
+      contenu += `<text x="170" y="18" style="fill:var(--o2);font-size:18px;font-weight:700">−4</text>`;
     } else if (barres === 'tehon') {
       contenu += `<rect x="${x0}" y="4" width="${L * 0.66}" height="14" rx="3" style="fill:none;stroke:var(--encre-douce);stroke-width:2.5;stroke-dasharray:6 4"/>`;
       contenu += `<rect x="${x0}" y="27" width="${L * 0.66}" height="12" rx="3" style="fill:var(--o3)"/>`;
@@ -651,15 +674,27 @@
     $('sous-titre').innerHTML = html([NAGA, 'い？ ', MIJIKA, 'い？']);
     const zone = $('activites');
     zone.replaceChildren();
-    ACTIVITES.filter((a) => reglages.activites.includes(a.n)).forEach((a) => {
-      const carte = document.createElement('button');
-      carte.type = 'button';
-      carte.className = 'activite';
-      carte.innerHTML = `<span class="numero">${a.n}</span>${svgActivite(a.barres)}`
-        + `<strong>${html(a.titre)}</strong><span class="sous">${html(a.sous)}</span>`;
-      carte.setAttribute('aria-label', `${a.n}. ${lecture(a.titre)} ${lecture(a.sous)}`);
-      activable(carte, () => demarrer(a.n));
-      zone.append(carte);
+    const groupes = [
+      { titre: ['もんだい'], liste: ACTIVITES.filter((a) => !a.etude) },
+      { titre: [K('勉強', 'べんきょう')], liste: ACTIVITES.filter((a) => a.etude) },
+    ];
+    groupes.forEach((groupe) => {
+      const visibles = groupe.liste.filter((a) => reglages.activites.includes(a.n));
+      if (!visibles.length) return;
+      const titre = document.createElement('h2');
+      titre.className = 'groupe-titre';
+      titre.innerHTML = html(groupe.titre);
+      zone.append(titre);
+      visibles.forEach((a) => {
+        const carte = document.createElement('button');
+        carte.type = 'button';
+        carte.className = 'activite';
+        carte.innerHTML = `<span class="numero">${a.n}</span>${svgActivite(a.barres)}`
+          + `<strong>${html(a.titre)}</strong><span class="sous">${html(a.sous)}</span>`;
+        carte.setAttribute('aria-label', `${a.n}. ${lecture(a.titre)} ${lecture(a.sous)}`);
+        activable(carte, () => (a.etude ? demarrerEtude(a.etude) : demarrer(a.n)));
+        zone.append(carte);
+      });
     });
   }
 
@@ -705,29 +740,49 @@
     return (POSITIONS[q.objets.length] || [])[i] || 'これ';
   }
 
-  // L'explication donne toujours les longueurs, puis la conclusion avec l'écart.
+  // La règle à retenir : « long » = le nombre le plus grand, « court » = le plus petit.
+  function regleNombre(sens, superlatif) {
+    const mot = sens === 'long' ? NAGA : MIJIKA;
+    const taille = sens === 'long' ? [OOKI, 'きい'] : [CHIISA, 'さい'];
+    return superlatif
+      ? [ICHIBAN, ' ', mot, 'いのは ', KAZU, 'が ', ICHIBAN, ' ', ...taille, ' ほう。 ']
+      : [mot, 'いのは ', KAZU, 'が ', ...taille, ' ほう。 '];
+  }
+
+  // La même règle, en court, affichée sous la consigne après une bonne réponse.
+  function rappelDe(q) {
+    if (q.type === 'tehon') return [ONAJI, 'じ ', NAGA, 'さ ＝ ', ONAJI, 'じ ', KAZU];
+    const sens = q.type === 'phrase' ? q.bonne : q.demande;
+    const mot = sens === 'long' ? NAGA : MIJIKA;
+    const taille = sens === 'long' ? [OOKI, 'きい'] : [CHIISA, 'さい'];
+    if (q.type === 'trio') return [ICHIBAN, ' ', mot, 'い ＝ ', KAZU, 'が ', ICHIBAN, ' ', ...taille];
+    return [mot, 'い ＝ ', KAZU, 'が ', ...taille];
+  }
+
+  // L'explication donne toujours les longueurs, la règle, puis la conclusion avec l'écart.
   function explication(q) {
     const plus = q.demande === 'long' ? NAGA : MIJIKA;
     if (q.type === 'nombre') {
       const [a, b] = q.valeurs;
-      const fin = [segValeur(q.valeurs[q.bonne]), 'の ほうが ', segCm(Math.abs(a.cm - b.cm)), ' ', plus, 'いね。'];
+      const fin = [...regleNombre(q.demande), segValeur(q.valeurs[q.bonne]), 'の ほうが ', segCm(Math.abs(a.cm - b.cm)), ' ', plus, 'いね。'];
       if (!q.mixte) return fin;
+      // On ne compare les nombres qu'une fois dans la même unité.
       const m = q.valeurs.find((v) => v.m);
       const c = q.valeurs.find((v) => !v.m);
-      return [segValeur(m), 'は ', segCm(m.cm), '。 ', segCm(m.cm), 'と ', segCm(c.cm), 'だから、 ', ...fin];
+      return [segValeur(m), 'は ', segCm(m.cm), '。 ', segCm(m.cm), 'と ', segCm(c.cm), '。 ', ...fin];
     }
     if (q.type === 'tehon') {
-      return [TEHON, 'は ', segCm(q.modele.cm), '。 これも ', segCm(q.objets[q.bonne].cm), '。 ', ONAJI, 'じ ', NAGA, 'さだね。'];
+      return [TEHON, 'は ', segCm(q.modele.cm), '。 これも ', segCm(q.objets[q.bonne].cm), '。 ', ONAJI, 'じ ', KAZU, 'だから、 ', ONAJI, 'じ ', NAGA, 'さだね。'];
     }
     const longueurs = [];
     q.objets.forEach((o, i) => {
       longueurs.push(reference(q, i), 'は ', segCm(o.cm), i < q.objets.length - 1 ? '、 ' : '。 ');
     });
     const debut = q.type === 'libre' ? ['はしを そろえると、 ', ...longueurs] : longueurs;
-    if (q.type === 'phrase') return [...debut, 'だから ', ...phraseDe(q, q.bonne)];
-    if (q.type === 'trio') return [...debut, ICHIBAN, ' ', plus, 'いのは ', reference(q, q.bonne), 'だね。'];
+    if (q.type === 'phrase') return [...debut, ...regleNombre(q.bonne), 'だから ', ...phraseDe(q, q.bonne)];
+    if (q.type === 'trio') return [...debut, ...regleNombre(q.demande, true), reference(q, q.bonne), 'だね。'];
     const ecart = Math.abs(q.objets[0].cm - q.objets[1].cm);
-    return [...debut, reference(q, q.bonne), 'の ほうが ', segCm(ecart), ' ', plus, 'いね。'];
+    return [...debut, ...regleNombre(q.demande), reference(q, q.bonne), 'の ほうが ', segCm(ecart), ' ', plus, 'いね。'];
   }
 
   function afficherQuestion() {
@@ -736,6 +791,7 @@
     $('retour').classList.remove('ok');
     $('btn-suivant').hidden = true;
     $('confirmation-quitter').hidden = true;
+    $('rappel').hidden = true;
     rendreQuestion();
     parlerConsigne();
   }
@@ -883,6 +939,12 @@
     majBoutonAide();
   }
 
+  function afficherRappel(q) {
+    const rappel = $('rappel');
+    rappel.innerHTML = htmlMots(rappelDe(q));
+    rappel.hidden = false;
+  }
+
   /* ----- Preuve après une bonne réponse : longueurs, règle, partie qui dépasse ----- */
 
   let echelle = null;   // { ppc } : pixels par centimètre de la question affichée
@@ -919,7 +981,7 @@
   }
 
   // La partie de l'objet le plus long qui dépasse, avec l'écart en cm.
-  function dessinerEcart(etabli, xCourt, xLong, top, hauteur, ecart) {
+  function dessinerEcart(etabli, xCourt, xLong, top, hauteur, ecart, libelle) {
     if (xLong - xCourt < 2) return;
     const zone = document.createElement('div');
     zone.className = 'ecart preuve';
@@ -928,7 +990,7 @@
     zone.style.top = `${top}px`;
     zone.style.height = `${hauteur}px`;
     const texte = document.createElement('span');
-    texte.textContent = `${cmTexte(ecart)}\u00a0cm`;
+    texte.textContent = libelle || `${cmTexte(ecart)}\u00a0cm`;
     zone.append(texte);
     etabli.append(zone);
   }
@@ -1209,6 +1271,7 @@
       q.messageFinal = message;
       $('retour').innerHTML = htmlMots(message);
       $('retour').classList.add('ok');
+      afficherRappel(q);
       parler(message);
       // Même trouvé du premier coup, on montre pourquoi c'est juste.
       if (q.type === 'nombre' && q.aide < q.aideMax) {
@@ -1281,7 +1344,10 @@
     afficherQuestion();
   }
 
+  let finDe = 'question';   // ce que « もういちど » recommence : une série de questions ou de べんきょう
+
   function afficherFin() {
+    finDe = 'question';
     montrer('fin');
     const n = session.questions.length;
     $('fin-titre').innerHTML = htmlMots(PHRASES.otsukare);
@@ -1297,10 +1363,311 @@
   activable($('btn-quitter'), () => { $('confirmation-quitter').hidden = false; });
   $('quitter-oui').addEventListener('click', () => { rendreAccueil(); montrer('accueil'); });
   $('quitter-non').addEventListener('click', () => { $('confirmation-quitter').hidden = true; });
-  activable($('btn-recommencer'), () => demarrer(session.niveau));
+  activable($('btn-recommencer'), () => (finDe === 'etude' ? demarrerEtude(etude.mode) : demarrer(session.niveau)));
   activable($('btn-menu'), () => { rendreAccueil(); montrer('accueil'); });
 
   let minuteurRedim = 0;
+
+  /* ======================================================================
+     べんきょう : tirer un ruban sur la règle et voir les nombres changer
+     (étirer librement, additionner en tirant à droite, soustraire à gauche)
+     ====================================================================== */
+
+  let etude = null;
+
+  function demarrerEtude(mode) {
+    etude = { mode, index: 0, total: Number(reglages.nbQuestions) || 6 };
+    montrer('etude');
+    nouveauProbleme();
+  }
+
+  function nouveauProbleme() {
+    const e = etude;
+    const max = Number(reglages.nombreMax) || 20;
+    e.resolu = false;
+    if (e.mode === 'libre') {
+      e.base = Math.round(max / 2);
+      e.pas = null;
+      e.cible = null;
+    } else if (e.mode === 'plus') {
+      e.pas = entier(1, Math.min(9, max - 1));
+      e.base = entier(1, max - e.pas);
+      e.cible = e.base + e.pas;
+    } else {
+      e.pas = entier(1, Math.min(9, max - 1));
+      e.base = entier(e.pas + 1, max);
+      e.cible = e.base - e.pas;
+    }
+    e.valeur = e.base;
+    e.depart = e.base;
+    $('etude-retour').textContent = '';
+    $('etude-retour').classList.remove('ok');
+    $('etude-suivant').hidden = true;
+    rendreEtude();
+    parler(consigneEtude(true));
+  }
+
+  function bornesEtude() {
+    const max = Number(reglages.nombreMax) || 20;
+    if (etude.mode === 'plus') return [etude.base, max];
+    if (etude.mode === 'moins') return [0, etude.base];
+    return [0, max];
+  }
+
+  function consigneEtude(pourVoix) {
+    const e = etude;
+    if (e.mode === 'libre') return ['テープを ひっぱって みよう。 ', KAZU, 'が かわるよ。'];
+    const geste = e.mode === 'plus' ? ['みぎに ', String(e.pas), ' のばそう。'] : ['ひだりに ', String(e.pas), ' もどそう。'];
+    if (!pourVoix) return geste;
+    const op = e.mode === 'plus' ? ' たす ' : ' ひく ';
+    return [String(e.base), op, String(e.pas), ' は いくつ？ ', ...geste];
+  }
+
+  function equationEtude() {
+    const e = etude;
+    if (e.mode === 'libre') {
+      const d = e.valeur - e.depart;
+      const delta = d ? `<span class="delta">（${d > 0 ? '＋' : '−'}${Math.abs(d)}）</span>` : '';
+      return `${e.depart} → ${e.valeur}${delta}`;
+    }
+    const resultat = e.resolu ? `<span class="resultat">${e.cible}</span>` : '<span class="inconnu">？</span>';
+    return `${e.base} ${e.mode === 'plus' ? '＋' : '−'} ${e.pas} ＝ ${resultat}`;
+  }
+
+  function rendreEtude() {
+    if (!etude || ecranActuel !== 'etude') return;
+    const e = etude;
+    const activite = ACTIVITES.find((a) => a.etude === e.mode);
+    const compte = e.mode === 'libre' ? '' : `<small>${e.index + 1} / ${e.total}</small>`;
+    $('etude-titre').innerHTML = html(activite.titre) + compte;
+    $('etude-consigne').innerHTML = htmlMots(consigneEtude(false));
+    const plan = $('etude-plan');
+    plan.replaceChildren();
+    const max = Number(reglages.nombreMax) || 20;
+    const x0 = 27;
+    const ppc = Math.max(1, (plan.clientWidth - x0 - 50) / max);
+    e.geo = { x0, ppc };
+    dessinerRegle(plan, x0, ppc, max, false);
+    plan.querySelector('.regle')?.classList.remove('preuve');
+    const depart = document.createElement('span');
+    depart.className = 'depart-libre';
+    depart.style.left = `${x0 - 7}px`;
+    const couche = document.createElement('div');
+    couche.id = 'couche-ruban';
+    plan.append(depart, couche);
+    dessinerRuban();
+  }
+
+  function dessinerRuban() {
+    const e = etude;
+    const { x0, ppc } = e.geo;
+    const plan = $('etude-plan');
+    const couche = $('couche-ruban');
+    couche.replaceChildren();
+    const haut = Math.min(56, Math.max(30, plan.clientHeight * 0.14));
+    const y = Math.max(haut / 2 + 64, (plan.clientHeight - reserveRegle()) / 2 + 10);
+    e.geo.y = y;
+    e.geo.haut = haut;
+    const blocsVisibles = ppc >= 8;   // assez large pour voir chaque centimètre
+    const numeros = ppc >= 16;        // assez large pour écrire 1, 2, 3… sous chaque bloc
+
+    const segment = (de, a, classe) => {
+      if (a <= de) return null;
+      const el = document.createElement('span');
+      el.className = classe;
+      el.style.left = `${x0 + de * ppc}px`;
+      el.style.width = `${(a - de) * ppc}px`;
+      el.style.top = `${y - haut / 2}px`;
+      el.style.height = `${haut}px`;
+      couche.append(el);
+      return el;
+    };
+
+    // Des blocs d'1 cm, numérotés 1, 2, 3… pour compter ce qu'on ajoute ou ce qu'on enlève.
+    const blocs = (de, a, classeDe, numero, signe) => {
+      if (a <= de) return;
+      if (!blocsVisibles) {
+        const el = segment(de, a, classeDe(de));
+        const total = document.createElement('span');
+        total.className = 'compte-segment';
+        total.textContent = `${signe}${a - de}`;
+        el.append(total);
+        return;
+      }
+      for (let i = de; i < a; i++) {
+        const el = segment(i, i + 1, `${classeDe(i)} bloc-cm`);
+        if (numeros) {
+          const n = document.createElement('span');
+          n.className = 'numero-bloc';
+          n.textContent = numero(i);
+          el.append(n);
+        }
+      }
+      if (!numeros) {
+        // Blocs trop étroits pour être numérotés : on écrit le total sous l'ensemble.
+        const zone = segment(de, a, 'zone-compte');
+        const total = document.createElement('span');
+        total.className = 'compte-segment';
+        total.textContent = `${signe}${a - de}`;
+        zone.append(total);
+      }
+    };
+
+    if (e.mode === 'plus') {
+      segment(0, e.base, 'ruban-base');
+      blocs(e.base, e.valeur, (i) => (i >= e.cible ? 'ruban-ajout trop' : 'ruban-ajout'), (i) => String(i - e.base + 1), '＋');
+    } else if (e.mode === 'moins') {
+      segment(0, e.valeur, 'ruban-base');
+      blocs(e.valeur, e.base, (i) => (i < e.cible ? 'ruban-retire trop' : 'ruban-retire'), (i) => String(e.base - i), '−');
+    } else {
+      segment(0, Math.min(e.valeur, e.depart), 'ruban-base');
+      blocs(e.depart, e.valeur, () => 'ruban-ajout', (i) => String(i - e.depart + 1), '＋');
+      blocs(e.valeur, e.depart, () => 'ruban-retire', (i) => String(e.depart - i), '−');
+    }
+
+    const poignee = document.createElement('span');
+    poignee.className = 'poignee-etude';
+    poignee.style.left = `${x0 + e.valeur * ppc}px`;
+    poignee.style.top = `${y}px`;
+    poignee.innerHTML = '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M3 12h18"/></svg>';
+    const bulle = document.createElement('span');
+    bulle.className = 'bulle-etude';
+    bulle.textContent = String(e.valeur);
+    bulle.style.left = `${x0 + e.valeur * ppc}px`;
+    bulle.style.top = `${y - haut / 2 - 58}px`;
+    couche.append(poignee, bulle);
+
+    if (e.resolu) {
+      const debut = Math.min(e.base, e.cible);
+      const fin = Math.max(e.base, e.cible);
+      dessinerEcart(couche, x0 + debut * ppc, x0 + fin * ppc, y - haut / 2 - 6, haut + 12, e.pas, `${e.mode === 'plus' ? '＋' : '−'}${e.pas}`);
+    }
+
+    $('etude-valeur').textContent = String(e.valeur);
+    $('etude-equation').innerHTML = equationEtude();
+    const [min, max] = bornesEtude();
+    $('etude-moins').disabled = e.resolu || e.valeur <= min;
+    $('etude-plus').disabled = e.resolu || e.valeur >= max;
+    $('etude-suivant').hidden = !e.resolu || e.mode === 'libre';
+  }
+
+  // Change la valeur d'un cran : petit son (plus aigu en montant), vibration sur Android.
+  function changerValeur(v, voix) {
+    const [min, max] = bornesEtude();
+    const nouvelle = Math.max(min, Math.min(max, v));
+    if (nouvelle === etude.valeur) return false;
+    const monte = nouvelle > etude.valeur;
+    etude.valeur = nouvelle;
+    note((monte ? 440 : 400) + Math.min(nouvelle, 60) * 9, { duree: 0.08, volume: 0.09, type: 'triangle' });
+    if (reglages.sons && navigator.vibrate) navigator.vibrate(8);
+    dessinerRuban();
+    if (voix && reglages.compter) parler(String(nouvelle));
+    return true;
+  }
+
+  function messageEtude(segments, ok) {
+    $('etude-retour').innerHTML = htmlMots(segments);
+    $('etude-retour').classList.toggle('ok', Boolean(ok));
+  }
+
+  // Après un geste ou un appui : bravo, « encore N », ou « trop, reviens de N ».
+  function verifierEtude(parlerSiRien) {
+    const e = etude;
+    if (e.mode === 'libre') {
+      const d = e.valeur - e.depart;
+      const message = d > 0 ? [String(e.valeur), '。 ', String(d), ' ふえたね。']
+        : d < 0 ? [String(e.valeur), '。 ', String(-d), ' へったね。'] : [String(e.valeur), '。'];
+      messageEtude(message);
+      if (parlerSiRien) parler(message);
+      return;
+    }
+    if (e.valeur === e.cible) {
+      reussirEtude();
+      return;
+    }
+    const ecart = Math.abs(e.valeur - e.cible);
+    const trop = e.mode === 'plus' ? e.valeur > e.cible : e.valeur < e.cible;
+    if (trop) {
+      const message = [e.mode === 'plus' ? 'おおすぎ！ ひだりに ' : 'とりすぎ！ みぎに ', String(ecart), ' もどそう。'];
+      messageEtude(message);
+      parler(message);
+    } else {
+      const message = ['あと ', String(ecart), '。'];
+      messageEtude(message);
+      if (parlerSiRien) parler(message);
+    }
+  }
+
+  function reussirEtude() {
+    const e = etude;
+    e.resolu = true;
+    sons.succes();
+    const op = e.mode === 'plus' ? ' たす ' : ' ひく ';
+    const message = [...PHRASES.seikai, String(e.base), op, String(e.pas), ' は ', String(e.cible), '。'];
+    messageEtude(message, true);
+    parler(message);
+    dessinerRuban();
+  }
+
+  // Glisser n'importe où sur la zone : le ruban suit le mouvement du doigt, sans sauter.
+  (() => {
+    const plan = $('etude-plan');
+    let geste = null;
+    plan.addEventListener('pointerdown', (ev) => {
+      if (!etude || etude.resolu) return;
+      ev.preventDefault();
+      plan.setPointerCapture(ev.pointerId);
+      if (etude.mode === 'libre') etude.depart = etude.valeur;
+      geste = { id: ev.pointerId, x: ev.clientX, v: etude.valeur };
+      plan.classList.add('en-glisse');
+    });
+    plan.addEventListener('pointermove', (ev) => {
+      if (!geste || ev.pointerId !== geste.id) return;
+      changerValeur(geste.v + Math.round((ev.clientX - geste.x) / etude.geo.ppc), false);
+    });
+    const finGeste = (ev) => {
+      if (!geste || ev.pointerId !== geste.id) return;
+      const bouge = etude.valeur !== geste.v;
+      geste = null;
+      plan.classList.remove('en-glisse');
+      if (bouge) verifierEtude(true);
+      else dessinerRuban();
+    };
+    plan.addEventListener('pointerup', finGeste);
+    plan.addEventListener('pointercancel', finGeste);
+  })();
+
+  activable($('etude-plus'), () => {
+    if (etude && !etude.resolu && changerValeur(etude.valeur + 1, true)) verifierEtude(false);
+  });
+  activable($('etude-moins'), () => {
+    if (etude && !etude.resolu && changerValeur(etude.valeur - 1, true)) verifierEtude(false);
+  });
+  activable($('etude-ecouter'), () => parler(consigneEtude(true)), { garde: false });
+  activable($('etude-quitter'), () => { rendreAccueil(); montrer('accueil'); });
+  activable($('etude-suivant'), () => {
+    etude.index += 1;
+    if (etude.index < etude.total) {
+      nouveauProbleme();
+      return;
+    }
+    finDe = 'etude';
+    montrer('fin');
+    const texte = [String(etude.total), K('問', 'もん'), ' できたよ。'];
+    $('fin-titre').innerHTML = htmlMots(PHRASES.otsukare);
+    $('fin-texte').innerHTML = htmlMots(texte);
+    sons.fin();
+    parler([...PHRASES.otsukare, ' ', ...texte]);
+  });
+
+  let minuteurEtude = 0;
+  if ('ResizeObserver' in window) {
+    new ResizeObserver(() => {
+      if (ecranActuel !== 'etude' || !etude) return;
+      clearTimeout(minuteurEtude);
+      minuteurEtude = setTimeout(rendreEtude, 60);
+    }).observe($('etude-plan'));
+  }
 
   // Quand la zone des objets change de taille (l'explication apparaît dessous, rotation de l'écran…),
   // on recalcule la place des objets, de la règle et des repères.
@@ -1340,6 +1707,9 @@
       ecriture: 'Écriture',
       hiragana: 'Hiragana seuls',
       kanji: 'Kanji avec furigana',
+      nombreMax: 'べんきょう : nombres jusqu’à',
+      compter: 'べんきょう : la voix compte à chaque ＋1 / −1',
+      etudeAide: 'Dans « べんきょう », votre enfant tire le ruban (n’importe où sur la zone, pas seulement sur la poignée) ou utilise les gros boutons ＋1 / −1. Chaque centimètre ajouté ou retiré apparaît comme un bloc numéroté. Avec des nombres plus grands, le geste doit être plus précis.',
       aide: 'Bouton d’aide (ヒント, そろえる)',
       aideAide: 'Activités 6 et 7 : l’aide convertit d’abord dans la même unité (1 m ＝ 100 cm), puis dessine des barres à l’échelle. Activités 8 et 9 : elle fait glisser les objets jusqu’à la ligne de départ. Elle apparaît aussi d’elle-même après une erreur.',
       noms: 'Afficher le nom des objets',
@@ -1401,6 +1771,9 @@
       ecriture: 'もじ',
       hiragana: 'ひらがな',
       kanji: '漢字＋ふりがな',
+      nombreMax: 'べんきょう：かずの はんい',
+      compter: 'べんきょう：＋1・−1 で かずを よみあげる',
+      etudeAide: '「べんきょう」では テープを ひっぱるか（どこからでも）、＋1・−1 の ボタンを つかいます。たしたり ひいたり した 1cm ずつが ばんごうつきの ブロックで みえます。かずが 大きいと こまかい うごきが ひつようです。',
       aide: 'ヒントの ボタン（ヒント・そろえる）',
       aideAide: '6・7：まず おなじ たんいに なおし（1m＝100cm）、つぎに ぼうで しめします。8・9：ものの はしを そろえます。まちがえたときは じどうで でます。',
       noms: 'ものの なまえを ひょうじする',
@@ -1598,7 +1971,14 @@
     );
     const aideAide = document.createElement('p');
     aideAide.textContent = t('aideAide');
-    bActivites.append(aideAide);
+    bActivites.append(
+      aideAide,
+      groupeChoix('nombreMax', t('nombreMax'), [[10, '10'], [20, '20'], [50, '50'], [100, '100']]),
+      groupeChoix('compter', t('compter'), [[true, t('oui')], [false, t('non')]]),
+    );
+    const etudeAide = document.createElement('p');
+    etudeAide.textContent = t('etudeAide');
+    bActivites.append(etudeAide);
     const aideCourt = document.createElement('p');
     aideCourt.textContent = t('courtAide');
     bActivites.append(aideCourt);

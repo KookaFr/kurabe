@@ -492,6 +492,20 @@ button.ligne { cursor: pointer; }
 
 .btn-aide { min-height: 64px; min-width: 6em; font-size: 1.2rem; border-color: var(--action); color: var(--action); }
 
+/* Règle à retenir, affichée après une bonne réponse : « ながい ＝ かずが おおきい » */
+.rappel {
+  align-self: center;
+  margin: -6px 0 0;
+  padding: 4px 18px;
+  border: 2px solid var(--bon);
+  border-radius: 999px;
+  background: var(--bon-fond);
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-align: center;
+  animation: apparaitre .45s ease both;
+}
+
 /* Preuve après une bonne réponse : règle, longueurs, partie qui dépasse */
 .regle {
   position: absolute;
@@ -556,6 +570,123 @@ button.ligne { cursor: pointer; }
 .regle.preuve { animation-delay: .1s; }
 .mesure.preuve, .mesure-libre.preuve { animation-delay: .35s; }
 .ecart.preuve { animation-delay: .6s; }
+
+/* ---------- べんきょう : le ruban à tirer ---------- */
+
+.groupe-titre {
+  grid-column: 1 / -1;
+  margin: 8px 2px -2px;
+  font-size: 1.1rem;
+  letter-spacing: .1em;
+  color: var(--encre-douce);
+}
+
+.titre-etude {
+  flex: 1;
+  margin: 0;
+  font-size: 1.6rem;
+  text-align: center;
+}
+
+.titre-etude small {
+  display: block;
+  font-size: .55em;
+  font-weight: 400;
+  color: var(--encre-douce);
+  font-variant-numeric: tabular-nums;
+}
+
+.consigne-etude { font-size: clamp(1.4rem, 3.4vw, 2rem); }
+
+.equation {
+  margin: 0;
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+  font-weight: 800;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.equation .inconnu { color: var(--action); }
+.equation .resultat { color: var(--bon); }
+.equation .delta { color: var(--action); font-size: .7em; }
+
+.zone-etude { display: block; touch-action: none; cursor: ew-resize; }
+
+.ruban-base,
+.ruban-ajout,
+.ruban-retire { position: absolute; border-radius: 4px; }
+
+.ruban-base { background: var(--o2); }
+.ruban-ajout { background: var(--o3); }
+.ruban-ajout.trop { background: var(--o5); }
+.ruban-retire { border: 2px dashed var(--o2); background: transparent; }
+.ruban-retire.trop { border-color: var(--o5); }
+.bloc-cm { box-shadow: inset -2px 0 0 var(--surface); }
+.ruban-retire.bloc-cm { box-shadow: none; }
+.zone-compte { position: absolute; pointer-events: none; }
+
+.numero-bloc,
+.compte-segment {
+  position: absolute;
+  top: 100%;
+  margin-top: 4px;
+  font-size: .85rem;
+  font-weight: 700;
+  color: var(--encre);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+.numero-bloc { left: 0; right: 0; text-align: center; }
+.compte-segment { left: 50%; transform: translateX(-50%); font-size: 1rem; }
+
+.poignee-etude {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  margin: -27px 0 0 -27px;
+  border: 4px solid var(--action);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--action);
+  pointer-events: none;
+}
+
+.en-glisse .poignee-etude { transform: scale(1.12); }
+
+.bulle-etude {
+  position: absolute;
+  padding: 2px 14px;
+  border-radius: 999px;
+  background: var(--action);
+  color: var(--action-texte);
+  font-size: 1.6rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.commandes-etude {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+
+.btn-pas { min-width: 5em; min-height: 72px; font-size: 1.6rem; white-space: nowrap; }
+.btn-pas:disabled { opacity: .35; }
+
+.valeur-etude {
+  min-width: 3em;
+  margin: 0;
+  font-size: 2.4rem;
+  font-weight: 800;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
 
 /* Phrase à compléter (palier 4) */
 .phrase {
@@ -786,6 +917,10 @@ button.ligne { cursor: pointer; }
   .consigne { font-size: 1.5rem; }
   .phrase { font-size: 1.3rem; }
   .choix-mots { flex-wrap: nowrap; gap: 8px; }
+  .commandes-etude { gap: 10px; }
+  .btn-pas { flex: 1; min-width: 0; min-height: 64px; padding: 0 .4em; white-space: nowrap; }
+  .valeur-etude { min-width: 2.2em; font-size: 2rem; }
+  .titre-etude { font-size: 1.3rem; }
   .choix-mots .btn { flex: 1; min-width: 0; min-height: 56px; padding: 0 .3em; font-size: 1.3rem; white-space: nowrap; }
   .bas .btn-suivant, .bas .btn-aide { flex: 1; min-height: 60px; }
   .etabli.nombres .etiquette { font-size: 1.6rem; padding: 0 44px 0 14px; }
@@ -807,7 +942,7 @@ button.ligne { cursor: pointer; }
   #ecran-question {
     display: grid;
     grid-template-columns: minmax(210px, 36%) 1fr;
-    grid-template-rows: auto auto auto auto auto 1fr;
+    grid-template-rows: auto auto auto auto auto auto 1fr;
     column-gap: 14px;
     row-gap: 8px;
   }
@@ -815,9 +950,10 @@ button.ligne { cursor: pointer; }
   #ecran-question > .haut { grid-row: 1; gap: 8px; }
   #ecran-question > .confirmation { grid-row: 2; padding: 6px 10px; }
   #ecran-question > .consigne { grid-row: 3; font-size: 1.45rem; text-align: left; }
-  #ecran-question > .phrase { grid-row: 4; font-size: 1.25rem; text-align: left; }
-  #ecran-question > .choix-mots { grid-row: 5; justify-content: flex-start; gap: 8px; }
-  #ecran-question > .bas { grid-row: 6; align-self: end; flex-wrap: wrap; gap: 8px; min-height: 0; }
+  #ecran-question > .rappel { grid-row: 4; align-self: start; margin: 0; font-size: 1rem; }
+  #ecran-question > .phrase { grid-row: 5; font-size: 1.25rem; text-align: left; }
+  #ecran-question > .choix-mots { grid-row: 6; justify-content: flex-start; gap: 8px; }
+  #ecran-question > .bas { grid-row: 7; align-self: end; flex-wrap: wrap; gap: 8px; min-height: 0; }
   #ecran-question > .etabli { grid-column: 2; grid-row: 1 / -1; padding: 6px 8px 42px; gap: 4px; }
   .progression { gap: 5px; }
   .progression li { width: 12px; height: 12px; border-width: 2px; }
@@ -832,6 +968,24 @@ button.ligne { cursor: pointer; }
   .etabli.nombres .etiquette { font-size: 1.5rem; }
   .etabli.nombres .ligne { min-height: 60px; }
   .fin svg { width: 90px; }
+
+  #ecran-etude {
+    display: grid;
+    grid-template-columns: minmax(210px, 36%) 1fr;
+    grid-template-rows: auto auto auto auto 1fr;
+    column-gap: 14px;
+    row-gap: 8px;
+  }
+  #ecran-etude > * { grid-column: 1; min-width: 0; }
+  #ecran-etude > .haut { grid-row: 1; gap: 8px; }
+  #ecran-etude > .consigne { grid-row: 2; font-size: 1.15rem; text-align: left; }
+  #ecran-etude > .equation { grid-row: 3; font-size: 1.6rem; text-align: left; }
+  #ecran-etude > .commandes-etude { grid-row: 4; justify-content: flex-start; gap: 8px; }
+  #ecran-etude > .bas { grid-row: 5; align-self: end; flex-wrap: wrap; gap: 8px; min-height: 0; }
+  #ecran-etude > .etabli { grid-column: 2; grid-row: 1 / -1; padding: 6px 8px 42px; }
+  .titre-etude { font-size: 1.2rem; }
+  .btn-pas { min-width: 3.4em; min-height: 52px; font-size: 1.3rem; }
+  .valeur-etude { font-size: 1.6rem; min-width: 2em; }
   .fin h2 { font-size: 1.8rem; }
   .fin p { font-size: 1.2rem; }
   .fin .btn { min-height: 52px; }

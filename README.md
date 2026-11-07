@@ -22,6 +22,16 @@ Les objets sont alignés sur une ligne de départ et affichés à l'échelle. En
 
 Après chaque bonne réponse, même trouvée du premier coup, l'application montre pourquoi c'est juste : une règle graduée apparaît sous les objets, la longueur de chaque objet s'affiche, la partie qui dépasse est surlignée avec l'écart en cm, et la voix explique (« うえは 15センチ、したは 8センチ。うえの ほうが 7センチ ながいね。 »). Le bouton 🔊 permet de réécouter l'explication.
 
+L'explication rappelle aussi la règle : « ながいのは かずが おおきい ほう » (le plus long, c'est le plus grand nombre), « みじかいのは かずが ちいさい ほう ». Elle s'affiche sous la consigne.
+
+## べんきょう / Apprendre
+
+10. のばして みよう: on tire un ruban sur la règle, vers la droite ou la gauche, et on voit le nombre changer (« 3 ふえたね », « 2 へったね »)
+11. たしざん: par exemple 8 ＋ 5. On tire vers la droite ; chaque centimètre ajouté apparaît comme un bloc numéroté 1, 2, 3…, et l'égalité se complète.
+12. ひきざん: par exemple 12 − 4. On tire vers la gauche ; les blocs retirés restent visibles en pointillés, numérotés.
+
+On peut glisser le doigt n'importe où sur la zone, ou utiliser les gros boutons ＋1 / −1 (la voix compte à chaque appui). En cas de dépassement, l'application dit de combien revenir. La limite des nombres (10, 20, 50 ou 100) se règle dans l'espace parents.
+
 ## おうちの人へ / Pour les parents
 
 Appuyez 2 secondes sur « おうちの人 » pour ouvrir les réglages, en japonais ou en français. Vous pourrez y ajouter des photos d'objets de la maison, qui seront affichés à leur vraie longueur, et y choisir les activités, l'écriture (hiragana, ou kanji avec furigana) et la sensibilité au toucher.

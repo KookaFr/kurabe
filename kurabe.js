@@ -395,6 +395,8 @@
   const valeurCm = (c) => ({ cm: c, m: null, affichage: `${c}\u00a0cm`, lecture: `${c}センチ` });
   const valeurM = (m) => ({ cm: m * 100, m, affichage: `${m}\u00a0m`, lecture: `${m}メートル` });
   const segValeur = (v) => V(v.affichage, v.lecture);
+  const cmTexte = (x) => String(Math.round(x * 10) / 10);
+  const segCm = (x) => V(`${cmTexte(x)}\u00a0cm`, `${cmTexte(x)}センチ`);
 
   // Activité 6 : deux longueurs en cm. Quelques pièges : chiffres inversés (34 / 43), 1 chiffre contre 2 (9 / 12).
   function paireCm(i, derniere) {
@@ -460,21 +462,25 @@
 
   function paireDessinee(rmin, rmax, sortesDifferentes) {
     const r = aleatoire(rmin, rmax);
-    const court = aleatoire(5, Math.min(15, 28 / r));
+    // Longueurs en cm entiers : elles sont affichées et lues dans l'explication.
+    const court = Math.round(aleatoire(5, Math.min(15, 28 / r)));
+    const long = Math.max(court + 1, Math.round(court * r));
     const [c1, c2] = couleurs(2);
     const noms = Object.keys(SORTES);
     const s1 = choisir(noms);
     const s2 = sortesDifferentes ? choisir(noms.filter((s) => s !== s1)) : s1;
-    return [objetDessine(s1, court, c1), objetDessine(s2, court * r, c2)];
+    return [objetDessine(s1, court, c1), objetDessine(s2, long, c2)];
   }
 
   function trioDessine(rmin) {
     const r1 = aleatoire(rmin, rmin + 0.2);
     const r2 = aleatoire(rmin, rmin + 0.2);
-    const a = aleatoire(5, 30 / (r1 * r2));
+    const a = Math.round(aleatoire(5, 30 / (r1 * r2)));
+    const b = Math.max(a + 1, Math.round(a * r1));
+    const c = Math.max(b + 1, Math.round(b * r2));
     const sorte = choisir(Object.keys(SORTES));
     const cs = couleurs(3);
-    return [objetDessine(sorte, a, cs[0]), objetDessine(sorte, a * r1, cs[1]), objetDessine(sorte, a * r1 * r2, cs[2])];
+    return [objetDessine(sorte, a, cs[0]), objetDessine(sorte, b, cs[1]), objetDessine(sorte, c, cs[2])];
   }
 
   const indexMax = (objets) => objets.reduce((m, o, i) => (o.cm > objets[m].cm ? i : m), 0);
@@ -573,15 +579,19 @@
 
     // Niveau 5 : retrouver la même longueur que le modèle (comme couper un câble au modèle).
     const sorte = choisir(['keburu', 'tepu']);
-    const m = aleatoire(9, 19);
+    const m = entier(9, 19);
     const [cModele, ...cs] = couleurs(4);
     const facteurs = derniere
       ? [aleatoire(0.45, 0.6), aleatoire(1.45, 1.6)]
       : [aleatoire(0.68, 0.82), aleatoire(1.22, 1.38)];
+    const autre = (f) => {
+      const v = Math.round(m * f);
+      return v === m ? m + (f > 1 ? 1 : -1) : v;
+    };
     const candidats = melanger([
       { ...objetDessine(sorte, m, cs[0]), egal: true },
-      objetDessine(sorte, m * facteurs[0], cs[1]),
-      objetDessine(sorte, m * facteurs[1], cs[2]),
+      objetDessine(sorte, autre(facteurs[0]), cs[1]),
+      objetDessine(sorte, autre(facteurs[1]), cs[2]),
     ]);
     return {
       ...base,
@@ -685,27 +695,39 @@
     return [a, 'は ', b, 'より ', mot === 'long' ? NAGA : MIJIKA, 'い。'];
   }
 
+  // Comment désigner un objet dans l'explication : son nom, ou sa place (うえ / まんなか / した).
+  const POSITIONS = { 2: ['うえ', 'した'], 3: ['うえ', 'まんなか', 'した'] };
+
+  function reference(q, i) {
+    if (q.type === 'phrase') return nomDe(q.objets[i]);
+    const nomsDistincts = new Set(q.objets.map((o) => o.yomi)).size === q.objets.length;
+    if (q.type !== 'libre' && reglages.noms && nomsDistincts) return nomDe(q.objets[i]);
+    return (POSITIONS[q.objets.length] || [])[i] || 'これ';
+  }
+
+  // L'explication donne toujours les longueurs, puis la conclusion avec l'écart.
   function explication(q) {
     const plus = q.demande === 'long' ? NAGA : MIJIKA;
     if (q.type === 'nombre') {
-      const fin = [segValeur(q.valeurs[q.bonne]), 'の ほうが ', plus, 'いね。'];
+      const [a, b] = q.valeurs;
+      const fin = [segValeur(q.valeurs[q.bonne]), 'の ほうが ', segCm(Math.abs(a.cm - b.cm)), ' ', plus, 'いね。'];
       if (!q.mixte) return fin;
       const m = q.valeurs.find((v) => v.m);
-      return [segValeur(m), 'は ', segValeur(valeurCm(m.cm)), '。 だから ', ...fin];
+      const c = q.valeurs.find((v) => !v.m);
+      return [segValeur(m), 'は ', segCm(m.cm), '。 ', segCm(m.cm), 'と ', segCm(c.cm), 'だから、 ', ...fin];
     }
-    if (q.type === 'libre') return ['こっちの ほうが ', plus, 'いね。'];
-    const memesNoms = new Set(q.objets.map((o) => o.yomi)).size < q.objets.length;
-    const o = q.objets[q.bonne];
-    if (q.type === 'paire') {
-      const qui = memesNoms || !reglages.noms ? 'こっち' : nomDe(o);
-      return [qui, 'の ほうが ', q.demande === 'long' ? NAGA : MIJIKA, 'いね。'];
+    if (q.type === 'tehon') {
+      return [TEHON, 'は ', segCm(q.modele.cm), '。 これも ', segCm(q.objets[q.bonne].cm), '。 ', ONAJI, 'じ ', NAGA, 'さだね。'];
     }
-    if (q.type === 'trio') {
-      const qui = memesNoms || !reglages.noms ? 'これ' : nomDe(o);
-      return [qui, 'が ', ICHIBAN, ' ', q.demande === 'long' ? NAGA : MIJIKA, 'いね。'];
-    }
-    if (q.type === 'tehon') return ['これが ', TEHON, 'と ', ONAJI, 'じ ', NAGA, 'さだね。'];
-    return phraseDe(q, q.bonne);
+    const longueurs = [];
+    q.objets.forEach((o, i) => {
+      longueurs.push(reference(q, i), 'は ', segCm(o.cm), i < q.objets.length - 1 ? '、 ' : '。 ');
+    });
+    const debut = q.type === 'libre' ? ['はしを そろえると、 ', ...longueurs] : longueurs;
+    if (q.type === 'phrase') return [...debut, 'だから ', ...phraseDe(q, q.bonne)];
+    if (q.type === 'trio') return [...debut, ICHIBAN, ' ', plus, 'いのは ', reference(q, q.bonne), 'だね。'];
+    const ecart = Math.abs(q.objets[0].cm - q.objets[1].cm);
+    return [...debut, reference(q, q.bonne), 'の ほうが ', segCm(ecart), ' ', plus, 'いね。'];
   }
 
   function afficherQuestion() {
@@ -720,6 +742,11 @@
 
   function parlerConsigne() {
     const q = courante();
+    // Une fois la question résolue, 🔊 fait réécouter l'explication.
+    if (q.resolu && q.messageFinal) {
+      parler(q.messageFinal);
+      return;
+    }
     if (q.type === 'phrase') parler([...phraseDe(q), '…… ', ...PHRASES.nagaiMijikai]);
     else if (q.type === 'nombre') parler([segValeur(q.valeurs[0]), 'と ', segValeur(q.valeurs[1]), '、 ', ...consigneDe(q)]);
     else parler(consigneDe(q));
@@ -786,7 +813,8 @@
     if (q.type === 'libre') {
       rendreLibre(q, etabli);
       etabli.append(zoneReperes);
-      if (q.indices && q.aligne) afficherReperesLibre();
+      if (q.aligne && q.preuve) afficherPreuve();
+      else if (q.indices && q.aligne) afficherReperesLibre();
       majBoutonAide();
       return;
     }
@@ -814,7 +842,8 @@
       });
       etabli.append(zoneReperes);
       if (barres) dimensionner();
-      if (q.indices && barres) afficherReperes();
+      if (q.preuve) afficherPreuve();
+      else if (q.indices && barres) afficherReperes();
       majBoutonAide();
       return;
     }
@@ -849,8 +878,107 @@
     dimensionner();
 
     if (q.type === 'phrase') rendrePhrase();
-    if (q.indices) afficherReperes();
+    if (q.preuve) afficherPreuve();
+    else if (q.indices) afficherReperes();
     majBoutonAide();
+  }
+
+  /* ----- Preuve après une bonne réponse : longueurs, règle, partie qui dépasse ----- */
+
+  let echelle = null;   // { ppc } : pixels par centimètre de la question affichée
+  const reserveRegle = () => (window.innerHeight < 520 ? 40 : 50);
+
+  // Graduations lisibles : un nombre tous les 34 px au moins, un trait tous les 6 px au moins.
+  function pasRegle(ppc) {
+    const etiquette = [1, 2, 5, 10, 20, 50, 100].find((p) => p * ppc >= 34) || 100;
+    const trait = [1, 2, 5, 10, 20, 50].find((p) => p * ppc >= 6 && etiquette % p === 0) || etiquette;
+    return { etiquette, trait };
+  }
+
+  function dessinerRegle(etabli, x0, ppc, cmMax, avecMetres) {
+    const { etiquette, trait } = pasRegle(ppc);
+    const place = etabli.clientWidth - x0 - 40;
+    const cmFin = Math.max(trait, Math.min(Math.floor(place / ppc / trait) * trait, Math.ceil((cmMax * 1.05) / trait) * trait));
+    const hauteur = avecMetres ? 44 : 32;
+    let traits = '';
+    for (let c = 0; c <= cmFin; c += trait) {
+      const x = c * ppc;
+      const grand = c % etiquette === 0;
+      traits += `<line x1="${x}" y1="0" x2="${x}" y2="${grand ? 12 : 6}"/>`;
+      if (grand) traits += `<text x="${x}" y="26">${c}</text>`;
+      if (avecMetres && c > 0 && c % 100 === 0) traits += `<text class="m" x="${x}" y="41">${c / 100}\u00a0m</text>`;
+    }
+    const largeur = cmFin * ppc;
+    const regle = document.createElement('div');
+    regle.className = 'regle preuve';
+    regle.style.left = `${x0}px`;
+    regle.style.width = `${largeur}px`;
+    regle.innerHTML = `<svg width="${largeur}" height="${hauteur}" aria-hidden="true">${traits}`
+      + `<text class="unite" x="${largeur + 10}" y="26">cm</text></svg>`;
+    etabli.append(regle);
+  }
+
+  // La partie de l'objet le plus long qui dépasse, avec l'écart en cm.
+  function dessinerEcart(etabli, xCourt, xLong, top, hauteur, ecart) {
+    if (xLong - xCourt < 2) return;
+    const zone = document.createElement('div');
+    zone.className = 'ecart preuve';
+    zone.style.left = `${xCourt}px`;
+    zone.style.width = `${xLong - xCourt}px`;
+    zone.style.top = `${top}px`;
+    zone.style.height = `${hauteur}px`;
+    const texte = document.createElement('span');
+    texte.textContent = `${cmTexte(ecart)}\u00a0cm`;
+    zone.append(texte);
+    etabli.append(zone);
+  }
+
+  function afficherPreuve() {
+    const q = courante();
+    const etabli = $('etabli');
+    etabli.querySelectorAll('.preuve').forEach((e) => e.remove());
+
+    if (q.type === 'libre') {
+      if (!geometrie || !libres.length) return;
+      const { offsetX, ppc } = geometrie;
+      afficherReperesLibre();
+      dessinerRegle(etabli, offsetX, ppc, Math.max(...q.objets.map((o) => o.cm)), false);
+      libres.forEach((item) => {
+        const mesure = document.createElement('span');
+        mesure.className = 'mesure-libre preuve';
+        mesure.textContent = `${cmTexte(item.objet.cm)}\u00a0cm`;
+        mesure.style.left = `${offsetX}px`;
+        mesure.style.top = `${parseFloat(item.el.style.top) - 32}px`;
+        etabli.append(mesure);
+      });
+      const [a, b] = libres;
+      const longue = a.objet.cm >= b.objet.cm ? a : b;
+      const courte = longue === a ? b : a;
+      dessinerEcart(etabli, courte.finX, longue.finX, parseFloat(longue.el.style.top) - 6, longue.h + 12, longue.objet.cm - courte.objet.cm);
+      return;
+    }
+
+    const visibles = lignes.filter((l) => !l.piste.hidden);
+    if (!visibles.length || !echelle) return;
+    if (q.type !== 'nombre') {
+      visibles.forEach((l) => {
+        const mesure = document.createElement('span');
+        mesure.className = 'mesure preuve';
+        mesure.textContent = `${cmTexte(l.objet.cm)}\u00a0cm`;
+        l.etiq.append(mesure);
+      });
+    }
+    afficherReperes();
+    const base = etabli.getBoundingClientRect();
+    const x0 = visibles[0].piste.getBoundingClientRect().left - base.left + 7;
+    dessinerRegle(etabli, x0, echelle.ppc, Math.max(...visibles.map((l) => l.objet.cm)), q.type === 'nombre' && q.mixte);
+    if (['paire', 'phrase', 'nombre'].includes(q.type) && visibles.length === 2) {
+      const [a, b] = visibles;
+      const longue = a.objet.cm >= b.objet.cm ? a : b;
+      const courte = longue === a ? b : a;
+      const r = longue.forme.getBoundingClientRect();
+      dessinerEcart(etabli, x0 + courte.largeur, x0 + longue.largeur, r.top - base.top - 6, r.height + 12, longue.objet.cm - courte.objet.cm);
+    }
   }
 
   /* ----- Objets décalés ou penchés (activités 8 et 9) ----- */
@@ -862,7 +990,7 @@
     etabli.classList.add('libre');
     const marge = 16;
     const W = etabli.clientWidth - 2 * marge;
-    const H = etabli.clientHeight - 2 * marge;
+    const H = etabli.clientHeight - 2 * marge - reserveRegle();
     const couloir = H / q.objets.length;
     const grossir = window.innerWidth >= 700 && window.innerHeight >= 520 ? 1.45 : 1;
     let ppc = W / q.espaceCm;
@@ -940,7 +1068,9 @@
     $('depart-libre').hidden = false;
     majBoutonAide();
     setTimeout(() => {
-      if (courante() === q && q.indices && ecranActuel === 'question') afficherReperesLibre();
+      if (courante() !== q || ecranActuel !== 'question') return;
+      if (q.preuve) afficherPreuve();
+      else if (q.indices) afficherReperesLibre();
     }, animationsReduites() ? 0 : 850);
   }
 
@@ -1013,6 +1143,7 @@
     objets.filter((o) => o.type === 'photo').forEach((o) => {
       ppc = Math.min(ppc, hauteurMax / (o.cm * (o.h / o.w)));
     });
+    echelle = { ppc };
     lignes.forEach((l) => {
       const o = l.objet;
       const largeur = Math.max(8, o.cm * ppc);
@@ -1072,16 +1203,24 @@
 
     if (reponse === q.bonne) {
       q.resolu = true;
+      q.preuve = true;
       sons.succes();
       const message = [...PHRASES.seikai, ...explication(q)];
+      q.messageFinal = message;
       $('retour').innerHTML = htmlMots(message);
       $('retour').classList.add('ok');
       parler(message);
+      // Même trouvé du premier coup, on montre pourquoi c'est juste.
+      if (q.type === 'nombre' && q.aide < q.aideMax) {
+        q.aide = q.aideMax;
+        rendreQuestion();
+      }
       rendreApresReponse();
       if (q.type === 'libre') {
-        // Une fois trouvé, on aligne quand même : il voit pourquoi c'était le bon.
         q.indices = true;
-        if (q.aligne) afficherReperesLibre(); else aligner();
+        if (q.aligne) afficherPreuve(); else aligner();
+      } else {
+        afficherPreuve();
       }
       majBoutonAide();
       $('btn-suivant').hidden = false;
@@ -1162,6 +1301,22 @@
   activable($('btn-menu'), () => { rendreAccueil(); montrer('accueil'); });
 
   let minuteurRedim = 0;
+
+  // Quand la zone des objets change de taille (l'explication apparaît dessous, rotation de l'écran…),
+  // on recalcule la place des objets, de la règle et des repères.
+  let tailleEtabli = '';
+  if ('ResizeObserver' in window) {
+    new ResizeObserver(() => {
+      const etabli = $('etabli');
+      const taille = `${etabli.clientWidth}x${etabli.clientHeight}`;
+      if (taille === tailleEtabli) return;
+      tailleEtabli = taille;
+      if (ecranActuel !== 'question' || !session) return;
+      clearTimeout(minuteurRedim);
+      minuteurRedim = setTimeout(rendreQuestion, 60);
+    }).observe($('etabli'));
+  }
+
   window.addEventListener('resize', () => {
     clearTimeout(minuteurRedim);
     minuteurRedim = setTimeout(() => {

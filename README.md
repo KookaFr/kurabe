@@ -20,6 +20,8 @@ Pour les activités 6 et 7, le bouton « ヒント » convertit d'abord dans la 
 
 Les objets sont alignés sur une ligne de départ et affichés à l'échelle. En cas d'erreur, il n'y a pas de pénalité : des repères montrent le bout de chaque objet, et l'élève réessaie. La dernière question de chaque série est facile, pour finir sur une réussite.
 
+Après chaque bonne réponse, même trouvée du premier coup, l'application montre pourquoi c'est juste : une règle graduée apparaît sous les objets, la longueur de chaque objet s'affiche, la partie qui dépasse est surlignée avec l'écart en cm, et la voix explique (« うえは 15センチ、したは 8センチ。うえの ほうが 7センチ ながいね。 »). Le bouton 🔊 permet de réécouter l'explication.
+
 ## おうちの人へ / Pour les parents
 
 Appuyez 2 secondes sur « おうちの人 » pour ouvrir les réglages, en japonais ou en français. Vous pourrez y ajouter des photos d'objets de la maison, qui seront affichés à leur vraie longueur, et y choisir les activités, l'écriture (hiragana, ou kanji avec furigana) et la sensibilité au toucher.

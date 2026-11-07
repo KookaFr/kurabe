@@ -544,12 +544,16 @@ button.ligne { cursor: pointer; }
 }
 
 .ecart {
+  --c-ecart: var(--action);
   position: absolute;
-  border: 2px dashed var(--action);
+  border: 2px dashed var(--c-ecart);
   border-radius: 6px;
-  background: color-mix(in srgb, var(--action) 16%, transparent);
+  background: color-mix(in srgb, var(--c-ecart) 16%, transparent);
   pointer-events: none;
 }
+
+.ecart.ecart-plus { --c-ecart: var(--o3); }
+.ecart.ecart-moins { --c-ecart: var(--o4); }
 
 .ecart span {
   position: absolute;
@@ -558,8 +562,8 @@ button.ligne { cursor: pointer; }
   transform: translate(-50%, -4px);
   padding: 1px 10px;
   border-radius: 999px;
-  background: var(--action);
-  color: var(--action-texte);
+  background: var(--c-ecart);
+  color: var(--surface);
   font-size: .95rem;
   font-weight: 700;
   white-space: nowrap;
@@ -606,9 +610,26 @@ button.ligne { cursor: pointer; }
   font-variant-numeric: tabular-nums;
 }
 
-.equation .inconnu { color: var(--action); }
-.equation .resultat { color: var(--bon); }
-.equation .delta { color: var(--action); font-size: .7em; }
+/* Code couleur de l'opération (le même que sur le ruban) */
+.terme-base { color: var(--o2); }
+.terme-plus { color: var(--o3); }
+.terme-moins { color: var(--o4); }
+
+/* Le résultat a la même forme que la bulle au bout du ruban : c'est le même nombre. */
+.equation .resultat {
+  display: inline-block;
+  min-width: 1.6em;
+  padding: 0 .3em;
+  border-radius: .4em;
+  background: var(--encre);
+  color: var(--papier);
+}
+
+.equation .resultat.inconnu {
+  border: 3px dashed var(--encre-douce);
+  background: transparent;
+  color: var(--encre-douce);
+}
 
 .zone-etude { display: block; touch-action: none; cursor: ew-resize; }
 
@@ -619,7 +640,7 @@ button.ligne { cursor: pointer; }
 .ruban-base { background: var(--o2); }
 .ruban-ajout { background: var(--o3); }
 .ruban-ajout.trop { background: var(--o5); }
-.ruban-retire { border: 2px dashed var(--o2); background: transparent; }
+.ruban-retire { border: 2px dashed var(--o4); background: transparent; }
 .ruban-retire.trop { border-color: var(--o5); }
 .bloc-cm { box-shadow: inset -2px 0 0 var(--surface); }
 .ruban-retire.bloc-cm { box-shadow: none; }
@@ -638,6 +659,9 @@ button.ligne { cursor: pointer; }
 }
 
 .numero-bloc { left: 0; right: 0; text-align: center; }
+.ruban-ajout .numero-bloc, .ruban-ajout .compte-segment { color: var(--o3); }
+.ruban-retire .numero-bloc, .ruban-retire .compte-segment { color: var(--o4); }
+.trop .numero-bloc { color: var(--o5); }
 .compte-segment { left: 50%; transform: translateX(-50%); font-size: 1rem; }
 
 .poignee-etude {
@@ -659,9 +683,9 @@ button.ligne { cursor: pointer; }
 .bulle-etude {
   position: absolute;
   padding: 2px 14px;
-  border-radius: 999px;
-  background: var(--action);
-  color: var(--action-texte);
+  border-radius: .4em;
+  background: var(--encre);
+  color: var(--papier);
   font-size: 1.6rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;

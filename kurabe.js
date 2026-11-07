@@ -653,8 +653,8 @@
       contenu += `<text x="150" y="18" style="fill:var(--o3);font-size:18px;font-weight:700">＋5</text>`;
     } else if (barres === 'etude-moins') {
       contenu += `<rect x="10" y="26" width="140" height="18" rx="3" style="fill:var(--o2)"/>`;
-      for (let k = 0; k < 4; k++) contenu += `<rect x="${152 + k * 22}" y="27" width="19" height="16" rx="2" style="fill:none;stroke:var(--o2);stroke-width:2;stroke-dasharray:4 3"/>`;
-      contenu += `<text x="170" y="18" style="fill:var(--o2);font-size:18px;font-weight:700">−4</text>`;
+      for (let k = 0; k < 4; k++) contenu += `<rect x="${152 + k * 22}" y="27" width="19" height="16" rx="2" style="fill:none;stroke:var(--o4);stroke-width:2;stroke-dasharray:4 3"/>`;
+      contenu += `<text x="170" y="18" style="fill:var(--o4);font-size:18px;font-weight:700">−4</text>`;
     } else if (barres === 'tehon') {
       contenu += `<rect x="${x0}" y="4" width="${L * 0.66}" height="14" rx="3" style="fill:none;stroke:var(--encre-douce);stroke-width:2.5;stroke-dasharray:6 4"/>`;
       contenu += `<rect x="${x0}" y="27" width="${L * 0.66}" height="12" rx="3" style="fill:var(--o3)"/>`;
@@ -981,10 +981,10 @@
   }
 
   // La partie de l'objet le plus long qui dépasse, avec l'écart en cm.
-  function dessinerEcart(etabli, xCourt, xLong, top, hauteur, ecart, libelle) {
+  function dessinerEcart(etabli, xCourt, xLong, top, hauteur, ecart, libelle, variante) {
     if (xLong - xCourt < 2) return;
     const zone = document.createElement('div');
-    zone.className = 'ecart preuve';
+    zone.className = `ecart preuve${variante ? ` ${variante}` : ''}`;
     zone.style.left = `${xCourt}px`;
     zone.style.width = `${xLong - xCourt}px`;
     zone.style.top = `${top}px`;
@@ -1423,15 +1423,26 @@
     return [String(e.base), op, String(e.pas), ' は いくつ？ ', ...geste];
   }
 
+  // Code couleur, le même partout : 1er nombre et ruban de départ en bleu, « ＋ n » et les blocs
+  // ajoutés en vert, « − n » et les blocs retirés en violet, le résultat en pastille comme la bulle.
   function equationEtude() {
     const e = etude;
     if (e.mode === 'libre') {
       const d = e.valeur - e.depart;
-      const delta = d ? `<span class="delta">（${d > 0 ? '＋' : '−'}${Math.abs(d)}）</span>` : '';
-      return `${e.depart} → ${e.valeur}${delta}`;
+      const delta = d ? ` <span class="${d > 0 ? 'terme-plus' : 'terme-moins'}">${d > 0 ? '＋' : '−'}${Math.abs(d)}</span>` : '';
+      return `<span class="terme-base">${e.depart}</span>${delta} → <span class="resultat">${e.valeur}</span>`;
     }
-    const resultat = e.resolu ? `<span class="resultat">${e.cible}</span>` : '<span class="inconnu">？</span>';
-    return `${e.base} ${e.mode === 'plus' ? '＋' : '−'} ${e.pas} ＝ ${resultat}`;
+    const resultat = e.resolu ? `<span class="resultat">${e.cible}</span>` : '<span class="resultat inconnu">？</span>';
+    const terme = e.mode === 'plus' ? `<span class="terme-plus">＋ ${e.pas}</span>` : `<span class="terme-moins">− ${e.pas}</span>`;
+    return `<span class="terme-base">${e.base}</span> ${terme} ＝ ${resultat}`;
+  }
+
+  // La consigne, avec le nombre à ajouter ou à retirer dans sa couleur.
+  function consigneEtudeHtml() {
+    const e = etude;
+    if (e.mode === 'libre') return htmlMots(consigneEtude(false));
+    const [debut, fin, classe] = e.mode === 'plus' ? ['みぎに', 'のばそう。', 'terme-plus'] : ['ひだりに', 'もどそう。', 'terme-moins'];
+    return `<span class="mot">${debut}</span> <span class="mot ${classe}">${e.pas}</span> <span class="mot">${fin}</span>`;
   }
 
   function rendreEtude() {
@@ -1440,7 +1451,7 @@
     const activite = ACTIVITES.find((a) => a.etude === e.mode);
     const compte = e.mode === 'libre' ? '' : `<small>${e.index + 1} / ${e.total}</small>`;
     $('etude-titre').innerHTML = html(activite.titre) + compte;
-    $('etude-consigne').innerHTML = htmlMots(consigneEtude(false));
+    $('etude-consigne').innerHTML = consigneEtudeHtml();
     const plan = $('etude-plan');
     plan.replaceChildren();
     const max = Number(reglages.nombreMax) || 20;
@@ -1508,6 +1519,7 @@
         const zone = segment(de, a, 'zone-compte');
         const total = document.createElement('span');
         total.className = 'compte-segment';
+        total.style.color = signe === '＋' ? 'var(--o3)' : 'var(--o4)';
         total.textContent = `${signe}${a - de}`;
         zone.append(total);
       }
@@ -1540,7 +1552,8 @@
     if (e.resolu) {
       const debut = Math.min(e.base, e.cible);
       const fin = Math.max(e.base, e.cible);
-      dessinerEcart(couche, x0 + debut * ppc, x0 + fin * ppc, y - haut / 2 - 6, haut + 12, e.pas, `${e.mode === 'plus' ? '＋' : '−'}${e.pas}`);
+      dessinerEcart(couche, x0 + debut * ppc, x0 + fin * ppc, y - haut / 2 - 6, haut + 12, e.pas,
+        `${e.mode === 'plus' ? '＋' : '−'}${e.pas}`, e.mode === 'plus' ? 'ecart-plus' : 'ecart-moins');
     }
 
     $('etude-valeur').textContent = String(e.valeur);

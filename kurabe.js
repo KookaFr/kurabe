@@ -46,7 +46,7 @@
     dureeAppui: 0,          // ms : le doigt doit rester posé ce temps
     antiRebond: 0,          // ms : touchers suivants ignorés
     aide: true,             // bouton « ヒント » / « そろえる »
-    nombreMax: 20,          // べんきょう : nombres jusqu'à 10, 20, 50 ou 100
+    nombreMax: 20,          // べんきょう : nombres jusqu'à 10, 20, 50, 100 ou 1000
     compter: true,          // べんきょう : la voix compte à chaque ＋1 / −1
     version: 3,
     langue: (navigator.language || '').toLowerCase().startsWith('ja') ? 'ja' : 'fr',
@@ -952,8 +952,8 @@
 
   // Graduations lisibles : un nombre tous les 34 px au moins, un trait tous les 6 px au moins.
   function pasRegle(ppc) {
-    const etiquette = [1, 2, 5, 10, 20, 50, 100].find((p) => p * ppc >= 34) || 100;
-    const trait = [1, 2, 5, 10, 20, 50].find((p) => p * ppc >= 6 && etiquette % p === 0) || etiquette;
+    const etiquette = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000].find((p) => p * ppc >= 34) || 1000;
+    const trait = [1, 2, 5, 10, 20, 50, 100, 200].find((p) => p * ppc >= 6 && etiquette % p === 0) || etiquette;
     return { etiquette, trait };
   }
 
@@ -976,7 +976,7 @@
     regle.style.left = `${x0}px`;
     regle.style.width = `${largeur}px`;
     regle.innerHTML = `<svg width="${largeur}" height="${hauteur}" aria-hidden="true">${traits}`
-      + `<text class="unite" x="${largeur + 10}" y="26">cm</text></svg>`;
+      + `<text class="unite" x="${largeur + 4 + String(cmFin).length * 3.5}" y="26">cm</text></svg>`;
     etabli.append(regle);
   }
 
@@ -1377,25 +1377,30 @@
 
   function demarrerEtude(mode) {
     etude = { mode, index: 0, total: Number(reglages.nbQuestions) || 6 };
+    $('ecran-etude').classList.toggle('mode-libre', mode === 'libre');
     montrer('etude');
+    rendreChoixMax();
     nouveauProbleme();
   }
 
   function nouveauProbleme() {
     const e = etude;
     const max = Number(reglages.nombreMax) || 20;
+    const { petit } = pasBoutons();   // 1, ou 10 jusqu'à 1000 (nombres ronds en dizaines)
     e.resolu = false;
+    // Jusqu'à 20, le 2e nombre reste un chiffre ; au-delà, il va jusqu'à la moitié de la limite.
+    const pasMax = Math.floor((max <= 20 ? Math.min(9, max - 1) : max / 2) / petit);
     if (e.mode === 'libre') {
-      e.base = Math.round(max / 2);
+      e.base = Math.round(max / 2 / petit) * petit;
       e.pas = null;
       e.cible = null;
     } else if (e.mode === 'plus') {
-      e.pas = entier(1, Math.min(9, max - 1));
-      e.base = entier(1, max - e.pas);
+      e.pas = entier(1, pasMax) * petit;
+      e.base = entier(1, Math.floor((max - e.pas) / petit)) * petit;
       e.cible = e.base + e.pas;
     } else {
-      e.pas = entier(1, Math.min(9, max - 1));
-      e.base = entier(e.pas + 1, max);
+      e.pas = entier(1, pasMax) * petit;
+      e.base = entier(e.pas / petit + 1, Math.floor(max / petit)) * petit;
       e.cible = e.base - e.pas;
     }
     e.valeur = e.base;
@@ -1405,6 +1410,36 @@
     $('etude-suivant').hidden = true;
     rendreEtude();
     parler(consigneEtude(true));
+  }
+
+  // Pas des boutons et du glisser : ±1 et ±10, ou ±10 et ±100 quand on va jusqu'à 1000.
+  function pasBoutons() {
+    const max = Number(reglages.nombreMax) || 20;
+    return { petit: max >= 1000 ? 10 : 1, grand: max >= 1000 ? 100 : 10, avecGrand: max >= 50 };
+  }
+
+  const LIMITES = [10, 20, 50, 100, 1000];
+
+  // Choix de la limite directement dans l'écran べんきょう.
+  function rendreChoixMax() {
+    const zone = $('choix-max');
+    zone.replaceChildren();
+    const etiquette = document.createElement('span');
+    etiquette.textContent = 'かず：';
+    zone.append(etiquette);
+    LIMITES.forEach((v) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = `〜${v}`;
+      b.setAttribute('aria-pressed', String(Number(reglages.nombreMax) === v));
+      activable(b, () => {
+        if (Number(reglages.nombreMax) === v) return;
+        ecrireReglages({ nombreMax: v });
+        rendreChoixMax();
+        nouveauProbleme();
+      });
+      zone.append(b);
+    });
   }
 
   function bornesEtude() {
@@ -1456,7 +1491,7 @@
     plan.replaceChildren();
     const max = Number(reglages.nombreMax) || 20;
     const x0 = 27;
-    const ppc = Math.max(1, (plan.clientWidth - x0 - 50) / max);
+    const ppc = Math.max(0.1, (plan.clientWidth - x0 - 50) / max);
     e.geo = { x0, ppc };
     dessinerRegle(plan, x0, ppc, max, false);
     plan.querySelector('.regle')?.classList.remove('preuve');
@@ -1484,8 +1519,17 @@
     ));
     e.geo.y = y;
     e.geo.haut = haut;
-    const blocsVisibles = ppc >= 8;   // assez large pour voir chaque centimètre
-    const numeros = ppc >= 16;        // assez large pour écrire 1, 2, 3… sous chaque bloc
+    // Taille d'un bloc : jusqu'à 20, des blocs de 1 (s'ils sont assez larges pour être numérotés) ;
+    // au-delà, des paquets de 10 (la « dizaine » des manuels), ou de 100 quand 10 serait trop étroit.
+    const limite = Number(reglages.nombreMax) || 20;
+    const grain = limite <= 20 ? (ppc >= 16 ? 1 : 10) : ([10, 100].find((g) => g * ppc >= 18) || 100);
+    const numeros = grain * ppc >= 18;
+    // Dans un paquet, les unités (ou les dizaines) restent visibles par de fines lignes, comme
+    // une réglette de 10 : on voit à la fois le paquet et ce qu'il contient.
+    const sousUnite = [1, 10].filter((u) => u < grain && u * ppc >= 5).pop();
+    // Quand les numéros sont plus larges que les paquets (1000 sur un petit téléphone), on n'écrit
+    // que le dernier de chaque couleur, souligné : la règle juste en dessous donne les autres.
+    const saut = grain * ppc >= String(limite).length * 8 + 4 ? 1 : 2;
 
     const segment = (de, a, classe) => {
       if (a <= de) return null;
@@ -1495,45 +1539,21 @@
       el.style.width = `${(a - de) * ppc}px`;
       el.style.top = `${y - haut / 2}px`;
       el.style.height = `${haut}px`;
+      if (sousUnite && classe.includes('bloc-cm')) el.style.setProperty('--sous', `${sousUnite * ppc}px`);
       couche.append(el);
       return el;
     };
 
-    // Des blocs d'1 cm, numérotés 1, 2, 3… pour compter le départ, ce qu'on ajoute ou ce qu'on enlève.
-    // Le plus grand numéro de chaque couleur est souligné : c'est le nombre de l'opération.
-    const COULEURS_COMPTE = { '': 'var(--o2)', '＋': 'var(--o3)', '−': 'var(--o4)' };
-    const blocs = (de, a, classeDe, numero, signe) => {
-      if (a <= de) return;
-      if (!blocsVisibles) {
-        const el = segment(de, a, classeDe(de));
-        const total = document.createElement('span');
-        total.className = 'compte-segment';
-        total.textContent = `${signe}${a - de}`;
-        el.append(total);
-        return;
-      }
-      for (let i = de; i < a; i++) {
-        const el = segment(i, i + 1, `${classeDe(i)} bloc-cm`);
-        if (numeros) {
-          const n = document.createElement('span');
-          n.className = 'numero-bloc';
-          n.textContent = numero(i);
-          if (n.textContent === String(a - de)) n.classList.add('numero-fin');
-          el.append(n);
-        }
-      }
-      if (!numeros) {
-        // Blocs trop étroits pour être numérotés : on écrit le total sous l'ensemble.
-        const zone = segment(de, a, 'zone-compte');
-        const total = document.createElement('span');
-        total.className = 'compte-segment';
-        total.style.color = COULEURS_COMPTE[signe];
-        total.textContent = `${signe}${a - de}`;
-        zone.append(total);
-      }
+    // Découpe [de, a) en paquets de « grain », depuis le début ou depuis la fin. Un paquet à cheval
+    // sur « coupe » (la cible) est coupé en deux : la partie en trop change de couleur.
+    const paquets = (de, a, depuisFin, coupe) => {
+      const liste = [];
+      if (a <= de) return liste;
+      if (depuisFin) for (let q = a; q > de; q -= grain) liste.push([Math.max(de, q - grain), q]);
+      else for (let p = de; p < a; p += grain) liste.push([p, Math.min(a, p + grain)]);
+      if (coupe === undefined || coupe <= de || coupe >= a) return liste;
+      return liste.flatMap(([p, q]) => (p < coupe && q > coupe ? [[p, coupe], [coupe, q]] : [[p, q]]));
     };
-
-    const depart = (jusque) => blocs(0, jusque, () => 'ruban-base', (i) => String(i + 1), '');
 
     const ecrire = (el, texte, classe, souligne) => {
       const n = document.createElement('span');
@@ -1543,41 +1563,87 @@
       el.append(n);
     };
 
+    // Numéro écrit sous le ruban, centré sous un paquet. Le plus grand numéro d'une couleur est
+    // souligné : c'est le nombre de l'opération.
+    const sous = (p, q, texte, couleur, souligne) => {
+      const n = document.createElement('span');
+      n.className = `numero-sous${grain * ppc < 40 ? ' petit' : ''}${souligne ? ' numero-fin' : ''}`;
+      n.style.left = `${x0 + ((p + q) / 2) * ppc}px`;
+      n.style.top = `${y + haut / 2 + 4}px`;
+      n.style.color = couleur;
+      n.textContent = texte;
+      couche.append(n);
+    };
+
+    // Départ (bleu) ou partie ajoutée (vert) : comptés 1, 2, 3… ou 10, 20, 30… depuis leur début.
+    const ecrit = (k, n) => k === n - 1 || saut === 1;
+    const blocs = (de, a, classeDe, couleur, signe, coupe) => {
+      const liste = paquets(de, a, false, coupe);
+      liste.forEach(([p, q], k) => {
+        const classe = classeDe(p);
+        segment(p, q, `${classe} bloc-cm`);
+        if (numeros && ecrit(k, liste.length)) sous(p, q, String(q - de), classe.includes('trop') ? 'var(--o5)' : couleur, q === a);
+      });
+      if (!numeros && a > de) sous(de, a, `${signe}${a - de}`, couleur, false);
+    };
+
+    const depart = (jusque) => blocs(0, jusque, () => 'ruban-base', 'var(--o2)', '');
+
     // Soustraction : le 1er nombre reste compté en bleu sous tout le ruban de départ (pointillés
     // compris), et les blocs retirés portent leur numéro violet à l'intérieur, depuis le bout.
     // Ce qui reste est donné par la bulle et le résultat.
-    const retrait = (reste, total, classeDe) => {
+    const retrait = (reste, total, classeDe, coupe) => {
       const retires = total - reste;
-      if (blocsVisibles) {
-        for (let i = 0; i < total; i++) {
-          const retire = i >= reste;
-          const el = segment(i, i + 1, retire ? `${classeDe(i)} bloc-cm` : 'ruban-base bloc-cm');
-          if (!numeros) continue;
-          ecrire(el, String(i + 1), 'numero-bloc numero-bleu', i + 1 === total);
-          if (retire) ecrire(el, String(total - i), 'numero-dedans', total - i === retires);
+      paquets(0, reste, false).forEach(([p, q]) => segment(p, q, 'ruban-base bloc-cm'));
+      const retireListe = paquets(reste, total, true, coupe);
+      retireListe.forEach(([p, q], k) => {
+        const el = segment(p, q, `${classeDe(p)} bloc-cm`);
+        if (numeros && ecrit(k, retireListe.length)) {
+          ecrire(el, String(total - p), `numero-dedans${grain * ppc < 40 ? ' petit' : ''}`, total - p === retires);
         }
+      });
+      if (numeros) {
+        const tout = paquets(0, total, false);
+        tout.forEach(([p, q], k) => { if (ecrit(k, tout.length)) sous(p, q, String(q), 'var(--o2)', q === total); });
       } else {
-        segment(0, reste, 'ruban-base');
-        segment(reste, total, classeDe(reste));
-      }
-      if (!numeros) {
-        const tout = segment(0, total, 'zone-compte');
-        ecrire(tout, String(total), 'compte-segment numero-bleu');
+        sous(0, total, String(total), 'var(--o2)', false);
         if (retires > 0) ecrire(segment(reste, total, 'zone-compte'), `−${retires}`, 'numero-dedans');
       }
     };
 
     if (e.mode === 'plus') {
       depart(e.base);
-      blocs(e.base, e.valeur, (i) => (i >= e.cible ? 'ruban-ajout trop' : 'ruban-ajout'), (i) => String(i - e.base + 1), '＋');
+      blocs(e.base, e.valeur, (p) => (p >= e.cible ? 'ruban-ajout trop' : 'ruban-ajout'), 'var(--o3)', '＋', e.cible);
     } else if (e.mode === 'moins') {
-      retrait(e.valeur, e.base, (i) => (i < e.cible ? 'ruban-retire trop' : 'ruban-retire'));
+      retrait(e.valeur, e.base, (p) => (p < e.cible ? 'ruban-retire trop' : 'ruban-retire'), e.cible);
     } else if (e.valeur >= e.depart) {
       depart(e.depart);
-      blocs(e.depart, e.valeur, () => 'ruban-ajout', (i) => String(i - e.depart + 1), '＋');
+      blocs(e.depart, e.valeur, () => 'ruban-ajout', 'var(--o3)', '＋');
     } else {
       retrait(e.valeur, e.depart, () => 'ruban-retire');
     }
+
+    // Un paquet incomplet (350 = 3 centaines et 50) est étroit : son numéro pourrait toucher le
+    // suivant. Les numéros soulignés passent d'abord (décalés vers la droite s'ils se touchent),
+    // les autres s'effacent s'ils gênent.
+    const marge = 4;
+    const places = [];
+    const etiquettes = [...couche.querySelectorAll('.numero-sous')];
+    etiquettes.filter((n) => n.classList.contains('numero-fin')).forEach((n) => {
+      let r = n.getBoundingClientRect();
+      const avant = places.filter((g) => r.left < g.right + marge && r.right > g.left - marge);
+      if (avant.length) {
+        const decalage = Math.max(...avant.map((g) => g.right)) + marge - r.left;
+        n.style.left = `${parseFloat(n.style.left) + decalage}px`;
+        r = n.getBoundingClientRect();
+      }
+      places.push(r);
+    });
+    etiquettes.filter((n) => !n.classList.contains('numero-fin')).forEach((n) => {
+      const r = n.getBoundingClientRect();
+      if (places.some((g) => r.left < g.right + 2 && r.right > g.left - 2)) n.remove();
+      else places.push(r);
+    });
 
     const poignee = document.createElement('span');
     poignee.className = 'poignee-etude';
@@ -1622,8 +1688,22 @@
     $('etude-valeur').textContent = String(e.valeur);
     $('etude-equation').innerHTML = equationEtude();
     const [min, max] = bornesEtude();
+    const { petit, grand, avecGrand } = pasBoutons();
+    $('etude-moins').textContent = `−${petit}`;
+    $('etude-plus').textContent = `＋${petit}`;
+    $('etude-moins-grand').textContent = `−${grand}`;
+    $('etude-plus-grand').textContent = `＋${grand}`;
+    $('etude-moins').setAttribute('aria-label', petit === 1 ? 'ひとつ もどす' : `${petit} もどす`);
+    $('etude-plus').setAttribute('aria-label', petit === 1 ? 'ひとつ のばす' : `${petit} のばす`);
+    $('etude-moins-grand').setAttribute('aria-label', `${grand} もどす`);
+    $('etude-plus-grand').setAttribute('aria-label', `${grand} のばす`);
+    $('etude-moins-grand').hidden = !avecGrand;
+    $('etude-moins-grand').parentElement.classList.toggle('avec-grand', avecGrand);
+    $('etude-plus-grand').hidden = !avecGrand;
     $('etude-moins').disabled = e.resolu || e.valeur <= min;
     $('etude-plus').disabled = e.resolu || e.valeur >= max;
+    $('etude-moins-grand').disabled = e.resolu || e.valeur <= min;
+    $('etude-plus-grand').disabled = e.resolu || e.valeur >= max;
     $('etude-suivant').hidden = !e.resolu || e.mode === 'libre';
   }
 
@@ -1733,7 +1813,8 @@
     });
     plan.addEventListener('pointermove', (ev) => {
       if (!geste || ev.pointerId !== geste.id) return;
-      const pas = Math.round((ev.clientX - geste.x) / etude.geo.ppc);
+      const { petit } = pasBoutons();
+      const pas = Math.round((ev.clientX - geste.x) / etude.geo.ppc / petit) * petit;
       if (geste.cible === 'depart') changerDepart(geste.a + pas);
       else changerValeur(geste.v + pas, false);
     });
@@ -1751,12 +1832,14 @@
     plan.addEventListener('pointercancel', finGeste);
   })();
 
-  activable($('etude-plus'), () => {
-    if (etude && !etude.resolu && changerValeur(etude.valeur + 1, true)) verifierEtude(false);
-  });
-  activable($('etude-moins'), () => {
-    if (etude && !etude.resolu && changerValeur(etude.valeur - 1, true)) verifierEtude(false);
-  });
+  const bouger = (sens, quel) => {
+    if (!etude || etude.resolu) return;
+    if (changerValeur(etude.valeur + sens * pasBoutons()[quel], true)) verifierEtude(false);
+  };
+  activable($('etude-plus'), () => bouger(1, 'petit'));
+  activable($('etude-moins'), () => bouger(-1, 'petit'));
+  activable($('etude-plus-grand'), () => bouger(1, 'grand'));
+  activable($('etude-moins-grand'), () => bouger(-1, 'grand'));
   activable($('etude-ecouter'), () => parler(consigneEtude(true)), { garde: false });
   activable($('etude-quitter'), () => { rendreAccueil(); montrer('accueil'); });
   activable($('etude-suivant'), () => {
@@ -2087,7 +2170,7 @@
     aideAide.textContent = t('aideAide');
     bActivites.append(
       aideAide,
-      groupeChoix('nombreMax', t('nombreMax'), [[10, '10'], [20, '20'], [50, '50'], [100, '100']]),
+      groupeChoix('nombreMax', t('nombreMax'), [[10, '10'], [20, '20'], [50, '50'], [100, '100'], [1000, '1000']]),
       groupeChoix('compter', t('compter'), [[true, t('oui')], [false, t('non')]]),
     );
     const etudeAide = document.createElement('p');

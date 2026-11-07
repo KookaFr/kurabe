@@ -30,7 +30,13 @@ L'explication rappelle aussi la règle : « ながいのは かずが おおき�
 11. たしざん: par exemple 8 ＋ 5. On tire vers la droite ; chaque centimètre ajouté apparaît comme un bloc numéroté 1, 2, 3…, et l'égalité se complète.
 12. ひきざん: par exemple 12 − 4. On tire vers la gauche ; les blocs retirés restent visibles en pointillés, numérotés.
 
-On peut glisser le doigt n'importe où sur la zone, ou utiliser les gros boutons ＋1 / −1 (la voix compte à chaque appui). En cas de dépassement, l'application dit de combien revenir. La limite des nombres (10, 20, 50 ou 100) se règle dans l'espace parents.
+On peut glisser le doigt n'importe où sur la zone, ou utiliser les gros boutons ＋1 / −1 (la voix compte à chaque appui). En cas de dépassement, l'application dit de combien revenir.
+
+La limite des nombres (〜10, 〜20, 〜50, 〜100, 〜1000) se choisit en haut de l'écran べんきょう (et aussi dans l'espace parents). Au-delà de 20 :
+
+- les blocs sont groupés par dizaines (et par centaines pour 1000), avec les unités en fines lignes à l'intérieur, numérotés 10, 20, 30… ; le dernier numéro de chaque couleur, souligné, est le nombre de l'opération ;
+- les boutons ＋10 / −10 s'ajoutent (＋10 / ＋100 pour 1000, où l'on compte en dizaines) ;
+- le 2e nombre peut aller jusqu'à la moitié de la limite (37 ＋ 25, 480 ＋ 390…).
 
 ## おうちの人へ / Pour les parents
 

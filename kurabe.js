@@ -844,7 +844,8 @@
       jamais: 'Jamais',
       melange: 'Avec les dessins',
       toujours: 'Dès que possible',
-      ajouter: 'Ajouter une photo',
+      prendre: 'Prendre une photo',
+      galerie: 'Choisir dans la galerie',
       aucune: 'Aucune photo pour l’instant. Il en faut au moins deux pour qu’elles apparaissent dans les questions.',
       prive: 'Les photos restent sur cet appareil. Elles ne sont envoyées nulle part.',
       stockage: 'Ici, les photos ne pourront pas être gardées après fermeture de la page (stockage indisponible).',
@@ -902,7 +903,8 @@
       jamais: 'つかわない',
       melange: 'イラストと まぜる',
       toujours: 'できるだけ つかう',
-      ajouter: 'しゃしんを ついか',
+      prendre: 'しゃしんを とる',
+      galerie: 'アルバムから えらぶ',
       aucune: 'まだ しゃしんは ありません。もんだいに つかうには 2まい いじょう ひつようです。',
       prive: 'しゃしんは この きかいの 中だけに ほぞんされ、どこにも おくられません。',
       stockage: 'ここでは ページを とじると しゃしんが きえます（ほぞんできません）。',
@@ -1093,13 +1095,20 @@
       avert.textContent = t('stockage');
       bPhotos.append(avert);
     }
-    const ajouter = document.createElement('label');
-    ajouter.className = 'btn btn-principal';
-    ajouter.htmlFor = 'fichier-photo';
-    ajouter.tabIndex = 0;
-    ajouter.textContent = `＋ ${t('ajouter')}`;
-    ajouter.addEventListener('keydown', (ev) => {
-      if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); $('fichier-photo').click(); }
+    // Deux boutons : l'appareil photo, ou une photo déjà prise.
+    // (Sur Android, un seul bouton ouvre souvent la galerie sans proposer l'appareil photo.)
+    const ajouter = document.createElement('div');
+    ajouter.className = 'boutons-photo';
+    [['fichier-camera', t('prendre'), 'btn btn-principal'], ['fichier-photo', t('galerie'), 'btn']].forEach(([id, texte, classe]) => {
+      const bouton = document.createElement('label');
+      bouton.className = classe;
+      bouton.htmlFor = id;
+      bouton.tabIndex = 0;
+      bouton.textContent = texte;
+      bouton.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); $(id).click(); }
+      });
+      ajouter.append(bouton);
     });
     const prive = document.createElement('p');
     prive.textContent = t('prive');
@@ -1262,10 +1271,12 @@
     $('aide-cm').textContent = t('cmAide');
   }
 
-  $('fichier-photo').addEventListener('change', async (ev) => {
+  async function chargerPhoto(ev) {
     const fichier = ev.target.files && ev.target.files[0];
     ev.target.value = '';
     if (!fichier) return;
+    // « Autre photo » reprend la même source (appareil photo ou galerie).
+    $('btn-photo-autre').htmlFor = ev.target.id;
     try {
       const img = await chargerImage(fichier);
       const k = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
@@ -1290,7 +1301,10 @@
     $('champ-cm').value = '';
     montrer('photo');
     etapePhoto('recadrage');
-  });
+  }
+
+  $('fichier-photo').addEventListener('change', chargerPhoto);
+  $('fichier-camera').addEventListener('change', chargerPhoto);
 
   // Déplacer le cadre, tirer un coin, ou tracer un nouveau cadre.
   (() => {
@@ -1365,7 +1379,7 @@
   });
 
   $('btn-photo-autre').addEventListener('keydown', (ev) => {
-    if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); $('fichier-photo').click(); }
+    if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); $($('btn-photo-autre').htmlFor).click(); }
   });
 
   function recadrer() {

@@ -571,6 +571,8 @@ button.ligne { cursor: pointer; }
 .photo-ligne .infos span { color: var(--encre-douce); font-variant-numeric: tabular-nums; }
 .photo-ligne .actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 
+.boutons-photo { display: flex; flex-wrap: wrap; gap: 10px; }
+
 .avertissement { padding: 10px 14px; border-radius: 12px; background: var(--bon-fond); color: var(--encre); }
 
 /* ---------- Ajout d'une photo ---------- */

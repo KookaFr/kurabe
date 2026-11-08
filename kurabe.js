@@ -36,7 +36,7 @@
 
   const CLE_REGLAGES = 'kurabe.reglages';
   const DEFAUT = {
-    activites: Array.from({ length: 34 }, (_, i) => i + 1),
+    activites: Array.from({ length: 41 }, (_, i) => i + 1),
     theme: 'nagasa',        // onglet de l'accueil : ながさ | おもさ | かさ
     nbQuestions: 6,
     ecriture: 'hiragana',   // hiragana | kanji (avec furigana)
@@ -53,7 +53,7 @@
     lireUnites: true,       // la lecture des unités au-dessus des symboles (グラム sur g)
     toucherLire: true,      // toucher une phrase la fait lire ; bouton 👆 : lire les boutons au lieu de les activer
     volumeMax: 500,         // べんきょう かさ : verre doseur de 200, 500 ou 1000 mL
-    version: 6,
+    version: 7,
     langue: (navigator.language || '').toLowerCase().startsWith('ja') ? 'ja' : 'fr',
   };
 
@@ -79,7 +79,11 @@
       if (stocke.activites && (stocke.version || 1) < 6) {
         stocke.activites = [...new Set([...stocke.activites, 29, 30, 31, 32, 33, 34])];
       }
-      return { ...DEFAUT, ...stocke, version: 6 };
+      // Version 7 : l'onglet かず (35 à 41).
+      if (stocke.activites && (stocke.version || 1) < 7) {
+        stocke.activites = [...new Set([...stocke.activites, 35, 36, 37, 38, 39, 40, 41])];
+      }
+      return { ...DEFAUT, ...stocke, version: 7 };
     } catch {
       return { ...DEFAUT };
     }
@@ -171,6 +175,10 @@
   // Les trois onglets de l'accueil.
   const ICONE_TRAIT = 'fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"';
   const THEMES = [
+    {
+      cle: 'kazu', titre: ['かず'], sous: ['いくつ？ よめるかな？'],
+      icone: `<svg viewBox="0 0 32 32" ${ICONE_TRAIT} aria-hidden="true"><path d="M5 10l3-2v16M5 24h6M14 12a3.5 3.5 0 0 1 7 0c0 4-7 7-7 12h7M24 9h5l-3 5a4 4 0 1 1-3 6"/></svg>`,
+    },
     {
       cle: 'nagasa', titre: [NAGA, 'さ'], sous: [NAGA, 'い？ ', MIJIKA, 'い？'],
       icone: `<svg viewBox="0 0 32 32" ${ICONE_TRAIT} aria-hidden="true"><rect x="3" y="11" width="26" height="10" rx="2"/><path d="M8 11v4M13 11v3M18 11v4M23 11v3"/></svg>`,
@@ -534,6 +542,13 @@
     { n: 10, etude: 'libre', titre: ['のばして みよう'], sous: [SUJI, 'が かわるよ'], fr: 'べんきょう : étirer le ruban et voir les nombres changer', barres: 'etude-libre' },
     { n: 11, etude: 'plus', titre: ['たしざん'], sous: ['みぎに のばす（＋）'], fr: 'べんきょう : additionner en tirant vers la droite', barres: 'etude-plus' },
     { n: 12, etude: 'moins', titre: ['ひきざん'], sous: ['ひだりに もどす（−）'], fr: 'べんきょう : soustraire en tirant vers la gauche', barres: 'etude-moins' },
+    { n: 35, theme: 'kazu', titre: ['いくつ？'], sous: ['かぞえよう'], fr: 'Compter des objets (1 à 10), réponse en chiffres et en hiragana', barres: 'k-compter' },
+    { n: 36, theme: 'kazu', titre: ['よみかた'], sous: [SUJI, 'と ひらがな'], fr: 'Lire les nombres : chiffre → hiragana, hiragana → chiffre', barres: 'k-lire' },
+    { n: 37, theme: 'kazu', titre: ['10の まとまり'], sous: ['10ずつ かぞえる'], fr: 'Compter des jetons rangés par 10 (11 à 99)', barres: 'k-dizaines' },
+    { n: 38, theme: 'kazu', titre: ['どっちが ', OOKI, 'きい？'], sous: [SUJI, 'を くらべる'], fr: 'Comparer deux nombres (1 à 100)', barres: 'k-comparer' },
+    { n: 39, theme: 'kazu', etude: 'lecon-kazu1', titre: ['1から 10まで'], sous: ['いち、 に、 さん…'], fr: 'べんきょう : compter jusqu’à 10 avec le cadre de 10 (et la lecture en hiragana)', barres: 'k-lecon1' },
+    { n: 40, theme: 'kazu', etude: 'lecon-kazu2', titre: ['10より ', OOKI, 'きい かず'], sous: ['10の ぼうで 100まで'], fr: 'べんきょう : de 11 à 100 avec les barres de 10', barres: 'k-lecon2' },
+    { n: 41, theme: 'kazu', etude: 'lecon-kazu3', titre: ['100より ', OOKI, 'きい かず'], sous: ['ひゃく、 せん'], fr: 'べんきょう : les centaines jusqu’à 1000 (さんびゃく, ろっぴゃく…)', barres: 'k-lecon3' },
     { n: 32, groupe: 'culture', etude: 'lecon-corps', titre: ['からだで はかる'], sous: ['あた・ひろ'], fr: 'ね、しっていた？ Mesurer avec le corps (あた, ひろ), et pourquoi le cm', barres: 'lecon-corps' },
     { n: 33, groupe: 'culture', etude: 'lecon-shaku', titre: ['しゃくと すん'], sous: ['いっすんぼうしは なん cm？'], fr: 'ね、しっていた？ 尺 et 寸 : 1 寸 ≈ 3 cm, 1 尺 ≈ 30 cm', barres: 'lecon-shaku' },
     { n: 25, theme: 'omosa', titre: ['はりで くらべる'], sous: ['はかりの はりが たくさん まわった ほう'], fr: 'Balances de cuisine sans nombres : l’aiguille qui a le plus tourné', barres: 'hakari-simple' },
@@ -670,6 +685,7 @@
   const indexMin = (objets) => objets.reduce((m, o, i) => (o.cm < objets[m].cm ? i : m), 0);
 
   function genererQuestion(niveau, derniere, i = 0, n = 6) {
+    if (niveau >= 35 && niveau <= 38) return genererQuestionKazu(niveau, derniere, i, n);
     if (niveau >= 13) return genererQuestionMV(niveau, derniere, i, n);
     const base = { niveau, essais: new Set(), resolu: false, indices: false };
 
@@ -834,6 +850,28 @@
           + '<rect x="178" y="6" width="56" height="54" rx="6" style="fill:color-mix(in srgb, var(--metal) 70%, var(--encre-douce))"/>'
           + `<text x="83" y="51" text-anchor="middle" style="${texte};font-size:10px">10g</text><text x="136" y="46" text-anchor="middle" style="${texte};font-size:12px">100g</text>`
           + `<text x="206" y="40" text-anchor="middle" style="${texte};font-size:16px">1kg</text>`;
+      case 'k-compter':
+        return [0, 1, 2, 3, 4].map((k) => `<text x="${20 + k * 30}" y="44" style="font-size:24px">🍎</text>`).join('')
+          + `<text x="185" y="46" style="${texte};font-size:30px">5</text>`;
+      case 'k-lire':
+        return `<text x="20" y="48" style="${texte};font-size:40px">7</text><path d="M60 34h40M92 26l8 8-8 8" style="${trait}"/>`
+          + `<text x="115" y="44" style="${texte};font-size:26px">なな</text>`;
+      case 'k-dizaines':
+        return [0, 1, 2].map((k) => `<rect x="${12 + k * 60}" y="16" width="52" height="22" rx="3" style="fill:var(--o2)"/>`).join('')
+          + '<circle cx="200" cy="27" r="6" style="fill:var(--o3)"/><circle cx="216" cy="27" r="6" style="fill:var(--o3)"/>'
+          + `<text x="80" y="60" style="${texte};font-size:18px">10 10 10 ＋ 2</text>`;
+      case 'k-comparer':
+        return `<text x="20" y="46" style="${texte};font-size:32px">21</text><text x="88" y="46" style="${texte};font-size:30px">12</text>${question}`;
+      case 'k-lecon1':
+        return Array.from({ length: 10 }, (_, k) => `<circle cx="${30 + (k % 5) * 26}" cy="${18 + Math.floor(k / 5) * 26}" r="10" style="fill:${k < 7 ? 'var(--o5)' : 'none'};stroke:var(--encre-douce);stroke-width:2"/>`).join('')
+          + `<text x="170" y="46" style="${texte};font-size:30px">7</text>`;
+      case 'k-lecon2':
+        return [0, 1, 2].map((k) => `<rect x="${20 + k * 16}" y="6" width="12" height="54" rx="3" style="fill:var(--o2)"/>`).join('')
+          + '<circle cx="84" cy="50" r="6" style="fill:var(--o5)"/><circle cx="100" cy="50" r="6" style="fill:var(--o5)"/>'
+          + `<text x="130" y="44" style="${texte};font-size:28px">32</text>`;
+      case 'k-lecon3':
+        return '<rect x="14" y="6" width="54" height="54" rx="4" style="fill:var(--o4)"/><rect x="74" y="6" width="54" height="54" rx="4" style="fill:var(--o4)"/>'
+          + `<text x="146" y="44" style="${texte};font-size:28px">200</text>`;
       case 'lecture-hakari':
         return `${cadran(70, 2.1)}<text x="130" y="44" style="${texte}">？ g</text>`;
       case 'lecon-pratique':
@@ -1633,6 +1671,7 @@
     : [ONAJI, 'じ コップなら、 ひくい ほうが ', SUKU, 'ない。 ']);
 
   function consigneMV(q) {
+    if (q.theme === 'kazu') return consigneKazu(q);
     if (q.type === 'lecture') return [nomDe(q.objets[0]), 'の ', OMO, 'さは ', segU('なん', 'g'), '？'];
     const mot = motDe(q.theme, q.demande);
     if (q.type === 'devine' && q.etape === 'devine') return ['どっちが ', ...mot, 'と おもう？'];
@@ -1641,6 +1680,7 @@
   }
 
   function rappelMV(q) {
+    if (q.theme === 'kazu') return rappelKazu(q);
     if (q.type === 'lecture') {
       if (q.pas === 100) return [SUJI, 'の めもりは ', segU(100, 'g'), ' ずつ'];
       return ['ちいさい めもり 1つ ＝ ', segU(10, 'g')];
@@ -1659,6 +1699,7 @@
   }
 
   function explicationMV(q) {
+    if (q.theme === 'kazu') return explicationKazu(q);
     if (q.type === 'lecture') return [...lectureHakari(q.valeur), ' この ', nomDe(q.objets[0]), 'は ', segU(q.valeur, 'g'), '。'];
     const mot = motDe(q.theme, q.demande);
     const u = uniteDe(q.theme);
@@ -1708,6 +1749,7 @@
   }
 
   function messageErreurMV(q) {
+    if (q.theme === 'kazu') return messageErreurKazu(q);
     if (q.type === 'devine') {
       const regle = q.demande === 'plus'
         ? ['はりが たくさん まわった ほうが ', OMO, 'い。']
@@ -1971,7 +2013,8 @@
     const scene = document.createElement('div');
     scene.className = 'scene';
     etabli.append(scene);
-    if (q.type === 'devine' && q.etape === 'devine') rendreDevine(q, scene, W, H);
+    if (q.theme === 'kazu') rendreKazuQ(q, scene, W, H);
+    else if (q.type === 'devine' && q.etape === 'devine') rendreDevine(q, scene, W, H);
     else if (q.type === 'balance') rendreBalanceQ(q, scene, W, H);
     else if (q.type === 'hakari' || q.type === 'devine') rendreHakariQ(q, scene, W, H);
     else if (q.type === 'lecture') rendreLectureQ(q, scene, W, H);
@@ -2095,12 +2138,15 @@
   function rendreVerresQ(q, scene, W, H, objets, avant) {
     const n = objets.length;
     const colW = Math.min(250, (W - 16 * (n - 1)) / n);
-    const hNom = reglages.noms ? 30 : 0;
-    const h = Math.max(70, Math.min(H - hNom - 64, 330));
+    // Écran très bas (téléphone, explication affichée) : les verres d'abord, les noms ensuite.
+    const avecNoms = reglages.noms && H >= 190;
+    const hNom = avecNoms ? 30 : 0;
+    const h = Math.max(48, Math.min(H - hNom - 64, 330));
     const wMini = avant ? Math.min(colW * 0.3, 70) : 0;
-    const w = Math.max(40, Math.min((colW - wMini) * 0.6, h * 0.55, 150));
+    const w = Math.max(36, Math.min((colW - wMini) * 0.6, h * 0.55, 150));
     const rangee = document.createElement('div');
     rangee.className = 'rangee-mv';
+    rangee.classList.toggle('sans-noms-mv', !avecNoms);
     const verser = !q.vuVerres && !animationsReduites();
     objets.forEach((o, k) => {
       const col = document.createElement('button');
@@ -2220,6 +2266,405 @@
     scene.append(rangee);
     cadrans.forEach(([svg, val]) => tournerAiguille(svg, val, q.max));
     if (q.preuve && q.theme === 'kasa' && jauges) preuveVerres({ cap: q.max * 1.1 }, scene, q.valeurs);
+  }
+
+  /* ======================================================================
+     かず : compter et lire les nombres, toujours avec leur lecture en hiragana
+     (programme « 数の学習 » : compter, associer chiffre et quantité, grouper par 10, les rangs).
+     ====================================================================== */
+
+  const YOMI_UN = ['', 'いち', 'に', 'さん', 'よん', 'ご', 'ろく', 'なな', 'はち', 'きゅう'];
+  const YOMI_DIX = ['', 'じゅう', 'にじゅう', 'さんじゅう', 'よんじゅう', 'ごじゅう', 'ろくじゅう', 'ななじゅう', 'はちじゅう', 'きゅうじゅう'];
+  const YOMI_CENT = ['', 'ひゃく', 'にひゃく', 'さんびゃく', 'よんひゃく', 'ごひゃく', 'ろっぴゃく', 'ななひゃく', 'はっぴゃく', 'きゅうひゃく'];
+  const YOMI_MILLE = ['', 'せん', 'にせん', 'さんぜん', 'よんせん', 'ごせん', 'ろくせん', 'ななせん', 'はっせん', 'きゅうせん'];
+  // Autres lectures qu'on entend aussi : 4 し, 7 しち, 9 く.
+  const AUTRES_YOMI = { 4: 'し', 7: 'しち', 9: 'く' };
+
+  // La lecture en hiragana : 23 → にじゅうさん, 235 → にひゃく さんじゅう ご, 1000 → せん.
+  function yomiNombre(n) {
+    if (n === 0) return 'ぜろ';
+    const parties = [YOMI_MILLE[Math.floor(n / 1000) % 10], YOMI_CENT[Math.floor(n / 100) % 10],
+      YOMI_DIX[Math.floor(n / 10) % 10], YOMI_UN[n % 10]].filter(Boolean);
+    return parties.join(n >= 100 ? ' ' : '');
+  }
+
+  // Un nombre en chiffres, avec sa lecture en hiragana dessous.
+  const nombreYomi = (n, classe = '') => `<span class="nb ${classe}"><span class="nb-chiffre">${n}</span><span class="nb-yomi">${yomiNombre(n)}</span></span>`;
+
+  // Des choses à compter (emoji) et leur nom.
+  const A_COMPTER = [
+    ['りんご', '🍎'], ['いちご', '🍓'], ['みかん', '🍊'], ['ほし', '⭐'], ['さかな', '🐟'],
+    ['くるま', '🚗'], ['はな', '🌸'], ['いぬ', '🐶'], ['ふうせん', '🎈'], ['えんぴつ', '✏️'],
+  ];
+
+  // Trois réponses : la bonne, et deux nombres proches ou faciles à confondre (13 / 31).
+  function choixNombres(n, min, max, pieges = []) {
+    const autres = new Set();
+    melanger([...pieges, n + 1, n - 1, n + 2, n - 2, n + 10, n - 10]).forEach((x) => {
+      if (autres.size < 2 && x !== n && x >= min && x <= max) autres.add(x);
+    });
+    while (autres.size < 2) {
+      const x = entier(min, max);
+      if (x !== n) autres.add(x);
+    }
+    return melanger([n, ...autres]);
+  }
+  const inverse = (n) => (n >= 10 && n < 100 && n % 10 ? (n % 10) * 10 + Math.floor(n / 10) : null);
+
+  function genererQuestionKazu(niveau, derniere, i, n) {
+    const base = { niveau, theme: 'kazu', essais: new Set(), resolu: false, indices: false, demande: 'plus' };
+    const tiers = Math.ceil(n / 3);
+    if (niveau === 35) {
+      // いくつ？ : d'abord jusqu'à 5, en rangées de 5 ; ensuite jusqu'à 10, parfois en désordre.
+      const facile = derniere || i < tiers;
+      const v = facile ? entier(1, 5) : entier(4, 10);
+      const [nom, emoji] = choisir(A_COMPTER);
+      return { ...base, type: 'compter', valeur: v, nom, emoji, desordre: !facile && i >= 2 * tiers, options: choixNombres(v, 1, 10), bonne: v };
+    }
+    if (niveau === 36) {
+      // よみかた : chiffre → hiragana, puis hiragana → chiffre ; 1–10, puis 11–20, puis jusqu'à 99.
+      const v = derniere || i < tiers ? entier(1, 10) : i < 2 * tiers ? entier(11, 20) : entier(21, 99);
+      const sens = i % 2 === 0 ? 'chiffre' : 'yomi';
+      const options = choixNombres(v, v > 20 ? 11 : 1, v > 20 ? 99 : 20, [inverse(v), v > 10 ? v % 10 : null].filter(Boolean));
+      return { ...base, type: 'lire', valeur: v, sens, options, bonne: v };
+    }
+    if (niveau === 37) {
+      // 10の まとまり : des jetons rangés par cadres de 10.
+      const v = derniere ? entier(1, 3) * 10 + entier(1, 5) : entier(11, i < tiers ? 39 : 99);
+      return { ...base, type: 'dizaines', valeur: v, options: choixNombres(v, 10, 99, [inverse(v)].filter(Boolean)), bonne: v };
+    }
+    // どっちが おおきい？ : 1–10 très différents, puis jusqu'à 100 avec des pièges (12 / 21, 39 / 41).
+    let a;
+    let b;
+    if (derniere || i < tiers) {
+      a = entier(1, 4);
+      b = a + entier(3, 6);
+    } else if (Math.random() < 0.5) {
+      a = entier(12, 49);
+      b = inverse(a) || a + 10;
+    } else {
+      const d = entier(2, 8);
+      a = d * 10 + entier(5, 9);
+      b = (d + 1) * 10 + entier(0, 4);
+    }
+    const valeurs = melanger([a, b]);
+    const demande = !reglages.court || derniere ? 'plus' : choisir(['plus', 'moins']);
+    const bonne = demande === 'plus' ? (valeurs[0] > valeurs[1] ? 0 : 1) : (valeurs[0] < valeurs[1] ? 0 : 1);
+    return { ...base, type: 'comparer', valeurs, demande, bonne };
+  }
+
+  const motKazu = (sens) => (sens === 'plus' ? [OOKI, 'きい'] : [CHIISA, 'さい']);
+
+  function consigneKazu(q) {
+    if (q.type === 'compter') return [q.nom, 'は いくつ？'];
+    if (q.type === 'lire') return q.sens === 'chiffre' ? ['この ', SUJI, 'の よみかたは？'] : ['「', yomiNombre(q.valeur), '」は どれ？'];
+    if (q.type === 'dizaines') return ['●は いくつ？'];
+    return ['どっちが ', ...motKazu(q.demande), '？'];
+  }
+
+  function rappelKazu(q) {
+    if (q.type === 'compter') return ['ひとつずつ、 じゅんばんに かぞえる'];
+    if (q.type === 'lire') return [String(q.valeur), ' ＝ ', yomiNombre(q.valeur)];
+    if (q.type === 'dizaines') return ['10の まとまりで かぞえると はやい'];
+    const grand = Math.max(...q.valeurs) >= 10;
+    return grand
+      ? ['10の まとまりが ', OO_I, 'い ほう ＝ ', OOKI, 'きい']
+      : ['あとに かぞえる ', SUJI, ' ＝ ', OOKI, 'きい'];
+  }
+
+  function explicationKazu(q) {
+    const v = q.valeur;
+    if (q.type === 'compter') {
+      const compte = Array.from({ length: v }, (_, k) => YOMI_UN[k + 1] || 'じゅう').join('、 ');
+      return [compte, '。 ', q.nom, 'は ぜんぶで ', `${v}こ`, '。'];
+    }
+    if (q.type === 'lire') {
+      const autre = AUTRES_YOMI[v] ? [' 「', AUTRES_YOMI[v], '」とも よむよ。'] : [];
+      return [String(v), 'は 「', yomiNombre(v), '」と よむ。', ...autre];
+    }
+    if (q.type === 'dizaines') {
+      const d = Math.floor(v / 10);
+      const u = v % 10;
+      return ['10の まとまりが ', `${d}つで `, String(d * 10), '、 ばらが ', `${u}つで `, String(u), '。 あわせて ', String(v), '、 「', yomiNombre(v), '」。'];
+    }
+    const [a, b] = q.valeurs;
+    const g = Math.max(a, b);
+    const p = Math.min(a, b);
+    let raison;
+    if (g < 10) {
+      raison = [String(p), 'の あとに ', String(g), 'を かぞえる。 '];
+    } else if (Math.floor(g / 10) !== Math.floor(p / 10)) {
+      raison = [String(g), 'は 10が ', `${Math.floor(g / 10)}つ、 `, String(p), 'は 10が ', `${Math.floor(p / 10)}つ。 `, '10の まとまりが ', OO_I, 'い ほうが ', OOKI, 'きい。 '];
+    } else {
+      raison = ['10の まとまりは ', ONAJI, 'じ。 ばらは ', String(g % 10), 'と ', String(p % 10), '。 '];
+    }
+    return [...raison, String(q.valeurs[q.bonne]), 'の ほうが ', ...motKazu(q.demande), 'ね。'];
+  }
+
+  function messageErreurKazu(q) {
+    if (q.type === 'compter') return ['おしい！ ひとつずつ、 ゆびで さしながら かぞえよう。'];
+    if (q.type === 'lire') return ['おしい！ こえを よく きいてね。'];
+    if (q.type === 'dizaines') return ['おしい！ 10の まとまりを さきに かぞえよう。'];
+    return ['おしい！ 10の まとまりの かずを くらべよう。'];
+  }
+
+  // Les jetons d'un nombre : centaines (plaques), dizaines (barres de 10), unités en cadres de 10.
+  // Les jetons d'un nombre (ou, dans les leçons, exactement ce que l'élève a posé : { c, d, u }).
+  function htmlBlocs(n, { cadreVide = false, etiquettes = false, parties = null } = {}) {
+    const { c, d, u } = parties || { c: Math.floor(n / 100), d: Math.floor((n % 100) / 10), u: n % 10 };
+    let h = '<span class="blocs">';
+    if (c) h += `<span class="blocs-rang">${'<span class="plaque100"></span>'.repeat(c)}${etiquettes ? `<b class="ba">100 × ${c}</b>` : ''}</span>`;
+    if (d) h += `<span class="blocs-rang">${Array.from({ length: d }, () => `<span class="barre10">${'<i></i>'.repeat(10)}</span>`).join('')}${etiquettes ? `<b class="ba">10 × ${d}</b>` : ''}</span>`;
+    if (u || cadreVide) {
+      const cadres = Math.max(1, Math.ceil(u / 10));
+      h += `<span class="blocs-rang">${Array.from({ length: cadres }, (_, k) => htmlCadre(Math.min(10, u - k * 10))).join('')}${etiquettes && u ? `<b class="ba">1 × ${u}</b>` : ''}</span>`;
+    }
+    return `${h}</span>`;
+  }
+  // Un cadre de 10 (2 rangées de 5) : on voit ce qui manque pour faire 10.
+  const htmlCadre = (k) => `<span class="cadre10">${Array.from({ length: 10 }, (_, i) => `<i class="${i < k ? 'plein' : ''}"></i>`).join('')}</span>`;
+
+  function rendreKazuQ(q, scene, W, H) {
+    const choix = $('choix-mots');
+    const avecChoix = q.type !== 'comparer';
+    choix.hidden = !avecChoix;
+    choix.replaceChildren();
+    if (q.type === 'compter') {
+      const zone = document.createElement('div');
+      zone.className = `a-compter${q.desordre ? ' desordre' : ''}`;
+      const taille = Math.max(32, Math.min(90, W / 7, H / 3.2));
+      zone.style.setProperty('--t', `${taille}px`);
+      if (!q.places) {
+        // En désordre : des cases tirées au hasard dans une grille 5 × 3, un peu décalées.
+        const cases = melanger(Array.from({ length: 15 }, (_, k) => k)).slice(0, q.valeur).sort((x, y) => x - y);
+        q.places = cases.map((c) => ({ c, dx: aleatoire(-0.15, 0.15), dy: aleatoire(-0.15, 0.15) }));
+      }
+      for (let k = 0; k < q.valeur; k++) {
+        const o = document.createElement('span');
+        o.className = 'objet-compte';
+        o.textContent = q.emoji;
+        if (q.desordre) {
+          const p = q.places[k];
+          o.style.gridColumn = String((p.c % 5) + 1);
+          o.style.gridRow = String(Math.floor(p.c / 5) + 1);
+          o.style.transform = `translate(${p.dx * taille}px, ${p.dy * taille}px)`;
+        }
+        if (q.preuve) {
+          const num = document.createElement('b');
+          num.className = 'num-compte';
+          num.textContent = String(k + 1);
+          num.style.animationDelay = `${k * 0.45}s`;
+          o.append(num);
+        }
+        zone.append(o);
+      }
+      scene.append(zone);
+    } else if (q.type === 'lire') {
+      const carte = document.createElement('div');
+      carte.className = 'carte-nombre';
+      carte.innerHTML = q.sens === 'chiffre'
+        ? `<span class="nb-chiffre">${q.valeur}</span>${q.preuve ? `<span class="nb-yomi">${yomiNombre(q.valeur)}</span>` : ''}`
+        : `<span class="nb-yomi grand">${yomiNombre(q.valeur)}</span>${q.preuve ? `<span class="nb-chiffre">${q.valeur}</span>` : ''}`;
+      if (q.preuve) carte.innerHTML += htmlBlocs(q.valeur);
+      scene.append(carte);
+    } else if (q.type === 'dizaines') {
+      const zone = document.createElement('div');
+      zone.className = 'zone-dizaines';
+      const d = Math.floor(q.valeur / 10);
+      const u = q.valeur % 10;
+      zone.innerHTML = Array.from({ length: d }, () => `<span class="cadre-groupe">${htmlCadre(10)}${q.preuve ? '<b>10</b>' : ''}</span>`).join('')
+        + (u ? `<span class="cadre-groupe">${htmlCadre(u)}${q.preuve ? `<b class="ba">${u}</b>` : ''}</span>` : '');
+      // Taille des cases : le plus grand possible, cadres sur 5 colonnes au plus.
+      const colonnes = Math.min(5, d + (u ? 1 : 0));
+      const lignes = Math.ceil((d + (u ? 1 : 0)) / 5);
+      zone.style.setProperty('--c', `${Math.max(9, Math.min(40, (W - 20 - colonnes * 22) / (colonnes * 6.2), (H - 20 - lignes * 40) / (lignes * 2.6)))}px`);
+      scene.append(zone);
+    } else {
+      const rangee = document.createElement('div');
+      rangee.className = 'rangee-mv';
+      q.valeurs.forEach((v, k) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'carte-nombre choix-comparer';
+        b.innerHTML = nombreYomi(v) + (q.preuve ? htmlBlocs(v) : '');
+        cible(b, k, `${yomiNombre(v)}`);
+        rangee.append(b);
+      });
+      scene.append(rangee);
+    }
+    if (avecChoix) {
+      q.options.forEach((v) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'btn btn-nombre';
+        // Hiragana → chiffre : seulement le chiffre (sinon la réponse serait écrite) ; sinon les deux.
+        b.innerHTML = q.type === 'lire' && q.sens === 'chiffre' ? `<span class="nb-yomi">${yomiNombre(v)}</span>`
+          : q.type === 'lire' ? `<span class="nb-chiffre">${v}</span>` : nombreYomi(v);
+        cible(b, v, yomiNombre(v));
+        choix.append(b);
+      });
+    }
+  }
+
+  /* ----- Leçons かず : le cadre de 10, les dizaines, les centaines ----- */
+
+  const parlerNombre = (n) => parler(yomiNombre(n));
+
+  function etapesKazu1() {
+    const total = (e) => somme(e.plateau);
+    const un = (n) => P('pion', 1, n);
+    return [
+      {
+        dire: ['これは 10の わく。 ●を 1こずつ のせて、 10まで かぞえよう。 ', SUJI, 'と よみかたが でるよ。'],
+        scene: 'compte', cadre: true, contenu: [], reserve: [un(10)], vers: 'plateau', compter: true, fini: (e) => total(e) === 10,
+        bravo: ['10！ 「じゅう」。 わくが いっぱいに なったね。'],
+      },
+      {
+        dire: ['5は 「ご」。 うえの ならびが いっぱい。 5の まとまり だよ。'],
+        scene: 'compte', cadre: true, contenu: [un(5)],
+      },
+      {
+        dire: ['4は 「よん」。 「し」とも よむよ。 7は 「なな」、 「しち」とも よむ。 9は 「きゅう」、 「く」とも よむ。'],
+        scene: 'compte', cadre: true, contenu: [un(4)], autres: true,
+      },
+      {
+        dire: ['●を さわって、 ぜんぶ おろそう。'],
+        scene: 'compte', cadre: true, contenu: [un(6)], retirer: true, vers: 'plateau', compter: true, fini: (e) => total(e) === 0,
+        bravo: ['なにも ない とき、 ', SUJI, 'は 0。 「ぜろ」と よむ。'],
+      },
+      {
+        dire: ['●は いくつ？'],
+        scene: 'compte', cadre: true, contenu: [un(7)], cache: true,
+        choix: { options: [7, 6, 8], bonne: 7, unite: '', indice: ['おしい！ 5の まとまりと、 あと いくつ？'] },
+        bravo: ['5と 2で 7。 「なな」。'],
+      },
+      {
+        dire: ['●を 8こ のせよう。'],
+        scene: 'compte', cadre: true, contenu: [], reserve: [un(10)], vers: 'plateau', retirer: true, compter: true, cache: true,
+        fini: (e) => total(e) === 8,
+        pendant: (e) => (total(e) < 8 ? null : ['おおすぎ！ ●を さわって おろそう。']),
+        bravo: ['8！ 「はち」。 10まで あと 2つ。'],
+      },
+    ];
+  }
+
+  function etapesKazu2() {
+    const total = (e) => somme(e.plateau);
+    const un = (n) => P('pion', 1, n);
+    const dix = (n) => P('dix', 10, n);
+    return [
+      {
+        dire: ['10は 「じゅう」。 10の わくが いっぱいに なると、 10の ぼうに なる。'],
+        scene: 'compte', contenu: [dix(1)],
+      },
+      {
+        dire: ['10の ぼうの よこに ●を のせて、 13に しよう。'],
+        scene: 'compte', cadre: true, contenu: [dix(1)], reserve: [un(9)], vers: 'plateau', retirer: true, compter: true,
+        fini: (e) => total(e) === 13, pendant: (e) => (total(e) < 13 ? null : ['おおすぎ！ ●を さわって おろそう。']),
+        bravo: ['10と 3で 13。 「じゅうさん」。'],
+      },
+      {
+        dire: ['いくつ？'],
+        scene: 'compte', contenu: [dix(1), un(7)], cache: true,
+        choix: { options: [17, 71, 7], bonne: 17, unite: '', indice: ['おしい！ 10の ぼうが 1つと、 ●が 7こ。'] },
+        bravo: ['10と 7で 17。 「じゅうなな」（「じゅうしち」）。'],
+      },
+      {
+        dire: ['10の ぼうを のせて、 10ずつ かぞえよう。 100まで いくよ。'],
+        scene: 'compte', contenu: [], reserve: [dix(10)], vers: 'plateau', compter: true, fini: (e) => total(e) === 100,
+        bravo: ['10が 10こで 100。 「ひゃく」。'],
+      },
+      {
+        dire: ['34を つくろう。 10の ぼうと ●を つかってね。'],
+        scene: 'compte', cadre: true, contenu: [], reserve: [dix(5), un(9)], vers: 'plateau', retirer: true, compter: true,
+        fini: (e) => total(e) === 34,
+        pendant: (e) => (total(e) > 34 ? ['おおすぎ！ さわって おろそう。'] : null),
+        bravo: ['10が 3つで 30、 ●が 4つで 4。 34、 「さんじゅうよん」。'],
+      },
+      {
+        dire: ['いくつ？'],
+        scene: 'compte', contenu: [dix(5), un(2)], cache: true,
+        choix: { options: [52, 25, 7], bonne: 52, unite: '', indice: ['おしい！ 10の ぼうは いくつ？ ●は いくつ？'] },
+        bravo: ['10が 5つで 50、 ●が 2つで 2。 52、 「ごじゅうに」。'],
+      },
+      {
+        dire: ['まとめ： ひだりの ', SUJI, 'は 10の ぼうの かず、 みぎの ', SUJI, 'は ●の かず。 34は 10が 3つと ●が 4つ。'],
+        scene: 'compte', contenu: [dix(3), un(4)], etiquettes: true,
+      },
+    ];
+  }
+
+  function etapesKazu3() {
+    const total = (e) => somme(e.plateau);
+    const un = (n) => P('pion', 1, n);
+    const dix = (n) => P('dix', 10, n);
+    const cent = (n) => P('cent', 100, n);
+    return [
+      {
+        dire: ['10の ぼうが 10こで 100。 100の いたに なる。 「ひゃく」。'],
+        scene: 'compte', contenu: [cent(1)],
+      },
+      {
+        dire: ['100の いたを のせて、 100ずつ かぞえよう。 よみかたが かわる ところを きいてね。'],
+        scene: 'compte', contenu: [], reserve: [cent(9)], vers: 'plateau', compter: true, fini: (e) => total(e) === 900,
+        bravo: ['300は 「さんびゃく」、 600は 「ろっぴゃく」、 800は 「はっぴゃく」。 よみかたが すこし かわるね。'],
+      },
+      {
+        dire: ['235を つくろう。'],
+        scene: 'compte', contenu: [], reserve: [cent(4), dix(9), un(9)], vers: 'plateau', retirer: true, compter: true,
+        fini: (e) => total(e) === 235,
+        pendant: (e) => (total(e) > 235 ? ['おおすぎ！ さわって おろそう。'] : null),
+        bravo: ['100が 2つ、 10が 3つ、 ●が 5つ。 235、 「にひゃく さんじゅう ご」。'],
+      },
+      {
+        dire: ['いくつ？'],
+        scene: 'compte', contenu: [cent(4), un(8)], cache: true,
+        choix: { options: [408, 48, 480], bonne: 408, unite: '', indice: ['おしい！ 100の いたは いくつ？ 10の ぼうは ある？'] },
+        bravo: ['100が 4つ、 10の ぼうは ない、 ●が 8つ。 408、 「よんひゃく はち」。 10の ところは 0 だよ。'],
+      },
+      {
+        dire: ['100の いたを 10まい のせると…'],
+        scene: 'compte', contenu: [cent(9)], reserve: [cent(1)], vers: 'plateau', compter: true, fini: (e) => total(e) === 1000,
+        bravo: ['1000！ 「せん」。 100が 10こで 1000。'],
+      },
+      {
+        dire: ['まとめ： ', SUJI, 'は ひだりから 100の かず、 10の かず、 ●の かず。 235は 「にひゃく さんじゅう ご」。'],
+        scene: 'compte', contenu: [cent(2), dix(3), un(5)], etiquettes: true,
+      },
+    ];
+  }
+
+  // La scène des leçons かず : le nombre (et sa lecture) en grand, puis les plaques, barres et jetons.
+  function creerCompteLecon(W, H, et) {
+    const el = document.createElement('div');
+    el.className = 'compte-lecon';
+    el.style.setProperty('--c', `${Math.max(10, Math.min(24, W / 30, H / 14))}px`);
+    el.innerHTML = '<div class="compte-affiche"></div><div class="compte-plateau"></div>';
+    el.geo = { taille: 40, s: Math.max(18, Math.min(30, W / 24)) };
+    return el;
+  }
+
+  function majCompteLecon(el, e) {
+    const et = e.etape;
+    const n = somme(e.plateau);
+    const cache = et.cache && !e.resolu;
+    el.querySelector('.compte-affiche').innerHTML = cache
+      ? '<span class="nb"><span class="nb-chiffre">？</span></span>'
+      : nombreYomi(n) + (et.autres && AUTRES_YOMI[n] ? `<span class="nb-autre">（${AUTRES_YOMI[n]}）</span>` : '');
+    const plateau = el.querySelector('.compte-plateau');
+    const nb = (v) => e.plateau.filter((x) => x.v === v).length;
+    plateau.innerHTML = htmlBlocs(n, { cadreVide: et.cadre, etiquettes: et.etiquettes, parties: { c: nb('cent'), d: nb('dix'), u: nb('pion') } });
+    // On touche une plaque, une barre ou un jeton pour l'enlever.
+    if (et.retirer && !e.resolu) {
+      const enlever = (v) => {
+        const p = [...e.plateau].reverse().find((x) => x.v === v);
+        if (p) enleverPiece('plateau', p.id);
+      };
+      plateau.querySelectorAll('.plaque100').forEach((x) => activable(x, () => enlever('cent')));
+      plateau.querySelectorAll('.barre10').forEach((x) => activable(x, () => enlever('dix')));
+      plateau.querySelectorAll('.cadre10 i.plein').forEach((x) => activable(x, () => enlever('pion')));
+      plateau.classList.add('enlevable');
+    }
   }
 
   /* ----- Objets décalés ou penchés (activités 8 et 9) ----- */
@@ -3361,6 +3806,9 @@
     monme10: { genre: 'fundou', taille: 1.25, texte: '10匁', nom: ['10もんめの おもり'] },
     okome: { genre: 'sac', texte: 'おこめ 1kg', nom: ['おこめ ', segU(1, 'kg')] },
     gou: { genre: 'gou', nom: ['1ごうの カップ'] },
+    pion: { genre: 'pion', nom: ['●'] },
+    dix: { genre: 'barre', nom: ['10の ぼう'] },
+    cent: { genre: 'plaque', nom: ['100の いた'] },
     teEnfant: { genre: 'main', taille: 0.8, nom: ['こどもの て'] },
     teAdulte: { genre: 'main', taille: 1.15, nom: ['おとなの て'] },
   };
@@ -3696,6 +4144,9 @@
     'lecon-corps': etapesCorps,
     'lecon-shaku': etapesShaku,
     'lecon-gou': etapesGou,
+    'lecon-kazu1': etapesKazu1,
+    'lecon-kazu2': etapesKazu2,
+    'lecon-kazu3': etapesKazu3,
   };
   const estLecon = () => Boolean(etude && LECONS[etude.mode]);
 
@@ -3746,7 +4197,7 @@
         const b = document.createElement('button');
         b.type = 'button';
         b.className = 'btn btn-choix-lecon';
-        b.innerHTML = nombreUnite(v, ({ mL: 'ml', cm: 'cm', g: 'g' })[et.choix.unite || 'g']);
+        b.innerHTML = et.choix.unite === '' ? nombreYomi(v) : nombreUnite(v, ({ mL: 'ml', cm: 'cm', g: 'g' })[et.choix.unite || 'g']);
         if (e.essais.has(v)) b.classList.add('essaye');
         if (e.resolu && v === et.choix.bonne) b.classList.add('juste');
         activable(b, () => choisirLecon(v));
@@ -3768,6 +4219,7 @@
     else if (scene === 'corps') instrument = creerCorpsLecon(W, H - hReserve, et);
     else if (scene === 'shaku') instrument = creerShakuLecon(W, H - hReserve, et);
     else if (scene === 'hiro') instrument = creerHiroLecon(W, H - hReserve);
+    else if (scene === 'compte') instrument = creerCompteLecon(W, H - hReserve, et);
     else {
       instrument = creerBalance(W, H - hReserve, { noms: true });
       instrument.classList.add('balance-lecon');
@@ -3969,6 +4421,21 @@
       el.textContent = '1ごう';
       return el;
     }
+    if (vis.genre === 'pion') {
+      el.className = 'pion-piece';
+      el.style.width = `${s}px`;
+      el.style.height = `${s}px`;
+      return el;
+    }
+    if (vis.genre === 'barre') {
+      el.className = 'barre10 piece';
+      el.innerHTML = '<i></i>'.repeat(10);
+      return el;
+    }
+    if (vis.genre === 'plaque') {
+      el.className = 'plaque100 piece';
+      return el;
+    }
     if (vis.genre === 'main') {
       el.className = 'main-piece';
       el.style.fontSize = `${s * 1.3 * vis.taille}px`;
@@ -4042,6 +4509,8 @@
       instrument.querySelector('.verre .liquide').style.height = `${(somme(e.plateau) / geo.cap) * 100}%`;
     } else if (scene === 'corps') {
       majCorpsLecon(instrument, e);
+    } else if (scene === 'compte') {
+      majCompteLecon(instrument, e);
     } else if (scene === 'balance') {
       [0, 1].forEach((k) => {
         remplirPlateauLecon(instrument.plateaux[k].charge, e.cotes[k], k, geo.taille, s);
@@ -4101,7 +4570,7 @@
         return n ? `${v === 'teEnfant' ? 'こども' : 'おとな'}の あた <span class="resultat">${n}</span>つ` : '';
       }).filter(Boolean).join('　');
     }
-    if (scene !== 'hakari' && scene !== 'balance') return '';
+    if (scene !== 'hakari' && scene !== 'balance') return '';  // かず : le nombre est déjà en grand
     if (scene === 'balance' && et.vers !== undefined && e.cotes[et.vers].some((p) => p.v === 'yen5')) {
       return `5えんだま <span class="resultat">${e.cotes[et.vers].length}</span>こ`;
     }
@@ -4132,6 +4601,7 @@
     note(520 + Math.min(r.m, 100) * 2, { duree: 0.09, volume: 0.1, type: 'triangle' });
     if (reglages.sons && navigator.vibrate) navigator.vibrate(8);
     majLecon();
+    if (et.compter) parlerNombre(somme(e.plateau));
     verifierLecon();
   }
 
@@ -4147,6 +4617,7 @@
     else e.reserve.push({ v: p.v, c: p.c, m: p.m, n: 1 });
     note(400, { duree: 0.09, volume: 0.1, type: 'triangle' });
     majLecon();
+    if (e.etape.compter) parlerNombre(somme(e.plateau));
     verifierLecon();
   }
 
@@ -4358,7 +4829,8 @@
       etudeAide: 'Dans « べんきょう », votre enfant tire le ruban (n’importe où sur la zone, pas seulement sur la poignée) ou utilise les gros boutons ＋1 / −1. Chaque centimètre ajouté ou retiré apparaît comme un bloc numéroté. Dans « のばして みよう », la poignée bleue sous le ruban change le premier nombre sans changer le second. Avec des nombres plus grands, le geste doit être plus précis.',
       aide: 'Bouton d’aide (ヒント, そろえる)',
       aideAide: 'Activités 6 et 7 : l’aide convertit d’abord dans la même unité (1 m ＝ 100 cm), puis dessine des barres à l’échelle. Activités 8 et 9 : elle fait glisser les objets jusqu’à la ligne de départ. Elle apparaît aussi d’elle-même après une erreur.',
-      aideMV: 'Masses : la balance de cuisine (はかり) est l’instrument principal. « はりで くらべる » compare deux balances sans aucun nombre ; « みためと ちがう » : l’élève devine d’abord (un gros objet peut être léger), puis les balances vérifient ; « はかりを よもう » : lire l’aiguille (centaines, puis 50, puis dizaines). Leçons guidées (l’élève pose ou enlève les objets en les touchant, puis la voix explique) : « はかりの よみかた », « g と kg » (1円玉 ＝ 1 g … 1 kg ＝ 1000 g), puis l’entraînement « はかって みよう ». La rubrique « ね、しっていた？（むかしは…）» rassemble la culture : la balance à plateaux (てんびん, avec son exercice et « つりあわせよう »), 匁 et la pièce de 5 円, et pour les longueurs あた／ひろ et 尺／寸, pour les liquides 合／升. Masses 5 et 6, liquides 4 et 5 : l’aide convertit d’abord dans la même unité (1 kg ＝ 1000 g, 1 L ＝ 1000 mL), puis montre des balances de cuisine ou des verres doseurs. « うつして くらべよう » : le bouton « うつす » (ou une erreur) verse les deux récipients dans des verres identiques. « つりあわせよう » : des cubes jusqu’à 20 (« つみき なんこ ぶん »), puis des poids en g ; la balance penche moins quand on approche. « はかって いれよう » : on glisse le doigt vers le haut ou le bas ; la taille du verre doseur (200 mL, 500 mL, 1 L) se choisit en haut de l’écran.',
+      aideMV: 'Nombres (かず) : chaque nombre est écrit avec sa lecture en hiragana (3 さん, 23 にじゅうさん, 300 さんびゃく). « いくつ？ » : compter jusqu’à 5, puis 10, en rangées de 5 puis en désordre ; la preuve numérote les objets dans l’ordre. « よみかた » : chiffre → hiragana puis l’inverse (1–10, 11–20, jusqu’à 99). Les leçons utilisent le cadre de 10 (2 rangées de 5), les barres de 10 et les plaques de 100 ; la voix dit le nombre à chaque jeton posé. Masses : la balance de cuisine (はかり) est l’instrument principal. « はりで くらべる » compare deux balances sans aucun nombre ; « みためと ちがう » : l’élève devine d’abord (un gros objet peut être léger), puis les balances vérifient ; « はかりを よもう » : lire l’aiguille (centaines, puis 50, puis dizaines). Leçons guidées (l’élève pose ou enlève les objets en les touchant, puis la voix explique) : « はかりの よみかた », « g と kg » (1円玉 ＝ 1 g … 1 kg ＝ 1000 g), puis l’entraînement « はかって みよう ». La rubrique « ね、しっていた？（むかしは…）» rassemble la culture : la balance à plateaux (てんびん, avec son exercice et « つりあわせよう »), 匁 et la pièce de 5 円, et pour les longueurs あた／ひろ et 尺／寸, pour les liquides 合／升. Masses 5 et 6, liquides 4 et 5 : l’aide convertit d’abord dans la même unité (1 kg ＝ 1000 g, 1 L ＝ 1000 mL), puis montre des balances de cuisine ou des verres doseurs. « うつして くらべよう » : le bouton « うつす » (ou une erreur) verse les deux récipients dans des verres identiques. « つりあわせよう » : des cubes jusqu’à 20 (« つみき なんこ ぶん »), puis des poids en g ; la balance penche moins quand on approche. « はかって いれよう » : on glisse le doigt vers le haut ou le bas ; la taille du verre doseur (200 mL, 500 mL, 1 L) se choisit en haut de l’écran.',
+      theme_kazu: 'Nombres (かず)',
       theme_nagasa: 'Longueurs (ながさ)',
       theme_omosa: 'Masses (おもさ)',
       theme_kasa: 'Liquides (かさ)',
@@ -4435,7 +4907,8 @@
       etudeAide: '「べんきょう」では テープを ひっぱるか（どこからでも）、＋1・−1 の ボタンを つかいます。たしたり ひいたり した 1cm ずつが ばんごうつきの ブロックで みえます。「のばして みよう」では テープの 下の あおい ●で さいしょの かずを かえられます（2つめの かずは そのまま）。かずが 大きいと こまかい うごきが ひつようです。',
       aide: 'ヒントの ボタン（ヒント・そろえる）',
       aideAide: '6・7：まず おなじ たんいに なおし（1m＝100cm）、つぎに ぼうで しめします。8・9：ものの はしを そろえます。まちがえたときは じどうで でます。',
-      aideMV: 'おもさ：はかりが 中心です。「はりで くらべる」は すうじの ない はかりで くらべます。「みためと ちがう」は まず よそうして（大きくても かるい ものが あります）、はかりで たしかめます。「はかりを よもう」は はりを よみます。べんきょうでは「はかりの よみかた」「g と kg」（1円玉＝1g … 1kg＝1000g）「はかって みよう」を します。ものを さわって のせたり おろしたり すると、こえで せつめいします。「ね、しっていた？（むかしは…）」には てんびん、もんめ（5円玉）、あた・ひろ、しゃく・すん、ごう・しょうが あります。おもさ 5・6、かさ 4・5 は まず おなじ たんいに なおし（1kg＝1000g、1L＝1000mL）、つぎに はかりや けいりょうカップで しめします。「うつして くらべよう」は「うつす」ボタン（または まちがい）で おなじ コップに うつします。「つりあわせよう」は 20までは つみき、それより 大きいと g の おもりです。「はかって いれよう」は ゆびを 上下に うごかします。カップの 大きさ（200mL・500mL・1L）は がめんの 上で えらべます。',
+      aideMV: 'かず：すうじには いつも ひらがなの よみかたが つきます（3 さん、23 にじゅうさん、300 さんびゃく）。べんきょうでは 10の わく、10の ぼう、100の いたを つかい、のせる たびに こえで かずを いいます。おもさ：はかりが 中心です。「はりで くらべる」は すうじの ない はかりで くらべます。「みためと ちがう」は まず よそうして（大きくても かるい ものが あります）、はかりで たしかめます。「はかりを よもう」は はりを よみます。べんきょうでは「はかりの よみかた」「g と kg」（1円玉＝1g … 1kg＝1000g）「はかって みよう」を します。ものを さわって のせたり おろしたり すると、こえで せつめいします。「ね、しっていた？（むかしは…）」には てんびん、もんめ（5円玉）、あた・ひろ、しゃく・すん、ごう・しょうが あります。おもさ 5・6、かさ 4・5 は まず おなじ たんいに なおし（1kg＝1000g、1L＝1000mL）、つぎに はかりや けいりょうカップで しめします。「うつして くらべよう」は「うつす」ボタン（または まちがい）で おなじ コップに うつします。「つりあわせよう」は 20までは つみき、それより 大きいと g の おもりです。「はかって いれよう」は ゆびを 上下に うごかします。カップの 大きさ（200mL・500mL・1L）は がめんの 上で えらべます。',
+      theme_kazu: 'かず',
       theme_nagasa: 'ながさ',
       theme_omosa: 'おもさ',
       theme_kasa: 'かさ',

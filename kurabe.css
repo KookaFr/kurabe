@@ -1526,6 +1526,110 @@ body.mode-lecture button:not(.btn-lire):not([hidden]) {
   cursor: help;
 }
 
+
+/* ---------- かず : nombres et leur lecture en hiragana ---------- */
+
+.nb { display: inline-flex; flex-direction: column; align-items: center; line-height: 1.1; }
+.nb-chiffre { font-weight: 800; font-variant-numeric: tabular-nums; }
+.nb-yomi { font-size: .55em; font-weight: 700; color: var(--action); white-space: nowrap; }
+.nb-yomi.grand { font-size: clamp(2rem, 7vw, 3.4rem); color: var(--encre); }
+.nb-autre { font-size: 1.1rem; color: var(--encre-douce); }
+.btn-nombre { flex-direction: column; line-height: 1.15; }
+.btn-nombre .nb-yomi { font-size: .62em; }
+
+/* Objets à compter : en rangées de 5 (ou en désordre dans la même grille). */
+.a-compter {
+  display: grid;
+  grid-template-columns: repeat(5, var(--t));
+  grid-auto-rows: var(--t);
+  gap: calc(var(--t) * .28);
+  justify-content: center;
+  align-content: center;
+}
+.objet-compte { position: relative; display: grid; place-items: center; font-size: calc(var(--t) * .82); line-height: 1; }
+.num-compte {
+  position: absolute;
+  right: -6px;
+  top: -6px;
+  display: grid;
+  place-items: center;
+  min-width: 1.6em;
+  height: 1.6em;
+  padding: 0 .3em;
+  border-radius: 999px;
+  background: var(--encre);
+  color: var(--papier);
+  font-size: max(13px, calc(var(--t) * .28));
+  font-weight: 800;
+  animation: apparaitre .3s ease both;
+}
+
+.carte-nombre {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 22px;
+  border: 3px solid var(--bord);
+  border-radius: 18px;
+  background: var(--surface);
+}
+.carte-nombre > .nb-chiffre { font-size: clamp(3rem, 12vw, 6rem); line-height: 1; }
+.carte-nombre > .nb-yomi { font-size: clamp(1.4rem, 4vw, 2.2rem); }
+.choix-comparer { min-width: 40%; }
+.choix-comparer .nb { font-size: clamp(3rem, 10vw, 5rem); }
+.choix-comparer.juste { border-color: var(--bon); background: var(--bon-fond); }
+.choix-comparer.essaye { opacity: .45; }
+
+/* Cadre de 10 (2 rangées de 5), barre de 10, plaque de 100. */
+.blocs { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.blocs-rang { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; }
+.blocs .ba, .cadre-groupe b { font-weight: 800; color: var(--action); }
+.cadre10 {
+  display: inline-grid;
+  grid-template-columns: repeat(5, var(--c, 18px));
+  grid-auto-rows: var(--c, 18px);
+  gap: 3px;
+  padding: 4px;
+  border: 2px solid var(--encre-douce);
+  border-radius: 6px;
+  background: var(--surface);
+}
+.cadre10 i { border: 2px solid var(--bord); border-radius: 50%; }
+.cadre10 i.plein { border-color: color-mix(in srgb, var(--o5) 70%, var(--encre)); background: var(--o5); }
+.barre10 {
+  display: inline-grid;
+  grid-template-rows: repeat(10, calc(var(--c, 18px) * .55));
+  gap: 1px;
+  padding: 3px;
+  border-radius: 5px;
+  background: var(--o2);
+}
+.barre10 i { width: calc(var(--c, 18px) * .55); border-radius: 50%; background: color-mix(in srgb, #fff 55%, var(--o2)); }
+.plaque100 {
+  display: inline-block;
+  width: calc(var(--c, 18px) * 6.2);
+  height: calc(var(--c, 18px) * 6.2);
+  border-radius: 6px;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, #fff 40%, transparent) 1px, transparent 1px) 0 0 / 10% 10%,
+    linear-gradient(color-mix(in srgb, #fff 40%, transparent) 1px, transparent 1px) 0 0 / 10% 10%,
+    var(--o4);
+}
+.zone-dizaines { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; max-width: 100%; }
+.cadre-groupe { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.zone-dizaines .cadre10 { grid-template-columns: repeat(5, var(--c)); grid-auto-rows: var(--c); }
+
+/* Leçons かず */
+.compte-lecon { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; margin: auto 0; }
+.compte-affiche .nb { font-size: clamp(2.6rem, 9vw, 4.4rem); }
+.compte-affiche .nb-yomi { font-size: .45em; }
+.compte-plateau { display: flex; justify-content: center; }
+.compte-plateau.enlevable :is(.plaque100, .barre10, .cadre10 i.plein) { cursor: pointer; }
+.pion-piece { display: inline-block; border-radius: 50%; background: var(--o5); border: 2px solid color-mix(in srgb, var(--o5) 70%, var(--encre)); }
+.reserve-piece .barre10 { --c: 12px; }
+.reserve-piece .plaque100 { --c: 7px; }
+
 @media (max-width: 560px) {
   :root { --cible: 56px; }
   .titre { font-size: 1.6rem; }
@@ -1578,7 +1682,7 @@ body.mode-lecture button:not(.btn-lire):not([hidden]) {
   .valeur-etude { min-width: 2.2em; font-size: 2rem; }
   /* Avec ±10 et ±100, la place manque : le nombre reste lisible dans la bulle du ruban. */
   .avec-grand .valeur-etude { display: none; }
-  .titre-etude { font-size: 1.15rem; }
+  .titre-etude { font-size: 1rem; line-height: 1.2; }
   .choix-mots .btn { flex: 1; min-width: 0; min-height: 56px; padding: 0 .3em; font-size: 1.3rem; white-space: nowrap; }
   .bas .btn-suivant, .bas .btn-aide { flex: 1; min-height: 60px; }
   .etabli.nombres .etiquette { font-size: 1.6rem; padding: 0 44px 0 14px; }

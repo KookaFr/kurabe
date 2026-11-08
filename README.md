@@ -4,6 +4,23 @@
 
 Une petite application pour s'entraîner à comparer des longueurs (長い・短い), des masses (重い・軽い) et des quantités de liquide (多い・少ない), pensée pour les élèves avec un retard intellectuel. Elle fonctionne sur tablette et sur smartphone (iPad, Android). L'accueil a trois onglets : ながさ, おもさ, かさ.
 
+## かず / Nombres
+
+Le premier onglet : compter et lire les nombres (programme « 数の学習 »). Chaque nombre est écrit avec sa **lecture en hiragana** dessous : 3 さん, 23 にじゅうさん, 235 にひゃく さんじゅう ご, 600 ろっぴゃく.
+
+もんだい :
+
+1. いくつ？: compter des objets (jusqu'à 5, puis 10), d'abord en rangées de 5, puis en désordre ; les réponses montrent le chiffre et sa lecture ; la preuve numérote les objets dans l'ordre et la voix compte « いち、に、さん… »
+2. よみかた: un chiffre → choisir sa lecture en hiragana, puis l'inverse (「にじゅうさん」 → 23) ; 1 à 10, puis 11 à 20, puis jusqu'à 99 (pièges : 13 / 31) ; les autres lectures sont rappelées (4 し, 7 しち, 9 く)
+3. 10の まとまり: des jetons rangés dans des cadres de 10 (2 rangées de 5) ; compter les dizaines puis le reste
+4. どっちが 大きい？: comparer deux nombres (1 à 10, puis jusqu'à 100 avec 12 / 21, 39 / 41) ; la preuve montre les barres de 10 et les jetons
+
+べんきょう (leçons guidées ; la voix dit le nombre à chaque jeton posé ou enlevé) :
+
+5. 1から 10まで: le cadre de 10 ; poser les jetons un par un jusqu'à 10 ; 5 ご, la rangée du haut ; 4 よん / し, 7 なな / しち, 9 きゅう / く ; tout enlever → 0 ぜろ ; 「いくつ？」 ; poser 8 jetons
+6. 10より 大きい かず: le cadre plein devient une barre de 10 ; 10 et 3 → 13 ; 17 ; compter de 10 en 10 jusqu'à 100 ; fabriquer 34 avec des barres et des jetons ; lire 52
+7. 100より 大きい かず: 10 barres → une plaque de 100 ; compter de 100 en 100 jusqu'à 900 (さんびゃく, ろっぴゃく, はっぴゃく) ; fabriquer 235 ; lire 408 (le 0 des dizaines) ; 10 plaques → 1000 せん
+
 ## ながさ / Longueurs
 
 1. どっちが 長い？（やさしい）: deux objets, avec une différence très marquée

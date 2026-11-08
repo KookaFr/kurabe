@@ -40,23 +40,33 @@ La limite des nombres (〜10, 〜20, 〜50, 〜100, 〜1000) se choisit en haut 
 
 ## おもさ / Masses
 
-13. どっちが 重い？: deux objets sur une balance à plateaux (上皿てんびん). Elle part à plat, puis penche : 「下がった ほうが 重い」
-14. 見ためと ちがう: deux objets posés sur la table, souvent un gros mais léger (ふうせん) et un petit mais lourd (いし). L'élève devine d'abord, puis la balance vérifie
-15. 一番 重いのは？: trois objets sur trois balances de cuisine à cadran (はかり) ; l'aiguille la plus avancée montre le plus lourd
-16. g で くらべる: deux masses écrites en g (300 g / 250 g), avec des pièges comme 350 g / 530 g
-17. kg と g: 1 kg / 800 g. « ヒント » convertit (1 kg ＝ 1000 g), puis montre deux balances de cuisine
+Les activités sont numérotées 1, 2, 3… dans chaque onglet.
 
-べんきょう : 18. つりあわせよう — un objet sur un plateau ; on pose des cubes (つみき, jusqu'à 20 : « つみき なんこ ぶん ») ou des poids de 1 / 10 g ou 10 / 100 g sur l'autre, jusqu'à ce que la balance soit à l'équilibre. Elle penche moins quand on approche, et la voix dit de quel côté c'est plus lourd. Les objets ont leur vrai poids, à 15 % près.
+もんだい :
+
+1. どっちが 重い？: deux objets sur une balance à plateaux (上皿てんびん). Elle part à plat, puis penche : 「下がった ほうが 重い」
+2. 見ためと ちがう: deux objets posés sur la table, souvent un gros mais léger (ふうせん) et un petit mais lourd (いし). L'élève devine d'abord, puis la balance vérifie
+3. はりで くらべる: deux balances de cuisine à cadran, **sans aucun nombre** : on compare seulement de combien l'aiguille a tourné (「はりが たくさん まわった ほうが 重い」) ; la preuve colore l'angle parcouru
+4. 一番 重いのは？: trois balances de cuisine, avec des nombres ; l'aiguille la plus avancée montre le plus lourd
+5. g で くらべる: deux masses écrites en g (300 g / 250 g), avec des pièges comme 350 g / 530 g
+6. kg と g: 1 kg / 800 g. « ヒント » convertit (1 kg ＝ 1000 g), puis montre deux balances de cuisine
+
+べんきょう (leçons guidées : une consigne lue, l'élève touche les objets pour les poser ou les enlever, puis la voix explique ; つぎへ passe à l'étape suivante) :
+
+7. てんびんの しくみ: à quoi sert la balance ; une pomme posée → ce plateau descend ; deux pommes → 「つりあう」 ; pomme contre fraise → 「下がった ほうが 重い、上がった ほうが 軽い」 ; on inverse les côtés ; puis des poids identiques : 「りんごは おもり 3こ ぶん」, 「ボールは 5こ ぶん」 → 5 est plus grand que 3, la balle est plus lourde
+8. おもりと たんい: 1円玉 ＝ 1 g ; dix 1円玉 équilibrent 10 g ; dix 10 g équilibrent 100 g ; peser une pomme avec des poids de 100 g et 10 g (320 g) ; dix 100 g ＝ 1 kg ＝ 1000 g. Quand le plus gros poids dépasserait, la voix conseille un plus petit
+9. つりあわせよう: entraînement — un objet sur un plateau ; on pose des cubes (つみき, jusqu'à 20 : « つみき なんこ ぶん ») ou des poids de 1 / 10 g ou 10 / 100 g sur l'autre, jusqu'à l'équilibre. Elle penche moins quand on approche. Les objets ont leur vrai poids, à 15 % près
+10. はかりの よみかた: une balance de cuisine de 500 g ; on pose des poids de 100 g un par un et l'aiguille tourne de plus en plus ; on les enlève et elle revient à 0 ; les petites graduations (10 g) ; lire 「はりは なん g？」 (trois réponses au choix) ; puis poser les poids pour que l'aiguille montre une masse donnée
 
 ## かさ / Liquides
 
-19. どっちが 多い？: deux verres identiques ; 「同じ コップなら、たかい ほうが 多い」
-20. 一番 多いのは？: trois verres identiques
-21. うつして くらべよう: deux récipients de formes différentes (びん, カップ, ボウル, なべ). Souvent un piège : le liquide monte plus haut dans le récipient étroit, mais il y en a moins. Le bouton « うつす » (ou une erreur) verse les deux dans des verres identiques pour comparer
-22. mL で くらべる: deux quantités en mL (200 mL / 350 mL)
-23. L と mL: 1 L / 800 mL. « ヒント » convertit (1 L ＝ 1000 mL), puis montre deux verres doseurs gradués
+1. どっちが 多い？: deux verres identiques ; 「同じ コップなら、たかい ほうが 多い」
+2. 一番 多いのは？: trois verres identiques
+3. うつして くらべよう: deux récipients de formes différentes (びん, カップ, ボウル, なべ). Souvent un piège : le liquide monte plus haut dans le récipient étroit, mais il y en a moins. Le bouton « うつす » (ou une erreur) verse les deux dans des verres identiques pour comparer
+4. mL で くらべる: deux quantités en mL (200 mL / 350 mL)
+5. L と mL: 1 L / 800 mL. « ヒント » convertit (1 L ＝ 1000 mL), puis montre deux verres doseurs gradués
 
-べんきょう : 24. はかって いれよう — remplir un verre doseur gradué jusqu'à la quantité demandée, en glissant le doigt vers le haut ou le bas, ou avec les boutons. Ensuite, le verre contient déjà du liquide : on ajoute ou on en enlève (« いま 120 mL。200 mL に しよう »). La taille du verre doseur (200 mL, 500 mL, 1 L) se choisit en haut de l'écran.
+べんきょう : 6. はかって いれよう — remplir un verre doseur gradué jusqu'à la quantité demandée, en glissant le doigt vers le haut ou le bas, ou avec les boutons. Ensuite, le verre contient déjà du liquide : on ajoute ou on en enlève (« いま 120 mL。200 mL に しよう »). La taille du verre doseur (200 mL, 500 mL, 1 L) se choisit en haut de l'écran.
 
 Comme pour les longueurs, chaque bonne réponse est suivie d'une preuve (masses en g sur les plateaux, niveau le plus bas tracé sur les verres avec la quantité en plus) et de la règle : « 重いのは 数が 大きい ほう », « 少ないのは 数が 小さい ほう ».
 

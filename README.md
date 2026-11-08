@@ -102,8 +102,8 @@ Les poids posés s'alignent par rangées de 5 (10 ＝ 5 ＋ 5), une rangée par 
 
 1. どっちが 多い？: deux verres identiques ; 「同じ コップなら、たかい ほうが 多い」
 2. 一番 多いのは？: trois verres identiques
-3. うつして くらべよう: deux récipients de formes différentes (びん, カップ, ボウル, なべ). Souvent un piège : le liquide monte plus haut dans le récipient étroit, mais il y en a moins. Le bouton « うつす » (ou une erreur) verse les deux dans des verres identiques pour comparer
-4. mL で くらべる: deux quantités en mL (200 mL / 350 mL)
+3. うつして くらべよう: deux récipients de formes différentes (びん, カップ, ボウル, なべ). Souvent un piège : le liquide monte plus haut dans le récipient étroit, mais il y en a moins. Le bouton « うつす » (ou une erreur) verse les deux dans des verres identiques pour comparer Quand on verse (« うつす », après une erreur ou avec « わからない »), chaque récipient garde une taille raisonnable : il monte au-dessus du verre, se penche et se vide pendant qu'un filet remplit le verre, puis se repose à côté, vide. Le message dit « うつしても かさは かわらないよ ». L'animation continue même si l'écran se redessine.
+4. mL で くらべる: deux quantités en mL (200 mL / 350 mL) ; avec l'aide, deux verres doseurs dont la contenance est proche du plus grand nombre (200 mL pour 130 et 180, puis 300, 500 ou 1000 mL), pour lire les graduations facilement
 5. L と mL: 1 L / 800 mL. L'aide convertit (1 L ＝ 1000 mL), puis montre deux verres doseurs gradués
 
 べんきょう : 6. はかって いれよう — remplir un verre doseur gradué jusqu'à la quantité demandée, en glissant le doigt vers le haut ou le bas, ou avec les boutons. Ensuite, le verre contient déjà du liquide : on ajoute ou on en enlève (« いま 120 mL。200 mL に しよう »). La taille du verre doseur (200 mL, 500 mL, 1 L) se choisit en haut de l'écran.

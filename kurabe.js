@@ -1665,7 +1665,8 @@
       const mixte = niveau === 17 || niveau === 23;
       const valeurs = melanger(mixte ? paireUnitesMV(theme, derniere) : paireNombresMV(theme, i, derniere));
       const max = Math.max(...valeurs.map((v) => v.val));
-      const paliers = theme === 'omosa' ? [500, 1000, 2000, 3000, 4000, 5000] : [500, 1000, 2000, 3000, 4000];
+      // La contenance du verre doseur (ou de la はかり) proche du plus grand nombre : 130 et 180 → 200 mL.
+      const paliers = theme === 'omosa' ? [500, 1000, 2000, 3000, 4000, 5000] : [200, 300, 500, 1000, 2000, 3000, 4000];
       return avecBonne({
         ...base, theme, type: 'mesures', mixte, valeurs, objets: valeurs,
         max: paliers.find((p) => p >= max) || 5000,
@@ -1817,7 +1818,7 @@
     if (q.type === 'lecture') return ['おしい！ はりの さきを よく ', MI, 'てね。 ', OOKI, 'きい めもりから かぞえよう。'];
     if (q.type === 'transvaser' && q.versePourErreur) {
       q.versePourErreur = false;
-      return ['おしい！ ', ONAJI, 'じ コップに うつして くらべよう。'];
+      return ['おしい！ ', ONAJI, 'じ コップに うつして くらべよう。 うつしても かさは かわらないよ。'];
     }
     return ['おしい！ たかさを よく ', MI, 'てね。'];
   }
@@ -2197,13 +2198,21 @@
     // Écran très bas (téléphone, explication affichée) : les verres d'abord, les noms ensuite.
     const avecNoms = reglages.noms && H >= 190;
     const hNom = avecNoms ? 30 : 0;
-    const h = Math.max(48, Math.min(H - hNom - 64, 330));
-    const wMini = avant ? Math.min(colW * 0.3, 70) : 0;
-    const w = Math.max(36, Math.min((colW - wMini) * 0.6, h * 0.55, 150));
+    // Après avoir versé : les verres un peu moins hauts, pour laisser la place au récipient penché au-dessus.
+    const h = Math.max(48, Math.min(H - hNom - 64 - (avant ? 46 : 0), 330));
+    // Verser : le récipient d'origine reste assez grand (environ 40 % de la colonne), à côté du verre.
+    const wMini = avant ? colW * 0.42 : 0;
+    const w = Math.max(36, Math.min((colW - wMini) * 0.75, h * 0.55, 150));
     const rangee = document.createElement('div');
     rangee.className = 'rangee-mv';
     rangee.classList.toggle('sans-noms-mv', !avecNoms);
-    const verser = !q.vuVerres && !animationsReduites();
+    // L'animation (verser) dure 3,3 s ; si l'écran se redessine pendant ce temps (le texte qui apparaît
+    // réduit la place sur téléphone), elle reprend là où elle en était (--decalage négatif).
+    const maintenant = performance.now();
+    if (!q.vuVerres) q.debutVerse = maintenant;
+    const ecoule = maintenant - (q.debutVerse || 0);
+    const verser = !animationsReduites() && ecoule < 3300;
+    rangee.style.setProperty('--decalage', `${-Math.round(ecoule)}ms`);
     objets.forEach((o, k) => {
       const col = document.createElement('button');
       col.type = 'button';
@@ -2213,9 +2222,14 @@
       pill.style.visibility = q.preuve ? 'visible' : 'hidden';
       const ligne = document.createElement('span');
       ligne.className = 'verre-ligne';
+      let mini = null;
+      let taille = 0;
       if (avant) {
-        // Le récipient d'origine, maintenant vide (il se vide pendant qu'on verse).
-        const mini = creerContenant(o, Math.min(wMini * 1.4, h * 0.45));
+        // Le récipient d'origine : il monte au-dessus du verre, se penche et se vide pendant que le verre
+        // se remplit (la même quantité : « うつしても かさは かわらない »), puis se redresse, vide.
+        const c = o.contenant || { w: 0.8, h: 0.8 };
+        taille = Math.max(30, Math.min(wMini / c.w, (h * 0.7) / c.h, 160));
+        mini = creerContenant(o, taille);
         mini.classList.add('mini');
         const liq = mini.querySelector('.liquide');
         if (liq) {
@@ -2226,7 +2240,25 @@
         ligne.append(mini);
       }
       const v = creerVerre(w, h, o.val, q.cap, o.couleur);
-      if (verser) v.querySelector('.liquide').classList.add('verse');
+      if (verser) {
+        v.querySelector('.liquide').classList.add('verse');
+        if (mini) {
+          // Le filet qui tombe dans le verre pendant qu'on verse.
+          const filet = document.createElement('span');
+          filet.className = 'filet';
+          filet.style.setProperty('--c', o.couleur);
+          v.append(filet);
+          mini.classList.add('versement');
+          const hMini = parseFloat(mini.style.height) || 40;
+          // Il monte au-dessus du bord du verre, sans sortir du cadre (en tournant, son bord gauche remonte).
+          const wMiniPx = parseFloat(mini.style.width) || 40;
+          mini.style.setProperty('--monte', `${Math.max(0, Math.min(h - hMini + 14, h + 40 - hMini - wMiniPx * 0.88))}px`);
+          mini.style.setProperty('--avance', `${Math.min(w * 0.35, 40)}px`);
+          // Il part de sa taille d'avant (c'est le même récipient), puis rapetisse à côté du verre.
+          mini.style.setProperty('--grand', String(Math.max(1, Math.min(1.5, (q.tailleAvant || taille) / taille))));
+          mini.style.setProperty('--h', `${hMini}px`);
+        }
+      }
       ligne.append(v);
       col.append(pill, ligne, nomMV(o));
       cible(col, k, `${POSITIONS_MV[n]?.[k] || ''} ${o.yomi}`);
@@ -2271,6 +2303,7 @@
     const hNom = reglages.noms ? 30 : 0;
     const formes = q.objets.map((o) => o.contenant || { w: 0.8, h: 0.8 });
     const S = Math.max(50, Math.min((H - hNom - 30) / Math.max(...formes.map((c) => c.h)), (W - 60) / formes.reduce((s, c) => s + c.w * 1.15, 0), 380));
+    q.tailleAvant = S;   // pour que le récipient parte de cette taille quand on verse
     const rangee = document.createElement('div');
     rangee.className = 'rangee-mv';
     q.objets.forEach((o, k) => {
@@ -3300,7 +3333,7 @@
       if (q.etape !== 'avant') return;
       q.etape = 'apres';
       rendreQuestion();
-      const m = [ONAJI, 'じ コップに うつしたよ。'];
+      const m = [ONAJI, 'じ コップに うつしたよ。 うつしても かさは かわらないよ。'];
       $('retour').innerHTML = htmlMots(m);
       $('retour').classList.remove('ok');
       parlerPuisRelancer(m, q);

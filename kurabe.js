@@ -1320,6 +1320,7 @@
   function afficherRappel(q) {
     const rappel = $('rappel');
     rappel.innerHTML = htmlMots(rappelDe(q));
+    rappel.dataset.parole = versParole(lecture(rappelDe(q)));
     rappel.hidden = false;
   }
 
@@ -2530,7 +2531,7 @@
     if (q.type === 'tuto') return [''];
     if (q.type === 'compter') return ['ひとつずつ、 じゅんばんに かぞえる'];
     if (q.type === 'compteur') return q.sens === 'choisir' ? [COMPTEURS[q.compteur].court] : [sonsQuiChangent(q.compteur)];
-    if (q.type === 'lire') return [String(q.valeur), ' ＝ ', yomiNombre(q.valeur)];
+    if (q.type === 'lire') return [V(`${q.valeur} ＝ `, 'この すうじは '), yomiNombre(q.valeur)];
     if (q.type === 'dizaines') return ['10の まとまりで かぞえると はやい'];
     const grand = Math.max(...q.valeurs) >= 10;
     return grand
@@ -2555,13 +2556,13 @@
     }
     if (q.type === 'lire') {
       const autre = AUTRES_YOMI[v] ? [' 「', AUTRES_YOMI[v], '」とも よむよ。'] : [];
-      return [String(v), 'は 「', yomiNombre(v), '」と よむ。', ...autre];
+      return [V(String(v), 'この すうじ'), 'は 「', yomiNombre(v), '」と よむ。', ...autre];
     }
     if (q.type === 'dizaines') {
       const d = Math.floor(v / 10);
       const u = v % 10;
-      if (!u) return ['10の まとまりが ', `${d}つで `, String(v), '、 「', yomiNombre(v), '」。 ばらは ない。'];
-      return ['10の まとまりが ', `${d}つで `, String(d * 10), '、 ばらが ', `${u}つで `, String(u), '。 あわせて ', String(v), '、 「', yomiNombre(v), '」。'];
+      if (!u) return ['10の まとまりが ', `${d}つで `, ecrit(`${v}、 `), '「', yomiNombre(v), '」。 ばらは ない。'];
+      return ['10の まとまりが ', `${d}つで `, String(d * 10), '、 ばらが ', `${u}つで `, String(u), '。 あわせて ', ecrit(`${v}、 `), '「', yomiNombre(v), '」。'];
     }
     const [a, b] = q.valeurs;
     const g = Math.max(a, b);
@@ -2581,11 +2582,37 @@
   const compterPar10 = (d) => V(d <= 3 ? Array.from({ length: d }, (_, k) => (k + 1) * 10).join('、 ') : '10、 20、 30…',
     YOMI_DIX.slice(1, d + 1).join('、 '));
 
+  // Un nombre écrit mais pas dit, quand sa lecture suit juste après : sinon la voix dit « じゅうさん。 じゅうさん ».
+  const ecrit = (texte) => V(texte, '');
+
   // L'aide かず : on DÉCOMPOSE le nombre (16 = 10 と 6 : 「じゅう」 と 「ろく」), on compte les 10 (じゅう、 にじゅう…).
+  // Après une erreur sur un nombre (64 pour 66) : quelle partie était juste ? 'ba' : les dizaines sont justes,
+  // on regarde les ばら ; 'dix' : les ばら sont justes, on regarde les 10の まとまり.
+  function partieAVoir(q) {
+    if (!['dizaines', 'lire'].includes(q.type) || typeof q.erreur !== 'number' || q.valeur < 10) return null;
+    const [d, u, de, ue] = [Math.floor(q.valeur / 10), q.valeur % 10, Math.floor(q.erreur / 10), q.erreur % 10];
+    if (d === de && u !== ue) return 'ba';
+    if (u === ue && d !== de) return 'dix';
+    return null;
+  }
+
   function aideKazu(q) {
     const v = q.valeur;
     const d = Math.floor(v / 10);
     const u = v % 10;
+    const voir = partieAVoir(q);
+    if (q.type === 'dizaines' && voir === 'ba') {
+      return ['10の まとまりは あって いるよ。 ', String(d * 10), '。 こんどは ばらを ひとつずつ かぞえよう。'];
+    }
+    if (q.type === 'dizaines' && voir === 'dix') {
+      return ['ばらは あって いるよ。 10の まとまりを 10ずつ かぞえよう： ', compterPar10(d), '。'];
+    }
+    if (q.type === 'lire' && voir === 'ba') {
+      return ['「', YOMI_DIX[d], '」は あって いるよ。 ばらを よく ', MI, 'て： ばら ', `${u}つは 「`, YOMI_UN[u], '」。'];
+    }
+    if (q.type === 'lire' && voir === 'dix' && u) {
+      return ['「', YOMI_UN[u], '」は あって いるよ。 10の まとまりを よく ', MI, 'て： 10の まとまり ', `${d}つは 「`, YOMI_DIX[d], '」。'];
+    }
     if (q.type === 'compteur') {
       const c = q.compteur;
       // Choisir : la règle de chaque compteur proposé. Lire : on compte ensemble jusqu'au nombre d'avant.
@@ -2597,11 +2624,11 @@
       if (v < 10) return ['●を かぞえて みよう。 いち、 に、 さん…'];
       if (q.sens === 'chiffre') {
         return u
-          ? [String(v), 'は ', String(d * 10), 'と ', String(u), '。 ', String(d * 10), 'は 「', YOMI_DIX[d], '」、 ', String(u), 'は 「', YOMI_UN[u], '」。']
+          ? ['10の まとまり ', `${d}つは 「`, YOMI_DIX[d], '」、 ばら ', `${u}つは 「`, YOMI_UN[u], '」。']
           : ['10の まとまりが ', `${d}つ。 10ずつ かぞえよう： `, compterPar10(d), '。'];
       }
       return u
-        ? ['「', yomiNombre(v), '」は 「', YOMI_DIX[d], '」と 「', YOMI_UN[u], '」。 「', YOMI_DIX[d], '」は ', String(d * 10), '、 「', YOMI_UN[u], '」は ', String(u), '。']
+        ? ['「', yomiNombre(v), '」は 「', YOMI_DIX[d], '」と 「', YOMI_UN[u], '」。 「', YOMI_DIX[d], '」は 10の まとまり ', `${d}つ`, '、 「', YOMI_UN[u], '」は ばら ', `${u}つ`, '。']
         : ['「', yomiNombre(v), '」は 10の まとまりが ', `${d}つ。`];
     }
     if (q.type === 'dizaines') {
@@ -2620,7 +2647,9 @@
         : ['おしい！ こえに だして かぞえて みよう。'];
     }
     if (q.type === 'lire') return ['おしい！ こえを よく きいてね。'];
-    if (q.type === 'dizaines') return ['おしい！ 10の まとまりを さきに かぞえよう。'];
+    if (q.type === 'dizaines') {
+      return partieAVoir(q) === 'ba' ? ['おしい！ ばらを ゆびで さしながら かぞえよう。'] : ['おしい！ 10の まとまりを さきに かぞえよう。'];
+    }
     return ['おしい！ 10の まとまりの かずを くらべよう。'];
   }
 
@@ -2733,6 +2762,10 @@
       // Aide et preuve : le nombre décomposé (10の まとまり / ばら), avec la lecture de chaque partie.
       if (q.preuve || aide) {
         carte.innerHTML += htmlBlocs(q.valeur, { compte: q.valeur >= 20, legende: q.valeur >= 10 });
+        // La partie à regarder après l'erreur (dizaines ou ばら) est entourée.
+        const voir = q.preuve ? null : partieAVoir(q);
+        const groupes = carte.querySelectorAll('.blocs-groupe');
+        if (voir && groupes.length === 2) groupes[voir === 'ba' ? 1 : 0].classList.add('a-regarder');
         carte.classList.toggle('en-ligne', W > H * 1.25);
       }
       scene.append(carte);
@@ -2744,8 +2777,9 @@
       const u = q.valeur % 10;
       // Aide et preuve : on compte les 10 (10, 20, 30…), puis les ばら.
       const compter = q.preuve || aide;
-      zone.innerHTML = Array.from({ length: d }, (_, k) => `<span class="cadre-groupe">${htmlCadre(10, 'dix')}${compter ? `<b>${(k + 1) * 10}</b>` : ''}</span>`).join('')
-        + (u ? `<span class="cadre-groupe">${htmlCadre(u)}${q.preuve ? `<b class="ba">ばら ${u}</b>` : ''}</span>` : '');
+      const voir = q.preuve ? null : partieAVoir(q);
+      zone.innerHTML = Array.from({ length: d }, (_, k) => `<span class="cadre-groupe${voir === 'dix' ? ' a-regarder' : ''}">${htmlCadre(10, 'dix')}${compter ? `<b>${(k + 1) * 10}</b>` : ''}</span>`).join('')
+        + (u ? `<span class="cadre-groupe${voir === 'ba' ? ' a-regarder' : ''}">${htmlCadre(u)}${q.preuve ? `<b class="ba">ばら ${u}</b>` : voir === 'ba' ? '<b class="ba">ばら ？</b>' : ''}</span>` : '');
       placerCadres(zone, d + (u ? 1 : 0), scene, W, H);
     } else if (q.type === 'tuto') {
       rendreExemple(q, scene, W, H);
@@ -2842,7 +2876,7 @@
         { dire: ['まずは れいを みよう。 これは 10の まとまり。 ●が 10こ はいって いるよ。 ', V('1、 2、 3… 10。', 'いち、 に、 さん、 よん、 ご、 ろく、 なな、 はち、 きゅう、 じゅう。')], dizaines: 1, numeros: [1, 10] },
         { dire: ['10の まとまりは 10ずつ かぞえる： ', V('10、 20。', 'じゅう、 にじゅう。')], dizaines: 2, ba: 3, etiquettes: true },
         { dire: ['のこりの ●は 「ばら」。 ', V('21、 22、 23。', 'にじゅういち、 にじゅうに、 にじゅうさん。')], dizaines: 2, ba: 3, etiquettes: true, numerosBa: 21 },
-        { dire: ['ぜんぶで 23、 「にじゅうさん」。 じゃ、 やって みよう！'], dizaines: 2, ba: 3, etiquettes: true, total: 23 },
+        { dire: ['ぜんぶで ', ecrit('23、 '), '「にじゅうさん」。 では、 やって みよう！'], dizaines: 2, ba: 3, etiquettes: true, total: 23 },
       ],
     }),
   };
@@ -2897,34 +2931,34 @@
       {
         dire: ['これは 10の わく。 ●を 1こずつ のせて、 10まで かぞえよう。 ', SUJI, 'と よみかたが でるよ。'],
         scene: 'compte', cadre: true, contenu: [], reserve: [un(10)], vers: 'plateau', compter: true, fini: (e) => total(e) === 10,
-        bravo: ['10！ 「じゅう」。 わくが いっぱいに なったね。'],
+        bravo: [ecrit('10！ '), '「じゅう」。 わくが いっぱいに なったね。'],
       },
       {
-        dire: ['5は 「ご」。 うえの ならびが いっぱい。 5の まとまり だよ。'],
+        dire: [ecrit('5は '), '「ご」。 うえの ならびが いっぱい。 5の まとまり だよ。'],
         scene: 'compte', cadre: true, contenu: [un(5)],
       },
       {
-        dire: ['4は 「よん」。 「し」とも よむよ。 7は 「なな」、 「しち」とも よむ。 9は 「きゅう」、 「く」とも よむ。'],
+        dire: [ecrit('4は '), '「よん」。 「し」とも よむよ。 ', ecrit('7は '), '「なな」、 「しち」とも よむ。 ', ecrit('9は '), '「きゅう」、 「く」とも よむ。'],
         scene: 'compte', cadre: true, contenu: [un(4)], autres: true,
       },
       {
         dire: ['●を さわって、 ぜんぶ おろそう。'],
         scene: 'compte', cadre: true, contenu: [un(6)], retirer: true, vers: 'plateau', compter: true, fini: (e) => total(e) === 0,
-        bravo: ['なにも ない とき、 ', SUJI, 'は 0。 「ぜろ」と よむ。'],
+        bravo: ['なにも ない とき、 ', SUJI, 'は ', ecrit('0。 '), '「ぜろ」と よむ。'],
       },
       {
         dire: ['●は いくつ？'],
         scene: 'compte', cadre: true, contenu: [un(7)], cache: true,
         cinq: true,
         choix: { options: [7, 6, 8], bonne: 7, unite: '', indice: ['おしい！ うえの ならびを かぞえよう： いち、 に、 さん、 よん、 ご。 5の まとまり。 あと いくつ？'] },
-        bravo: ['5と 2で 7。 「なな」。'],
+        bravo: ['5と 2で ', ecrit('7。 '), '「なな」。'],
       },
       {
         dire: ['●を 8こ のせよう。'],
         scene: 'compte', cadre: true, contenu: [], reserve: [un(10)], vers: 'plateau', retirer: true, compter: true, cache: true,
         fini: (e) => total(e) === 8,
         pendant: (e) => (total(e) < 8 ? null : ['おおすぎ！ ●を さわって おろそう。']),
-        bravo: ['8！ 「はち」。 10まで あと 2つ。'],
+        bravo: [ecrit('8！ '), '「はち」。 10まで あと 2つ。'],
       },
     ];
   }
@@ -2935,38 +2969,38 @@
     const dix = (n) => P('dix', 10, n);
     return [
       {
-        dire: ['10は 「じゅう」。 10の わくが いっぱいに なったら、 それが 「10の まとまり」。 10、 20、 30と、 10ずつ かぞえられるよ。'],
+        dire: [ecrit('10は '), '「じゅう」。 10の わくが いっぱいに なったら、 それが 「10の まとまり」。 10、 20、 30と、 10ずつ かぞえられるよ。'],
         scene: 'compte', contenu: [dix(1)],
       },
       {
         dire: ['10の まとまりの よこに ●を のせて、 13に しよう。'],
         scene: 'compte', cadre: true, contenu: [dix(1)], reserve: [un(9)], vers: 'plateau', retirer: true, compter: true,
         fini: (e) => total(e) === 13, pendant: (e) => (total(e) < 13 ? null : ['おおすぎ！ ●を さわって おろそう。']),
-        bravo: ['10と 3で 13。 「じゅうさん」。'],
+        bravo: ['10と 3で ', ecrit('13。 '), '「じゅうさん」。'],
       },
       {
         dire: ['いくつ？'],
         scene: 'compte', contenu: [dix(1), un(7)], cache: true,
         choix: { options: [17, 71, 7], bonne: 17, unite: '', indice: ['おしい！ 10の まとまりが 1つと、 ●が 7こ。'] },
-        bravo: ['10と 7で 17。 「じゅうなな」（「じゅうしち」）。'],
+        bravo: ['10と 7で ', ecrit('17。 '), '「じゅうなな」（「じゅうしち」）。'],
       },
       {
         dire: ['10の まとまりを のせて、 10ずつ かぞえよう。 100まで いくよ。'],
         scene: 'compte', contenu: [], reserve: [dix(10)], vers: 'plateau', compter: true, fini: (e) => total(e) === 100,
-        bravo: ['10が 10こで 100。 「ひゃく」。'],
+        bravo: ['10が 10こで ', ecrit('100。 '), '「ひゃく」。'],
       },
       {
         dire: ['34を つくろう。 10の まとまりと ●を つかってね。'],
         scene: 'compte', cadre: true, contenu: [], reserve: [dix(5), un(9)], vers: 'plateau', retirer: true, compter: true,
         fini: (e) => total(e) === 34,
         pendant: (e) => (total(e) > 34 ? ['おおすぎ！ さわって おろそう。'] : null),
-        bravo: ['10が 3つで 30、 ●が 4つで 4。 34、 「さんじゅうよん」。'],
+        bravo: ['10が 3つで 30、 ●が 4つで 4。 ', ecrit('34、 '), '「さんじゅうよん」。'],
       },
       {
         dire: ['いくつ？'],
         scene: 'compte', contenu: [dix(5), un(2)], cache: true,
         choix: { options: [52, 25, 7], bonne: 52, unite: '', indice: ['おしい！ 10の まとまりは いくつ？ ●は いくつ？'] },
-        bravo: ['10が 5つで 50、 ●が 2つで 2。 52、 「ごじゅうに」。'],
+        bravo: ['10が 5つで 50、 ●が 2つで 2。 ', ecrit('52、 '), '「ごじゅうに」。'],
       },
       {
         dire: ['まとめ： ひだりの ', SUJI, 'は 10の まとまりの かず、 みぎの ', SUJI, 'は ●の かず。 34は 10が 3つと ●が 4つ。'],
@@ -2988,28 +3022,28 @@
       {
         dire: ['100の いたを のせて、 100ずつ かぞえよう。 よみかたが かわる ところを きいてね。'],
         scene: 'compte', contenu: [], reserve: [cent(9)], vers: 'plateau', compter: true, fini: (e) => total(e) === 900,
-        bravo: ['300は 「さんびゃく」、 600は 「ろっぴゃく」、 800は 「はっぴゃく」。 よみかたが すこし かわるね。'],
+        bravo: ['100が 3つで 「さんびゃく」、 100が 6つで 「ろっぴゃく」、 100が 8つで 「はっぴゃく」。 よみかたが すこし かわるね。'],
       },
       {
         dire: ['235を つくろう。'],
         scene: 'compte', contenu: [], reserve: [cent(4), dix(9), un(9)], vers: 'plateau', retirer: true, compter: true,
         fini: (e) => total(e) === 235,
         pendant: (e) => (total(e) > 235 ? ['おおすぎ！ さわって おろそう。'] : null),
-        bravo: ['100が 2つ、 10が 3つ、 ●が 5つ。 235、 「にひゃく さんじゅう ご」。'],
+        bravo: ['100が 2つ、 10が 3つ、 ●が 5つ。 ', ecrit('235、 '), '「にひゃく さんじゅう ご」。'],
       },
       {
         dire: ['いくつ？'],
         scene: 'compte', contenu: [cent(4), un(8)], cache: true,
         choix: { options: [408, 48, 480], bonne: 408, unite: '', indice: ['おしい！ 100の いたは いくつ？ 10の まとまりは ある？'] },
-        bravo: ['100が 4つ、 10の まとまりは ない、 ●が 8つ。 408、 「よんひゃく はち」。 10の ところは 0 だよ。'],
+        bravo: ['100が 4つ、 10の まとまりは ない、 ●が 8つ。 ', ecrit('408、 '), '「よんひゃく はち」。 10の ところは 0 だよ。'],
       },
       {
         dire: ['100の いたを 10まい のせると…'],
         scene: 'compte', contenu: [cent(9)], reserve: [cent(1)], vers: 'plateau', compter: true, fini: (e) => total(e) === 1000,
-        bravo: ['1000！ 「せん」。 100が 10こで 1000。'],
+        bravo: [ecrit('1000！ '), '「せん」。 100が 10こで 1000。'],
       },
       {
-        dire: ['まとめ： ', SUJI, 'は ひだりから 100の かず、 10の かず、 ●の かず。 235は 「にひゃく さんじゅう ご」。'],
+        dire: ['まとめ： ', SUJI, 'は ひだりから 100の かず、 10の かず、 ●の かず。 ', ecrit('235は '), '「にひゃく さんじゅう ご」。'],
         scene: 'compte', contenu: [cent(2), dix(3), un(5)], etiquettes: true,
       },
     ];
@@ -3375,6 +3409,7 @@
   // conversion puis barres…), le conseil s'affiche et se dit, puis la question est reposée.
   function donnerAide(q, debut, erreur) {
     q.indices = true;
+    if (erreur !== undefined) q.erreur = erreur;
     let message = q.type === 'tehon' ? PHRASES.oshiiTehon : PHRASES.oshii;
     if (q.type === 'libre') message = PHRASES.oshiiSoroe;
     if (estMV(q)) {
@@ -3417,7 +3452,7 @@
 
   /* ----- Reposer la question après une aide -----
      Quand la voix a fini le conseil (« ぼうで くらべて みよう。 ») et que rien d'autre n'a été dit
-     pendant 2,5 s, la question revient : « じゃ、 どっちが みじかい？ ». */
+     pendant 2,5 s, la question revient : « では、 どっちが みじかい？ ». */
   let minuteurRelance = 0;
   function parlerPuisRelancer(message, q) {
     clearTimeout(minuteurRelance);
@@ -3427,7 +3462,7 @@
       clearTimeout(minuteurRelance);
       minuteurRelance = setTimeout(() => {
         if (paroles !== numero || q !== courante() || q.resolu || ecranActuel !== 'question') return;
-        const relance = ['じゃ、 ', ...consigneDe(q)];
+        const relance = ['では、 ', ...consigneDe(q)];
         $('retour').insertAdjacentHTML('beforeend', ` ${htmlMots(relance)}`);
         parler(relance);
       }, 2500);
@@ -3559,7 +3594,10 @@
       if (bouge || ev.target.closest('button, a, input, label, select, textarea, .zone-etude')) return;
       if (ev.target.closest('#ecran-parents, #ecran-photo')) return;
       const bloc = ev.target.closest('.phrase-lue') || ev.target.closest(LISIBLE);
-      if (bloc) lireElement(bloc);
+      // Un bloc qui a sa propre phrase à dire (le rappel « 16 ＝ じゅうろく » → « この すうじは じゅうろく »).
+      const avecParole = bloc && bloc.closest('[data-parole]');
+      if (avecParole) lireElement(avecParole, avecParole.dataset.parole);
+      else if (bloc) lireElement(bloc);
     }, true);
   })();
 

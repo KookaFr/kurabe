@@ -45,7 +45,7 @@ Les objets sont alignés sur une ligne de départ et affichés à l'échelle. En
 Dans tous les onglets :
 
 - un bouton « わからない » (avec un ?) est toujours là. La première fois, il rassure et aide (« だいじょうぶ！ ぼうで くらべて みよう。 ») : repères, barres, balance de cuisine, verres identiques selon la question. Ensuite, il montre la réponse avec sa preuve, sans reproche, et l'on passe à la suite ;
-- après chaque conseil (une erreur ou « わからない »), quand la voix a fini, la question est reposée 2 à 3 secondes plus tard : « じゃ、どっちが みじかい？ ».
+- après chaque conseil (une erreur ou « わからない »), quand la voix a fini, la question est reposée 2 à 3 secondes plus tard : « では、どっちが みじかい？ ».
 
 Après chaque bonne réponse, même trouvée du premier coup, l'application montre pourquoi c'est juste : une règle graduée apparaît sous les objets, la longueur de chaque objet s'affiche, la partie qui dépasse est surlignée avec l'écart en cm, et la voix explique (« うえは 15センチ、したは 8センチ。うえの ほうが 7センチ ながいね。 »). Le bouton 🔊 permet de réécouter l'explication.
 

@@ -1647,6 +1647,11 @@ mark { background: none; color: var(--o5); }
 .cadre-groupe { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .cadre-groupe b { font-size: max(14px, calc(var(--c, 18px) * .6)); font-variant-numeric: tabular-nums; }
 .zone-dizaines.serre { gap: 4px; }
+/* Après une erreur : la partie à regarder (les ばら, ou les 10の まとまり) est entourée et pulse un peu. */
+.cadre-groupe.a-regarder .cadre10 { box-shadow: 0 0 0 4px var(--action); animation: regarder 1.1s ease-in-out 3; }
+.blocs-groupe.a-regarder { outline: 3px solid var(--action); outline-offset: 5px; border-radius: 10px; }
+.cadre-groupe.a-regarder > b { color: var(--action); }
+@keyframes regarder { 50% { box-shadow: 0 0 0 9px color-mix(in srgb, var(--action) 35%, transparent); } }
 /* Exemple guidé (れい) : les numéros dans les ●, les étiquettes 10, 20 au rythme de la voix. */
 .cadre10 i.plein:has(b) { display: grid; place-items: center; }
 .cadre10 i b { font-size: calc(var(--c, 18px) * .5); font-weight: 800; line-height: 1; color: #2b1702; animation: apparaitre .3s ease both; }

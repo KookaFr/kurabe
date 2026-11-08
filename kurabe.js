@@ -581,7 +581,7 @@
   }
 
   const SORTES = {
-    enpitsu: { yomi: 'えんぴつ', kanji: '鉛筆', dessin: svgCrayon, hauteur: 40 },
+    enpitsu: { yomi: 'えんぴつ', kanji: null, dessin: svgCrayon, hauteur: 40 },
     keburu: { yomi: 'ケーブル', kanji: null, dessin: svgCable, hauteur: 36 },
     tepu: { yomi: 'テープ', kanji: null, dessin: svgRuban, hauteur: 30 },
   };
@@ -598,11 +598,11 @@
     { n: 1, titre: ['どっちが ', NAGA, 'い？'], sous: ['やさしい'], fr: 'Lequel est le plus long ? (facile)', barres: [1, 0.42] },
     { n: 2, titre: ['どっちが ', NAGA, 'い？'], sous: ['むずかしい'], fr: 'Lequel est le plus long ? (difficile)', barres: [1, 0.86] },
     { n: 3, titre: [ICHIBAN, ' ', NAGA, 'いのは？'], sous: ['3つから えらぶ'], fr: 'Le plus long parmi trois', barres: [0.62, 1, 0.8] },
-    { n: 4, titre: ['ことばで いおう'], sous: ['〇〇は △△より …'], fr: 'La phrase « A は B より 長い »', barres: [1, 0.55] },
+    { n: 4, titre: ['ことばで いおう'], sous: [V('〇〇は △△より …', 'なになには なになにより')], fr: 'La phrase « A は B より 長い »', barres: [1, 0.55] },
     { n: 5, titre: [TEHON, 'と ', ONAJI, 'じ'], sous: [ONAJI, 'じ ', NAGA, 'さを さがす'], fr: 'Même longueur que le modèle', barres: 'tehon' },
     { n: 6, titre: ['cm で くらべる'], sous: ['10\u00a0cm と 43\u00a0cm'], fr: 'Nombres en cm (10 cm ou 43 cm ?)', barres: 'cm' },
     { n: 7, titre: ['m と cm'], sous: ['1\u00a0m ＝ 100\u00a0cm'], fr: 'Mètres et centimètres (1 m ou 75 cm ?)', barres: 'mcm' },
-    { n: 8, titre: ['ずれている'], sous: ['はしが そろっていない'], fr: 'Objets décalés (pas alignés à gauche)', barres: 'decale' },
+    { n: 8, titre: ['ずれている'], sous: ['はしが そろって いない'], fr: 'Objets décalés (pas alignés à gauche)', barres: 'decale' },
     { n: 9, titre: ['ななめ'], sous: ['かたむいている'], fr: 'Objets penchés', barres: 'incline' },
     { n: 10, etude: 'libre', titre: ['のばして みよう'], sous: [SUJI, 'が かわるよ'], fr: 'べんきょう : étirer le ruban et voir les nombres changer', barres: 'etude-libre' },
     { n: 11, etude: 'plus', titre: ['たしざん'], sous: ['みぎに のばす（＋）'], fr: 'べんきょう : additionner en tirant vers la droite', barres: 'etude-plus' },
@@ -611,14 +611,14 @@
     { n: 36, theme: 'kazu', titre: ['よみかた'], sous: [SUJI, 'と ひらがな'], fr: 'Lire les nombres : chiffre → hiragana, hiragana → chiffre', barres: 'k-lire' },
     { n: 37, theme: 'kazu', titre: ['10の まとまり'], sous: ['10ずつ かぞえる'], fr: 'Compter des jetons rangés par 10 (11 à 99)', barres: 'k-dizaines' },
     { n: 38, theme: 'kazu', titre: ['どっちが ', OOKI, 'きい？'], sous: [SUJI, 'を くらべる'], fr: 'Comparer deux nombres (1 à 100)', barres: 'k-comparer' },
-    { n: 42, theme: 'kazu', titre: ['かぞえかた'], sous: ['〜こ、 〜ひき、 〜ほん'], fr: 'Les compteurs (助数詞) : choisir 〜こ, 〜ひき, 〜ほん… selon la chose, puis la bonne lecture (いっぽん, さんぼん, ろっぽん…)', barres: 'k-compteur' },
+    { n: 42, theme: 'kazu', titre: ['かぞえかた'], sous: [V('〜こ、 〜ひき、 〜ほん', 'こ、 ひき、 ほん')], fr: 'Les compteurs (助数詞) : choisir 〜こ, 〜ひき, 〜ほん… selon la chose, puis la bonne lecture (いっぽん, さんぼん, ろっぽん…)', barres: 'k-compteur' },
     { n: 39, theme: 'kazu', etude: 'lecon-kazu1', titre: ['1から 10まで'], sous: ['いち、 に、 さん…'], fr: 'べんきょう : compter jusqu’à 10 avec le cadre de 10 (et la lecture en hiragana)', barres: 'k-lecon1' },
     { n: 40, theme: 'kazu', etude: 'lecon-kazu2', titre: ['10より ', OOKI, 'きい かず'], sous: ['10の まとまりで 100まで'], fr: 'べんきょう : de 11 à 100 avec les « 10の まとまり » (cadres de 10 pleins), comptés par 10', barres: 'k-lecon2' },
     { n: 41, theme: 'kazu', etude: 'lecon-kazu3', titre: ['100より ', OOKI, 'きい かず'], sous: ['ひゃく、 せん'], fr: 'べんきょう : les centaines jusqu’à 1000 (さんびゃく, ろっぴゃく…)', barres: 'k-lecon3' },
     { n: 32, groupe: 'culture', etude: 'lecon-corps', titre: ['からだで はかる'], sous: ['あた・ひろ'], fr: 'ね、しっていた？ Mesurer avec le corps (あた, ひろ), et pourquoi le cm', barres: 'lecon-corps' },
     { n: 33, groupe: 'culture', etude: 'lecon-shaku', titre: ['しゃくと すん'], sous: ['いっすんぼうしは なん cm？'], fr: 'ね、しっていた？ 尺 et 寸 : 1 寸 ≈ 3 cm, 1 尺 ≈ 30 cm', barres: 'lecon-shaku' },
     { n: 25, theme: 'omosa', titre: ['はりで くらべる'], sous: ['はかりの はりが たくさん まわった ほう'], fr: 'Balances de cuisine sans nombres : l’aiguille qui a le plus tourné', barres: 'hakari-simple' },
-    { n: 14, theme: 'omosa', titre: [MI, 'ためと ちがう'], sous: ['よそうして、 はかりで たしかめる'], fr: 'Gros mais léger : deviner, puis vérifier sur les balances de cuisine', barres: 'devine' },
+    { n: 14, theme: 'omosa', titre: [MI, 'た', ME, 'と ちがう'], sous: ['よそうして、 はかりで たしかめる'], fr: 'Gros mais léger : deviner, puis vérifier sur les balances de cuisine', barres: 'devine' },
     { n: 15, theme: 'omosa', titre: [ICHIBAN, ' ', OMO, 'いのは？'], sous: ['はかりで くらべる'], fr: 'Le plus lourd parmi trois (balances de cuisine)', barres: 'hakari' },
     { n: 29, theme: 'omosa', titre: ['はかりを よもう'], sous: ['はりは なん g？'], fr: 'Lire une balance de cuisine (trois nombres au choix)', barres: 'lecture-hakari' },
     { n: 16, theme: 'omosa', titre: ['g で くらべる'], sous: ['300\u00a0g と 250\u00a0g'], fr: 'Nombres en g (300 g ou 250 g ?)', barres: 'g' },
@@ -1517,7 +1517,7 @@
     { yomi: 'はね', kanji: '羽', emoji: '🪶', val: 1, taille: 1.15 },
     { yomi: 'ぬいぐるみ', emoji: '🧸', val: 150, taille: 1.45 },
     { yomi: 'いし', kanji: '石', emoji: '🪨', val: 700, taille: 0.75 },
-    { yomi: 'かんづめ', kanji: '缶詰', emoji: '🥫', val: 400, taille: 0.7 },
+    { yomi: 'かんづめ', kanji: null, emoji: '🥫', val: 400, taille: 0.7 },
     { yomi: 'りんご', emoji: '🍎', val: 300, taille: 0.85 },
     { yomi: 'いちご', emoji: '🍓', val: 20, taille: 0.55 },
     { yomi: 'たまご', kanji: '卵', emoji: '🥚', val: 60, taille: 0.6 },
@@ -1525,7 +1525,7 @@
     { yomi: 'バナナ', emoji: '🍌', val: 120, taille: 0.95 },
     { yomi: 'ボール', emoji: '⚽', val: 430, taille: 1.1 },
     { yomi: 'みかん', emoji: '🍊', val: 100, taille: 0.65 },
-    { yomi: 'かぎ', kanji: '鍵', emoji: '🔑', val: 10, taille: 0.55 },
+    { yomi: 'かぎ', kanji: null, emoji: '🔑', val: 10, taille: 0.55 },
     { yomi: 'トマト', emoji: '🍅', val: 200, taille: 0.7 },
     { yomi: 'くつ', kanji: '靴', emoji: '👟', val: 250, taille: 1.1 },
   ];
@@ -1546,10 +1546,10 @@
 
   // Récipients de formes différentes (w, h : largeur et hauteur relatives). Contenance ∝ w² × h.
   const CONTENANTS = {
-    bin: { yomi: 'びん', kanji: '瓶', w: 0.34, h: 1, forme: 'bin' },
+    bin: { yomi: 'びん', kanji: null, w: 0.34, h: 1, forme: 'bin' },
     kappu: { yomi: 'カップ', w: 0.5, h: 0.6, forme: 'tasse' },
     boru: { yomi: 'ボウル', w: 1, h: 0.42, forme: 'bol' },
-    nabe: { yomi: 'なべ', kanji: '鍋', w: 0.8, h: 0.55, forme: 'nabe' },
+    nabe: { yomi: 'なべ', kanji: null, w: 0.8, h: 0.55, forme: 'nabe' },
   };
   const capacite = (c) => Math.round(c.w * c.w * c.h * 2600);
 
@@ -1800,7 +1800,7 @@
   function rappelMV(q) {
     if (q.theme === 'kazu') return rappelKazu(q);
     if (q.type === 'lecture') {
-      if (q.pas === 100) return [SUJI, 'の ', ME, 'もりは ', segU(100, 'g'), ' ずつ'];
+      if (q.pas === 100) return [OOKI, 'きい ', ME, 'もり 1つ ＝ ', segU(100, 'g')];
       return ['ちいさい ', ME, 'もり 1つ ＝ ', segU(10, 'g')];
     }
     const mot = motDe(q.theme, q.demande);
@@ -1838,7 +1838,7 @@
     if (t.length === 3) {
       const aiguille = q.demande === 'plus'
         ? ['はりが ', ICHIBAN, ' すすんだ ものが ', ICHIBAN, ' ', OMO, 'い。 ']
-        : ['はりが ', ICHIBAN, ' すすまない ものが ', ICHIBAN, ' ', KARU, 'い。 '];
+        : ['はりの うごきが ', ICHIBAN, ' ちいさい ものが、 ', ICHIBAN, ' ', KARU, 'い。 '];
       const debut = q.type === 'hakari' ? aiguille : regleVerres(q.demande);
       return [...debut, ...mesures, ...regleMV(q.theme, q.demande, true), referenceMV(q, q.bonne), 'だね。'];
     }
@@ -1874,7 +1874,7 @@
       const regle = q.demande === 'plus'
         ? ['はりが たくさん まわった ほうが ', OMO, 'い。']
         : ['はりが すこししか まわらない ほうが ', KARU, 'い。'];
-      return q.essais.size <= 1 ? ['おしい！ はかりで たしかめよう。 ', ...regle] : ['おしい！ ', ...regle];
+      return q.essais.size <= 1 ? ['そう おもうよね。 はかりで たしかめよう。 ', ...regle] : ['おしい！ ', ...regle];
     }
     if (q.type === 'balance') return ['おしい！ ', ...regleBalance(q.demande)];
     if (q.type === 'hakari') return ['おしい！ はりを よく ', MI, 'てね。'];
@@ -2894,7 +2894,7 @@
     const grand = Math.max(...q.valeurs) >= 10;
     return grand
       ? ['10の まとまりが ', OO_I, 'い ほう ＝ ', OOKI, 'きい']
-      : ['あとに かぞえる ', SUJI, ' ＝ ', OOKI, 'きい'];
+      : ['あとから いう かず ＝ ', OOKI, 'きい'];
   }
 
   function explicationKazu(q) {
@@ -2927,7 +2927,7 @@
     const p = Math.min(a, b);
     let raison;
     if (g < 10) {
-      raison = [String(p), 'の あとに ', String(g), 'を かぞえる。 '];
+      raison = ['かぞえると、 ', String(p), 'の あとに ', String(g), 'が くるね。 '];
     } else if (Math.floor(g / 10) !== Math.floor(p / 10)) {
       raison = [String(g), 'は ◇10が ', `${Math.floor(g / 10)}つ、 `, String(p), 'は ◇10が ', `${Math.floor(p / 10)}つ。 `, '◇10の まとまりが ', OO_I, 'い ほうが ', OOKI, 'きい。 '];
     } else {
@@ -3004,7 +3004,10 @@
         ? ['おしい！ ', q.nom, 'は ', q.options.map((x) => questions[x]).join(' '), ' よく ', MI, 'てね。']
         : ['おしい！ こえに だして かぞえて みよう。'];
     }
-    if (q.type === 'lire') return ['おしい！ こえを よく きいてね。'];
+    if (q.type === 'lire') {
+      if (q.sens === 'yomi') return ['おしい！ こえを よく きいてね。'];
+      return q.valeur < 10 ? ['おしい！ ●を かぞえて みよう。'] : ['おしい！ ◇10の まとまりと ●を よく ', MI, 'てね。'];
+    }
     if (q.type === 'dizaines') {
       return partieAVoir(q) === 'ba' ? ['おしい！ ◎ばらを ゆびで さしながら かぞえよう。'] : ['おしい！ ◇10の まとまりを さきに かぞえよう。'];
     }
@@ -3357,23 +3360,23 @@
         bravo: [ecrit('10！ '), '「じゅう」。 わくが いっぱいに なったね。'],
       },
       {
-        dire: [ecrit('5は '), '「ご」。 うえの ならびが いっぱい。 5の まとまり だよ。'],
+        dire: [ecrit('5は '), '「ご」。 うえの だんが いっぱい。 5の まとまり だよ。'],
         scene: 'compte', cadre: true, contenu: [un(5)],
       },
       {
-        dire: [ecrit('4は '), '「よん」。 「し」とも よむよ。 ', ecrit('7は '), '「なな」、 「しち」とも よむ。 ', ecrit('9は '), '「きゅう」、 「く」とも よむ。'],
+        dire: [ecrit('4は '), '「よん」。 「し」とも よむよ。 ', ecrit('7は '), '「なな」、 「しち」とも よむよ。 ', ecrit('9は '), '「きゅう」、 「く」とも よむよ。'],
         scene: 'compte', cadre: true, contenu: [un(4)], autres: true,
       },
       {
         dire: ['●を さわって、 ぜんぶ おろそう。'],
         scene: 'compte', cadre: true, contenu: [un(6)], retirer: true, vers: 'plateau', compter: true, fini: (e) => total(e) === 0,
-        bravo: ['なにも ない とき、 ', SUJI, 'は ', ecrit('0。 '), '「ぜろ」と よむ。'],
+        bravo: ['なにも ない とき、 ', SUJI, 'は ', ecrit('0。 '), '「ぜろ」と よむ。 「れい」とも よむよ。'],
       },
       {
         dire: ['●は いくつ？'],
         scene: 'compte', cadre: true, contenu: [un(7)], cache: true,
         cinq: true,
-        choix: { options: [7, 6, 8], bonne: 7, unite: '', indice: ['おしい！ うえの ならびを かぞえよう： いち、 に、 さん、 よん、 ご。 5の まとまり。 あと いくつ？'] },
+        choix: { options: [7, 6, 8], bonne: 7, unite: '', indice: ['おしい！ うえの だんを かぞえよう： いち、 に、 さん、 よん、 ご。 5の まとまり。 あと いくつ？'] },
         bravo: ['5と 2で ', ecrit('7。 '), '「なな」。'],
       },
       {
@@ -3426,7 +3429,7 @@
         bravo: ['◇10が 5つで 50、 ●が 2つで 2。 ', ecrit('52、 '), '「ごじゅうに」。'],
       },
       {
-        dire: ['まとめ： ひだりの ', SUJI, '（みずいろの せん）は ◇10の まとまりの かず、 みぎの ', SUJI, '（オレンジの せん）は ●の かず。 34は ◇10が 3つと ●が 4つ。'],
+        dire: ['まとめ。 ひだりの ', SUJI, 'は、 ◇10の まとまりの かず。 みずいろの せん だよ。 みぎの ', SUJI, 'は、 ●の かず。 オレンジの せん だよ。 34は、 ◇10が 3つと ●が 4つ。'],
         scene: 'compte', contenu: [dix(3), un(4)], etiquettes: true,
       },
     ];
@@ -3466,7 +3469,7 @@
         bravo: [ecrit('1000！ '), '「せん」。 ◆100が 10こで 1000。'],
       },
       {
-        dire: ['まとめ： ', SUJI, 'は ひだりから 100の かず（むらさき）、 10の かず（みずいろ）、 ●の かず（オレンジ）。 ', ecrit('235は '), '「にひゃく さんじゅう ご」。'],
+        dire: ['まとめ。 ', SUJI, 'は、 ひだりから 100の かず、 10の かず、 ●の かず。 むらさき、 みずいろ、 オレンジの じゅん だよ。 ', ecrit('235は '), '「にひゃく さんじゅう ご」。'],
         scene: 'compte', contenu: [cent(2), dix(3), un(5)], etiquettes: true,
       },
     ];
@@ -3787,7 +3790,9 @@
 
     q.essais.add(reponse);
     sons.oups();
-    donnerAide(q, presque(q, reponse) ? ['おしい！ '] : ['もう いっかい！ '], reponse);
+    // Deviner faux dans 見た目と ちがう est le but du jeu : pas de « もう いっかい » à la première réponse.
+    const devine = q.type === 'devine' && q.etape === 'devine';
+    donnerAide(q, devine ? [] : presque(q, reponse) ? ['おしい！ '] : ['もう いっかい！ '], reponse);
   }
 
   // « おしい » n'est vrai que si la réponse était presque juste (14 pour 15, deux longueurs très proches) ;
@@ -4707,7 +4712,7 @@
     const g100 = (n) => P('g100', 100, n);
     return [
       {
-        dire: ['これは てんびん。 むかしは これで ', OMO, 'さを くらべたり はかったり したよ。 いまでも りかの じっけんで つかう。 なにも のって いない とき、 てんびんは まっすぐ。 まんなかの はりも まんなかを さして いる。'],
+        dire: ['これは てんびん。 むかしは これで ', OMO, 'さを くらべたり はかったり したよ。 いまでも りかの じっけんで つかうよ。 なにも のって いない とき、 てんびんは まっすぐ。 まんなかの はりも まんなかを さして いる。'],
         balance: [[], []],
       },
       {
@@ -4726,7 +4731,7 @@
         bravo: ['りんごの ほうが ', SAGA, 'がった。 ', SAGA, 'がった ほうが ', OMO, 'い。 いちごの ほうは ', AGA, 'がった。 ', AGA, 'がった ほうが ', KARU, 'い。'],
       },
       {
-        dire: ['ひだりと みぎを かえて みよう。 りんごを みぎの さらに のせよう。'],
+        dire: ['ひだりと みぎを いれかえて みよう。 りんごを みぎの さらに のせよう。'],
         balance: [[P('ichigo', 20)], []], reserve: [P('ringo', 300)], vers: 1, fini: unePose,
         bravo: ['こんどは みぎが ', SAGA, 'がった。 ひだりでも みぎでも、 ', OMO, 'い ほうが ', SAGA, 'がるよ。'],
       },
@@ -4739,7 +4744,7 @@
         dire: ['この おもりは 1こ ', segU(100, 'g'), '。 この りんごは ', segU('なん', 'g'), '？'],
         balance: [[P('ringo', 300)], [g100(3)]], cache: true,
         choix: { options: [300, 3, 100], bonne: 300, indice: ['おしい！ ', segU(100, 'g'), 'の おもりが 3こ。 100 ＋ 100 ＋ 100 は？'] },
-        bravo: ['100 ＋ 100 ＋ 100 ＝ 300。 100 × 3 ＝ 300 でも いいね。 この りんごは ', segU(300, 'g'), '。'],
+        bravo: ['100 ＋ 100 ＋ 100 ＝ 300。 この りんごは ', segU(300, 'g'), '。'],
       },
       {
         dire: ['こんどは ボール。 おもりを のせて、 つりあわせよう。'],
@@ -4798,7 +4803,7 @@
         bravo: ['はりは 1000を さして いる。 おこめは ', enG(1000), '、 つまり ', enKg(1), '。'], cache: true,
       },
       {
-        dire: ['まとめ： ', enKg(1), ' ＝ ', enG(1000), '。 ', V('g も kg も', 'グラムも キログラムも'), ' ', OMO, 'さの たんい。 ', ONAJI, 'じ たんいなら、 ', SUJI, 'が ', OOKI, 'きい ほうが ', OMO, 'い。'],
+        dire: ['まとめ。 ', enKg(1), ' ＝ ', enG(1000), '。 ', V('g も kg も', 'グラムも キログラムも'), ' ', OMO, 'さの たんい。 ', ONAJI, 'じ たんいなら、 ', SUJI, 'が ', OOKI, 'きい ほうが ', OMO, 'い。'],
         hakari: [P('g100', 100, 10)], max: 2000,
       },
     ];
@@ -4889,7 +4894,7 @@
         scene: 'corps', contenu: [],
       },
       {
-        dire: ['こどもの てで、 つくえの ', NAGA, 'さを はかろう。 て を さわって、 ならべよう。'],
+        dire: ['こどもの てで、 つくえの ', NAGA, 'さを はかろう。 てを さわって、 ならべよう。'],
         scene: 'corps', contenu: [], reserve: [P('teEnfant', 12, 8)], vers: 'plateau', fini: (e) => mains(e, 'teEnfant') >= BUREAU,
         bravo: ['つくえは こどもの あた 6つ ぶん。'],
       },
@@ -5005,7 +5010,7 @@
     });
     return [
       {
-        dire: ['これは はかり。 ものを のせると はりが まわって、 ', OMO, 'さが わかる。 なにも のって いない とき、 はりは 0 を さす。'],
+        dire: ['これは はかり。 ものを のせると はりが まわって、 ', OMO, 'さが わかる。 なにも のって いない とき、 はりは 0を さすよ。'],
         hakari: [],
       },
       {
@@ -5043,7 +5048,7 @@
         bravo: ['できた！ ', ...lectureHakari(cible)],
       },
       {
-        dire: ['まとめ： はりが さす かずを よむと、 ', OMO, 'さが わかる。 ', OMO, 'い ほど、 はりは たくさん まわる。'],
+        dire: ['まとめ。 はりが さす かずを よむと、 ', OMO, 'さが わかる。 ', OMO, 'い ほど、 はりは たくさん まわる。'],
         hakari: [P('g100', 100, 3), P('g10', 10, 2)],
       },
     ];
@@ -5517,7 +5522,7 @@
       pratique(200, false),
       pratique(500, false),
       {
-        dire: ['まとめ： ', ONAJI, 'じ コップに ', ONAJI, 'じ たかさまで いれると、 ', ONAJI, 'じ かさ。 ', segU(400, 'ml'), 'の はんぶんは ', segU(200, 'ml'), '。'],
+        dire: ['まとめ。 ', ONAJI, 'じ コップに ', ONAJI, 'じ たかさまで いれると、 ', ONAJI, 'じ かさ。 ', segU(400, 'ml'), 'の はんぶんは ', segU(200, 'ml'), '。'],
         scene: 'versement', versement: { total: 400, fait: true },
       },
     ];
@@ -5537,7 +5542,7 @@
     const deux = bonne === 0 ? [koi, usui] : [usui, koi];
     return [
       etape(['あおい ', K('水', 'みず'), 'と きいろい ', K('水', 'みず'), 'を、 おおきい コップに ぜんぶ いれよう。 コップを おして いる あいだ、 はいるよ。 なにいろに なるかな？'],
-        src('bleu', 100), src('jaune', 100), ['みどりに なった！ あおと きいろを まぜると、 みどり。 かさは たしざん。 ']),
+        src('bleu', 100), src('jaune', 100), ['みどりに なった！ あおと きいろを まぜると、 みどり。 かさは たして ふえるよ。 ']),
       etape(['こんどは あかと きいろ。 なにいろに なるかな？'],
         src('rouge', 200), src('jaune', 100), ['オレンジに なった！ あかと きいろで オレンジ。 ']),
       etape(['あかと あおを まぜると？'],
@@ -5554,7 +5559,7 @@
         bravo: [...PHRASES.seikai, K('水', 'みず'), 'が すくない ほうが こい。 ', K('水', 'みず'), 'が ', OO_I, 'い ほうが うすい。'],
       },
       {
-        dire: ['まとめ： まぜると いろが かわる。 あわせた かさは たしざん。 ', K('水', 'みず'), 'を たくさん いれると、 うすく なる。'],
+        dire: ['まとめ。 まぜると いろが かわる。 あわせると、 かさは たしざんで ふえる。 ', K('水', 'みず'), 'を たくさん いれると、 うすく なる。'],
         scene: 'versement',
         versement: {
           resultats: [
@@ -6124,11 +6129,12 @@
     return [compterPieces(liste).map(([v, n]) => {
       const vis = VISUELS[v];
       if (vis.genre === 'tsumiki') return `つみき ${n}こ`;
-      if (vis.genre === 'yen') return `1えんだま × ${n}`;
-      if (vis.genre === 'yen5') return `5えんだま × ${n}`;
-      if (vis.texte && !vis.unite) return `${vis.texte.replace('匁', 'もんめ')}${n > 1 ? ` × ${n}` : ''}`;
+      // « 10 g が 9こ » plutôt que « 10 g × 9 » : la multiplication n'est pas au programme de ces élèves.
+      if (vis.genre === 'yen') return `1えんだま ${n}まい`;
+      if (vis.genre === 'yen5') return `5えんだま ${n}まい`;
+      if (vis.texte && !vis.unite) return `${vis.texte.replace('匁', 'もんめ')}${n > 1 ? ` ${n}こ` : ''}`;
       if (!vis.unite) return `おもり ${n}こ`;
-      return `${vis.texte.replace(/(\d)([a-z])/, '$1\u00a0$2')} × ${n}`;
+      return `${vis.texte.replace(/(\d)([a-z])/, '$1\u00a0$2')}が ${n}こ`;
     }).join(' ＋ ')];
   }
 
@@ -6537,97 +6543,97 @@
       erreurImage: 'Cette image n’a pas pu être lue. Essayez une autre photo.',
     },
     ja: {
-      titre: 'おうちの人の せってい',
-      fermer: 'もどる',
-      langue: 'この ページの ことば',
-      activites: 'ひょうじする もんだい',
-      activitesAide: '1つ以上 えらんでください。1から はじめて、できたら ほかの もんだいを ふやしましょう。',
-      nbQuestions: '1回の もんだい数',
-      ecriture: 'もじ',
-      lireUnites: 'たんいの よみかたを 小さく かく（g の 上に グラム）',
-      toucherLire: 'さわって よむ：ぶんを さわると よみます。👆 を おすと、ボタンを さわっても よむだけに なります',
+      titre: '保護者の方の設定',
+      fermer: '戻る',
+      langue: 'このページの言語',
+      activites: '表示する問題',
+      activitesAide: '1つ以上選んでください。1から始めて、できるようになったら他の問題を増やしましょう。',
+      nbQuestions: '1回あたりの問題数',
+      ecriture: '文字',
+      lireUnites: '単位の読み方を小さく書く（g の上に グラム）',
+      toucherLire: '触って読む：文を触ると読み上げます。👆を押すと、ボタンに触れても読み上げるだけになります',
       hiragana: 'ひらがな',
       kanji: '漢字＋ふりがな',
-      nombreMax: 'べんきょう：かずの はんい',
-      compter: 'べんきょう：＋1・−1 で かずを よみあげる',
-      etudeAide: '「べんきょう」では テープを ひっぱるか（どこからでも）、＋1・−1 の ボタンを つかいます。たしたり ひいたり した 1cm ずつが ばんごうつきの ブロックで みえます。「のばして みよう」では テープの 下の あおい ●で さいしょの かずを かえられます（2つめの かずは そのまま）。かずが 大きいと こまかい うごきが ひつようです。',
-      aide: 'たすけの ボタン（わからない・そろえる・うつす）',
-      aideAide: '6・7：まず おなじ たんいに なおし（1m＝100cm）、つぎに ぼうで しめします。8・9：ものの はしを そろえます。まちがえたときは じどうで でます。',
-      aideMV: 'かず：すうじには いつも ひらがなの よみかたが つきます（3 さん、23 にじゅうさん、300 さんびゃく）。10の まとまり（いっぱいの 10の わく）を 10、20、30と かぞえ、べんきょうでは 100の いたも つかい、のせる たびに こえで かずを いいます。おもさ：はかりが 中心です。「はりで くらべる」は すうじの ない はかりで くらべます。「みためと ちがう」は まず よそうして（大きくても かるい ものが あります）、はかりで たしかめます。「はかりを よもう」は はりを よみます。べんきょうでは「はかりの よみかた」「g と kg」（1円玉＝1g … 1kg＝1000g）「はかって みよう」を します。ものを さわって のせたり おろしたり すると、こえで せつめいします。「ね、しっていた？（むかしは…）」には てんびん、もんめ（5円玉）、あた・ひろ、しゃく・すん、ごう・しょうが あります。おもさ 5・6、かさ 4・5 は まず おなじ たんいに なおし（1kg＝1000g、1L＝1000mL）、つぎに はかりや けいりょうカップで しめします。「うつして くらべよう」は「うつす」ボタン（または まちがい）で おなじ コップに うつします。「つりあわせよう」は 20までは つみき、それより 大きいと g の おもりです。はこを さわると 1こ のり、さらの おもりを さわると はこに もどります。おもりは 5こずつ ならびます。「はかって いれよう」は ゆびを 上下に うごかします。カップの 大きさ（200mL・500mL・1L）は がめんの 上で えらべます。',
+      nombreMax: 'べんきょう：数の範囲',
+      compter: 'べんきょう：＋1・−1 で数を読み上げる',
+      etudeAide: '「べんきょう」ではテープを引っ張るか（どこからでも）、＋1・−1 のボタンを使います。足したり引いたりした 1 cm ずつが番号つきのブロックで見えます。「のばして みよう」ではテープの下の青い●で最初の数を変えられます（2つめの数はそのまま）。数が大きいと細かい動きが必要です。',
+      aide: '助けのボタン（わからない・そろえる・うつす）',
+      aideAide: '6・7：まず同じ単位に直し（1 m＝100 cm）、次に棒で示します。8・9：物の端をそろえます。間違えたときは自動で出ます。',
+      aideMV: 'かず：数字にはいつもひらがなの読み方がつきます（3 さん、23 にじゅうさん、300 さんびゃく）。10のまとまり（いっぱいの10のわく）を 10、20、30 と数え、べんきょうでは100の板も使い、のせるたびに声で数を言います。おもさ：はかりが中心です。「はりで くらべる」は数字のないはかりで比べます。「見た目と ちがう」はまず予想して（大きくても軽い物があります）、はかりで確かめます。「はかりを よもう」は針を読みます。べんきょうでは「はかりの よみかた」「g と kg」（1円玉＝1 g … 1 kg＝1000 g）「はかって みよう」をします。物を触ってのせたりおろしたりすると、声で説明します。「ね、しっていた？（むかしは…）」には てんびん、もんめ（5円玉）、あた・ひろ、しゃく・すん、ごう・しょう があります。おもさ 5・6、かさ 4・5 はまず同じ単位に直し（1 kg＝1000 g、1 L＝1000 mL）、次にはかりや計量カップで示します。「うつして くらべよう」は「うつす」ボタン（または間違い）で同じ器に移します。「つりあわせよう」は 20 まではつみき、それより大きいと g のおもりです。箱を触ると1個のり、皿のおもりを触ると箱に戻ります。おもりは5個ずつ並びます。「はかって いれよう」は指を上下に動かします。カップの大きさ（200 mL・500 mL・1 L）は画面の上で選べます。「はんぶんこ」「まぜて みよう」は器を押している間だけ注がれます（「タッチ」の設定で、1回タッチごとに 20 mL ずつ注ぐこともできます）。',
       theme_kazu: 'かず',
-      compteurs: 'れんしゅうする かぞえかた（「いくつ？」も この かぞえかたの ものだけ）',
-      exemple: 'さいしょの もんだいの まえに れいを みせる（10の まとまり）',
+      compteurs: '練習する数え方（「いくつ？」もこの数え方の物だけ）',
+      exemple: '最初の問題の前に例を見せる（10のまとまり）',
       theme_nagasa: 'ながさ',
       theme_omosa: 'おもさ',
       theme_kasa: 'かさ',
-      noms: 'ものの なまえを ひょうじする',
-      court: '「短い」も きく',
-      courtAide: '「長い」と「短い」は まちがえやすいので、「長い」が できてから つかいましょう。',
+      noms: '物の名前を表示する',
+      court: '「短い」も聞く',
+      courtAide: '「長い」と「短い」は間違えやすいので、「長い」ができてから使いましょう。',
       oui: 'はい',
       non: 'いいえ',
-      photos: 'いえの ものの しゃしん',
-      photosAide: 'ものを よこむきに むじの かみの 上に おき、まうえから とってください。じょうぎで ながさを はかると、ただしい 大きさで ひょうじされます。ながさの ちがう ものを えらびましょう（れい：5・10・15・25cm）。キッチンスケールで おもさ（g）を はかったり、ボトルや パックの かさ（mL）を いれたり すると、おもさ・かさの もんだいにも でます。',
-      photosUsage: 'もんだいに しゃしんを つかう',
-      jamais: 'つかわない',
-      melange: 'イラストと まぜる',
-      toujours: 'できるだけ つかう',
-      prendre: 'しゃしんを とる',
-      galerie: 'アルバムから えらぶ',
-      aucune: 'まだ しゃしんは ありません。もんだいに つかうには 2まい いじょう ひつようです。',
-      prive: 'しゃしんは この きかいの 中だけに ほぞんされ、どこにも おくられません。',
-      stockage: 'ここでは ページを とじると しゃしんが きえます（ほぞんできません）。',
-      supprimer: 'けす',
-      confirmer: 'けしますか？',
+      photos: '家の物の写真',
+      photosAide: '物を横向きに無地の紙の上に置き、真上から撮ってください。定規で長さを測ると、正しい大きさで表示されます。長さの違う物を選びましょう（例：5・10・15・25 cm）。キッチンスケールで重さ（g）を量ったり、ボトルやパックの容量（mL）を入れたりすると、おもさ・かさの問題にも出ます。',
+      photosUsage: '問題に写真を使う',
+      jamais: '使わない',
+      melange: 'イラストと混ぜる',
+      toujours: 'できるだけ使う',
+      prendre: '写真を撮る',
+      galerie: 'アルバムから選ぶ',
+      aucune: 'まだ写真はありません。問題に使うには2枚以上必要です。',
+      prive: '写真はこの端末の中だけに保存され、どこにも送信されません。',
+      stockage: 'この環境ではページを閉じると写真が消えます（保存できません）。',
+      supprimer: '削除',
+      confirmer: '削除しますか？',
       annuler: 'やめる',
-      voix: 'こえと おと',
-      vitesse: 'はなす はやさ',
+      voix: '声と音',
+      vitesse: '話す速さ',
       lente: 'ゆっくり',
       normale: 'ふつう',
-      rapide: 'はやい',
-      sons: 'おと',
-      ecouter: 'こえを きく',
-      genreVoix: 'こえ',
-      femme: 'おんなの ひと',
-      homme: 'おとこの ひと',
-      voixPrecise: 'この きかいに ある にほんごの こえ',
-      voixAuto: 'じどう',
-      voixGrave: 'おとこの こえが ありません。いまの こえを ひくく して います。iPad：設定 › アクセシビリティ › 読み上げコンテンツ › 声 › 日本語 › Otoya（または Hattori）。Android（Galaxy）：設定 › 一般管理 › テキスト読み上げ › エンジンの せってい › 日本語 で おとこの こえを えらんで ください（ある ばあい）。',
-      sansVoix: 'にほんごの こえが ありません。iPad：設定 › アクセシビリティ › 読み上げコンテンツ › 声 › 日本語。Android（Galaxy）：設定 › 一般管理 › テキスト読み上げ で 日本語の こえを いれてください。',
+      rapide: '速い',
+      sons: '効果音',
+      ecouter: '声を聞く',
+      genreVoix: '声',
+      femme: '女性の声',
+      homme: '男性の声',
+      voixPrecise: 'この端末にある日本語の声',
+      voixAuto: '自動',
+      voixGrave: '日本語の男性の声が入っていないため、今の声を低くしています。iPad：設定 › アクセシビリティ › 読み上げコンテンツ › 声 › 日本語 › Otoya（または Hattori）。Android（Galaxy）：設定 › 一般管理 › テキスト読み上げ › エンジンの設定 › 日本語 で男性の声を選んでください（ある場合）。',
+      sansVoix: '日本語の声が見つかりません。iPad：設定 › アクセシビリティ › 読み上げコンテンツ › 声 › 日本語。Android（Galaxy）：設定 › 一般管理 › テキスト読み上げ で日本語の声を追加してください。',
       toucher: 'タッチ',
-      dureeAppui: 'おしつづける じかん',
+      dureeAppui: '長押しする時間（押し続けて決定）',
       immediat: 'すぐ',
-      antiRebond: 'つづけて タッチしたときに むしする',
-      rebondMeme: '0.3びょう（おなじ ボタン）',
-      verser: 'そそぐ（はんぶんこ・まぜて みよう）',
-      verserMaintenir: 'おしている あいだ',
-      verserTouche: '1かい タッチで 20 mL',
-      animations: 'うごき（アニメーション）',
-      animAuto: 'きかいの せってい どおり',
-      animReduites: 'すくなく',
-      ipad: 'タブレット・スマホで つかう',
-      ipadAide: 'iPad：Safari › 共有 › 「ホーム画面に追加」。ほかの アプリに うつらないように：設定 › アクセシビリティ › アクセスガイド。Android（Galaxy）：Chrome › メニュー ⋮ › 「ホーム画面に追加」または「アプリをインストール」。画面の固定：設定 › セキュリティ › アプリの固定。しゃしんは とった きかいの 中だけに あるので、きかいごとに ついかしてください。',
-      photoTitre: 'あたらしい しゃしん',
-      recadrer: 'ものの はしから はしまで ぴったり かこんでください。わくの はばが ものの ながさに なります。',
-      tourner: 'かいてん',
-      autre: 'とりなおす',
-      suivant: 'つぎへ',
-      retour: 'もどる',
-      enregistrer: 'ほぞん',
-      infos: 'ものの なまえと ながさ・おもさ・かさ',
-      yomi: 'なまえ（ひらがな・ひっす）',
-      kanjiChamp: 'なまえ（漢字・なくても よい）',
-      cm: 'ほんとうの ながさ（cm）',
-      cmAide: 'じょうぎで はしから はしまで はかってください（おもさか かさを いれたら なくても よい）。',
-      erreurYomi: 'なまえを ひらがなで かいてください。',
-      erreurCm: '1〜300cm の ながさを いれてください。',
-      erreurMesure: 'ながさ・おもさ・かさの どれか 1つを いれてください。',
-      erreurG: '1〜5000g の おもさを いれてください。',
-      erreurMl: '10〜5000mL の かさを いれてください。',
-      g: 'おもさ（g・キッチンスケールで）',
-      gAide: 'なくても よい：おもさの もんだいに つかいます。',
-      ml: 'かさ（mL・ラベルに かいてある）',
-      mlAide: 'なくても よい：「うつして くらべよう」に つかいます。',
-      erreurImage: 'この しゃしんは よみこめませんでした。ほかの しゃしんで ためしてください。',
+      antiRebond: '連続タッチを無視する',
+      rebondMeme: '0.3秒（同じボタン）',
+      verser: '注ぐ（はんぶんこ・まぜて みよう）',
+      verserMaintenir: '押している間',
+      verserTouche: '1回タッチで 20 mL',
+      animations: '動き（アニメーション）',
+      animAuto: '端末の設定どおり',
+      animReduites: '少なく',
+      ipad: 'タブレット・スマートフォンで使う',
+      ipadAide: 'iPad：Safari › 共有 › 「ホーム画面に追加」。他のアプリに移らないように：設定 › アクセシビリティ › アクセスガイド。Android（Galaxy）：Chrome › メニュー ⋮ › 「ホーム画面に追加」または「アプリをインストール」。画面の固定：設定 › セキュリティ › アプリの固定。写真は撮った端末の中だけにあるので、端末ごとに追加してください。',
+      photoTitre: '新しい写真',
+      recadrer: '物の端から端までぴったり囲んでください。枠の幅が物の長さになります。',
+      tourner: '回転',
+      autre: '撮り直す',
+      suivant: '次へ',
+      retour: '戻る',
+      enregistrer: '保存',
+      infos: '物の名前と長さ・重さ・容量',
+      yomi: '名前（ひらがな・必須）',
+      kanjiChamp: '名前（漢字・なくてもよい）',
+      cm: '実際の長さ（cm）',
+      cmAide: '定規で端から端まで測ってください（重さか容量を入れたら、なくてもかまいません）。',
+      erreurYomi: '名前をひらがなで書いてください。',
+      erreurCm: '1〜300 cm の長さを入れてください。',
+      erreurMesure: '長さ・重さ・容量のどれか1つを入れてください。',
+      erreurG: '1〜5000 g の重さを入れてください。',
+      erreurMl: '10〜5000 mL の容量を入れてください。',
+      g: '重さ（g・キッチンスケールで）',
+      gAide: 'なくてもよい：おもさの問題に使います。',
+      ml: '容量（mL・ラベルに書いてある）',
+      mlAide: 'なくてもよい：「うつして くらべよう」に使います。',
+      erreurImage: 'この写真は読み込めませんでした。他の写真で試してください。',
     },
   };
 

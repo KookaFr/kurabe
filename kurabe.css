@@ -1649,7 +1649,8 @@ body.mode-lecture button:not(.btn-lire):not([hidden]) {
 .choix-comparer { min-width: 40%; }
 .choix-comparer .nb { font-size: clamp(3rem, 10vw, 5rem); }
 .choix-comparer.juste { border-color: var(--bon); background: var(--bon-fond); }
-.choix-comparer.essaye { opacity: .45; }
+.choix-comparer.essaye { opacity: .6; text-decoration: line-through; }
+@media (max-width: 560px) { .choix-comparer { padding-inline: 4px; } .choix-comparer .nb { font-size: clamp(2.4rem, 9vw, 4rem); } }
 
 /* Cadre de 10 (2 rangées de 5), barre de 10, plaque de 100. */
 .blocs { display: flex; flex-direction: column; align-items: center; gap: 8px; }
@@ -1811,7 +1812,7 @@ pu { color: var(--o5); }
   .mesure-mv { font-size: .9rem; padding: 1px 8px; }
   .choix-valeur { min-height: 70px; font-size: 1.7rem; padding: 6px 4px; }
   /* « 1300 mL » tient dans sa colonne sur 320 px : la valeur se resserre au besoin. */
-  .choix-valeur .valeur-texte { font-size: clamp(1.1rem, 6.2vw, 1.7rem); white-space: nowrap; }
+  .choix-valeur .valeur-texte { font-size: clamp(1rem, 6vw, 1.7rem); white-space: nowrap; }
   /* Deux boutons d'aide côte à côte (わからない + そろえる) : le texte se resserre plutôt que d'être coupé. */
   .bas .btn-aide { padding: 0 .5em; font-size: clamp(.95rem, 3.6vw, 1.2rem); }
   .avec-conversion .choix-valeur { min-height: 92px; }

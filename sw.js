@@ -1,5 +1,5 @@
 /* くらべよう : fonctionnement hors ligne. Changer VERSION à chaque mise à jour. */
-const VERSION = 'kurabe-v17';
+const VERSION = 'kurabe-v18';
 const FICHIERS = ['./', './index.html', './kurabe.css', './kurabe.js', './manifest.webmanifest', './icone.svg', './icone-180.png', './icone-192.png', './icone-512.png'];
 
 self.addEventListener('install', (ev) => {

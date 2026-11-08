@@ -118,9 +118,11 @@
   }
   const nombreUnite = (x, u) => `${echapper(String(x))}\u00a0${uniteHtml(u)}`;
 
+  // « ● » dans les textes : de la même couleur que les jetons dessinés (balise sans espace : voir htmlMots).
+  const pionsColores = (t) => t.replace(/●/g, '<mark>●</mark>');
   function html(segments) {
     return segments.map((s) => {
-      if (typeof s === 'string' || typeof s === 'number') return echapper(s);
+      if (typeof s === 'string' || typeof s === 'number') return pionsColores(echapper(s));
       if (s.u) return nombreUnite(s.x, s.u);
       if (s.d !== undefined) return echapper(s.d);
       if (reglages.ecriture === 'kanji' && s.k) return `<ruby>${echapper(s.k)}<rt>${echapper(s.y)}</rt></ruby>`;
@@ -145,8 +147,9 @@
     return phrases.join(' ');
   }
 
+  // Ce que dit la voix : « ● » se dit « まる » (et non « くろまる »).
   function lecture(segments) {
-    return segments.map((s) => (typeof s === 'object' ? (s.s ?? s.y) : String(s))).join('');
+    return segments.map((s) => (typeof s === 'object' ? (s.s ?? s.y) : String(s))).join('').replace(/●/g, 'まる');
   }
 
   const NAGA = K('長', 'なが');
@@ -292,6 +295,7 @@
       .replace(/×/g, ' かける ')
       .replace(/＝/g, ' は ')
       .replace(/→/g, ' で ')
+      .replace(/●/g, 'まる')
       .replace(/\s+/g, ' ')
       .trim();
   }

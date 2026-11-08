@@ -1617,6 +1617,8 @@ body.mode-lecture button:not(.btn-lire):not([hidden]) {
 }
 .cadre10 i { border: 2px solid var(--bord); border-radius: 50%; }
 .cadre10 i.plein { border-color: color-mix(in srgb, var(--o5) 70%, var(--encre)); background: var(--o5); }
+/* « ● » dans les consignes et les explications : l'orange des jetons, pas un rond noir (ou blanc en mode sombre). */
+mark { background: none; color: var(--o5); }
 /* « 10の まとまり » : un cadre de 10 plein, à peine plus marqué. */
 .cadre10.dix { border-color: color-mix(in srgb, var(--o5) 55%, var(--encre)); }
 /* Légende sous chaque groupe : « 10の まとまり 4つ / 40 よんじゅう », « ばら 4つ / 4 よん ». */

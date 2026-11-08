@@ -108,7 +108,11 @@ Les poids posés s'alignent par rangées de 5 (10 ＝ 5 ＋ 5), une rangée par 
 
 べんきょう : 6. はかって いれよう — remplir un verre doseur gradué jusqu'à la quantité demandée, en glissant le doigt vers le haut ou le bas, ou avec les boutons. Ensuite, le verre contient déjà du liquide : on ajoute ou on en enlève (« いま 120 mL。200 mL に しよう »). La taille du verre doseur (200 mL, 500 mL, 1 L) se choisit en haut de l'écran.
 
-ね、しっていた？ : 7. ごうと しょう — la mesure du riz, toujours utilisée : verser des 1合 (180 mL) dans un verre doseur ; 2合 ＝ 360 mL (「おこめを 2ごう たく」) ; 3合 ＝ ? ; 10合 ＝ 1升 ＝ 1,8 L (一升瓶).
+べんきょう : 7. はんぶんこ — partager une ジュース moitié-moitié dans deux コップ identiques. On **appuie sur la コップ à remplir** : la ピッチャー se penche au-dessus et ça coule tant qu'on appuie. D'abord une démonstration (「2つに 同じだけ わける ことを はんぶんこと いうよ」), puis 300 et 400 mL avec un trait pointillé à mi-hauteur, puis 200 et 500 mL sans trait. Réussi quand la ピッチャー est vide et que les deux コップ sont à la même hauteur (à 5 % près) : 「はんぶんこ できた！ どちらも 200 mL。同じ たかさ ＝ 同じ かさ」, le trait de même hauteur et 「400 mL の はんぶん ＝ 200 mL」. Si une コップ en a plus, on appuie sur l'autre : elle reçoit de la première, doucement (「ひだりの ほうが 多いね。みぎの コップを おして、ひだりから すこし うつそう」, la bonne コップ clignote).
+
+べんきょう : 8. まぜて みよう — on appuie sur un liquide pour le verser dans une grande コップ. あお ＋ きいろ ＝ みどり, あか ＋ きいろ ＝ オレンジ, あか ＋ あお ＝ むらさき (la couleur suit les quantités), et la かさ s'additionne sous les yeux : 「100 mL ＋ 100 mL ＝ 200 mL」 se met à jour pendant qu'on verse. Puis une シロップ avec un peu ou beaucoup d'eau : 「こい」 / 「うすい」, et la question 「いろが こいのは どっち？」 (水が すくない ほうが こい). Pour finir, les trois couleurs obtenues.
+
+ね、しっていた？ : 9. ごうと しょう — la mesure du riz, toujours utilisée : verser des 1合 (180 mL) dans un verre doseur ; 2合 ＝ 360 mL (「おこめを 2ごう たく」) ; 3合 ＝ ? ; 10合 ＝ 1升 ＝ 1,8 L (一升瓶).
 
 Comme pour les longueurs, chaque bonne réponse est suivie d'une preuve (masses en g, niveau le plus bas tracé sur les verres avec la quantité en plus) et de la règle : « 重いのは 数字が 大きい ほう », « 少ないのは 数字が 小さい ほう ». On parle de 「すうじ」 (le nombre qu'on lit sur la règle, la balance ou l'étiquette) plutôt que de 「かず」, qui évoque d'abord le nombre d'objets qu'on compte ; quand les unités sont différentes (1 kg et 900 g), le rappel précise 「おなじ たんいなら」.
 

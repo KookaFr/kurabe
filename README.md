@@ -20,7 +20,7 @@ Les dizaines sont partout des **cadres de 10 pleins** (« 10の まとまり »)
 
 « おしい！ » n'est dit que si la réponse était presque juste (14 pour 15, deux longueurs très proches) ; sinon : « もう いっかい！ ».
 
-べんきょう (leçons guidées ; la voix dit le nombre à chaque jeton posé ou enlevé ; quand il y en a trop, « おおすぎ！ さわって おろそう » s'accompagne d'une démonstration : un doigt 👆 touche la dernière pièce posée, elle descend vers la table puis revient — c'est ensuite à l'élève de le faire ; pour « 235を つくろう », le message dit quelle sorte enlever (« 100の いたが おおいよ ») puis, une fois enlevée, quoi poser ensuite : « 100の いたは これで いいね。 こんどは 10の まとまりを のせよう », puis les ●) :
+べんきょう (leçons guidées ; la voix dit le nombre à chaque jeton posé ou enlevé ; quand il y en a trop, « おおすぎ！ さわって おろそう » s'accompagne d'une démonstration : un doigt 👆 touche la dernière pièce posée, elle descend vers la table puis revient — c'est ensuite à l'élève de le faire ; pour « 235を つくろう », le message dit quelle sorte enlever (« 100の いたが おおいよ ») puis, une fois enlevée, quoi poser ensuite : « 100の いたは これで いいね。 こんどは 10の まとまりを のせよう », puis les ●). Devant les pièces à poser, « のこり » dit ce qui reste : « 2まい », « 6こ » (plus de « ×2 », qui se lit comme une multiplication) :
 
 6. 1から 10まで: le cadre de 10 ; poser les jetons un par un jusqu'à 10 ; 5 ご, la rangée du haut ; 4 よん / し, 7 なな / しち, 9 きゅう / く ; tout enlever → 0 ぜろ ; 「いくつ？」 (après une erreur, la rangée du haut descend sous le cadre, en gros, et se compte 1 à 5 : « 5の まとまり ＋ ？ » ; une fois trouvé, 6, 7) ; poser 8 jetons
 7. 10より 大きい かず: le cadre plein, c'est « 10の まとまり » ; 10 et 3 → 13 ; 17 ; compter de 10 en 10 jusqu'à 100 (10, 20, 30… sous les cadres) ; fabriquer 34 avec des 10の まとまり et des jetons ; lire 52

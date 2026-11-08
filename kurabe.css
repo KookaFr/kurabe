@@ -1404,7 +1404,9 @@ button.ligne { cursor: pointer; }
 .reserve-piece.bac:not(:disabled):active { transform: translateY(2px); }
 .bac .tas { display: flex; align-items: flex-end; gap: 2px; }
 .bac .tas .fundou { margin-top: 6px; }
-.reserve-nombre { font-weight: 800; font-variant-numeric: tabular-nums; }
+.reserve-nombre { font-weight: 800; font-variant-numeric: tabular-nums; font-size: 1.15rem; }
+/* « のこり » devant la réserve : ce qui reste à poser. */
+.reserve-titre { align-self: center; font-weight: 700; font-size: 1.05rem; color: var(--encre-douce); }
 
 .choix-lecon { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; width: 100%; }
 .btn-choix-lecon { min-width: 6em; min-height: 64px; font-size: 1.5rem; font-variant-numeric: tabular-nums; }

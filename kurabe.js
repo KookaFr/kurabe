@@ -3605,7 +3605,7 @@
 
   // Toucher une phrase ou un petit texte : on l'entend (sans déclencher autre chose).
   (() => {
-    const LISIBLE = '.consigne, .rappel, .retour, .phrase, .equation, .titre-etude, .groupe-titre, .titre small, '
+    const LISIBLE = '.consigne, .rappel, .retour, .phrase, .equation, .titre-etude, .groupe-titre, .titre small, .reserve-titre, '
       + '.nom-mv, .balance-nom, .mesure-mv, .valeur-etude, .fin h2, .fin p, .rang-nom, .bulle-etude';
     let depart = null;
     document.addEventListener('pointerdown', (ev) => { depart = { x: ev.clientX, y: ev.clientY, t: performance.now() }; }, true);
@@ -5080,6 +5080,13 @@
     }
     // La réserve : ce qu'on peut poser (touchez pour poser un exemplaire).
     reserve.replaceChildren();
+    // « のこり » : ce qui reste à poser (« 2まい », « 6こ » ; plus de « ×2 », qui se lit comme une multiplication).
+    if (!et.bac && e.reserve.length) {
+      const titre = document.createElement('span');
+      titre.className = 'reserve-titre';
+      titre.textContent = 'のこり';
+      reserve.append(titre);
+    }
     e.reserve.forEach((r, k) => {
       const b = document.createElement('button');
       b.type = 'button';
@@ -5096,10 +5103,10 @@
         b.append(creerPiece(r, Math.min(geo.taille, 64), s));
         const n = document.createElement('span');
         n.className = 'reserve-nombre';
-        n.textContent = r.n > 1 || r.n === 0 ? `×${r.n}` : '';
+        n.textContent = `${r.n}${compteurReserve(r.v)}`;
         b.append(n);
       }
-      b.setAttribute('aria-label', `${lecture(nomVisuel(r.v))} を のせる`);
+      b.setAttribute('aria-label', et.bac ? `${lecture(nomVisuel(r.v))} を のせる` : `${lecture(nomVisuel(r.v))} を のせる。 のこり ${r.n}${compteurReserve(r.v)}`);
       activable(b, () => poserPiece(k));
       reserve.append(b);
     });
@@ -5116,6 +5123,9 @@
       : (geo.hCharge - 12 - tailles.length * 2 * 8) / (2 * 1.15 * tailles.reduce((a, b) => a + b, 0));
     return Math.max(14, Math.min(40, parLargeur, parHauteur));
   }
+
+  // Le compteur des pièces qui restent : les choses plates (plaques, pièces de monnaie) en まい, le reste en こ.
+  const compteurReserve = (v) => (['plaque', 'yen', 'yen5'].includes(VISUELS[v]?.genre) ? 'まい' : 'こ');
 
   // Nom affiché sous un plateau : l'objet, ou le nombre de poids.
   function nomCote(liste) {

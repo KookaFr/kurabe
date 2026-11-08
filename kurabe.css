@@ -1507,6 +1507,25 @@ button.ligne { cursor: pointer; }
 .pile.pile-rangees { display: flex; flex-direction: column; flex-wrap: nowrap; align-items: center; gap: 2px; width: 100%; }
 .rangee-poids { display: flex; align-items: flex-end; justify-content: center; gap: 3px; }
 
+
+/* ----- Lire ce qu'on touche ----- */
+
+/* Les phrases et petits textes qu'on peut toucher pour les entendre. */
+.phrase-lue, .consigne, .rappel, .retour, .equation, .groupe-titre, .nom-mv, .balance-nom, .mesure-mv { cursor: pointer; }
+.en-lecture {
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--repere) 38%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--repere) 38%, transparent);
+}
+.btn-lire { color: var(--encre); }
+.btn-lire[aria-pressed="true"] { background: var(--action); border-color: var(--action); color: var(--action-texte); }
+/* Mode 👆 : les boutons se lisent au lieu d'agir ; un contour pointillé le rappelle. */
+body.mode-lecture button:not(.btn-lire):not([hidden]) {
+  outline: 3px dashed color-mix(in srgb, var(--action) 65%, transparent);
+  outline-offset: 2px;
+  cursor: help;
+}
+
 @media (max-width: 560px) {
   :root { --cible: 56px; }
   .titre { font-size: 1.6rem; }
@@ -1524,6 +1543,12 @@ button.ligne { cursor: pointer; }
   .phrase { font-size: 1.3rem; }
   .choix-mots { flex-wrap: nowrap; gap: 8px; }
   #ecran-etude { gap: 8px; }
+  /* Trois boutons ronds dans les en-têtes : des points de progression plus petits, un titre plus court. */
+  .haut { gap: 8px; }
+  .progression { gap: 4px; min-width: 0; }
+  .progression li { flex: 0 1 12px; width: auto; height: auto; min-width: 6px; aspect-ratio: 1; border-width: 2px; }
+  #ecran-accueil .titre { font-size: 1.45rem; }
+  #ecran-accueil .btn-lire { width: 48px; height: 48px; }
   .nom-mv, .balance-nom { font-size: .9rem; }
   .bulle-etude.bulle-verre { font-size: 1.05rem; padding: 2px 8px; }
   /* Leçons : consigne plus petite, pour laisser la place à la balance. */
@@ -1533,8 +1558,8 @@ button.ligne { cursor: pointer; }
   .choix-lecon { gap: 6px; }
   .reserve { gap: 6px; }
   .reserve-piece { min-height: 48px; min-width: 48px; padding: 4px 6px; }
-  .theme { gap: 6px; min-height: 52px; padding: 4px 6px; font-size: 1.1rem; }
-  .theme svg { width: 26px; height: 26px; }
+  .theme { flex-direction: column; gap: 2px; min-height: 58px; padding: 4px 4px; font-size: 1.05rem; line-height: 1.1; }
+  .theme svg { width: 24px; height: 24px; }
   .mesure-mv { font-size: .9rem; padding: 1px 8px; }
   .choix-valeur { min-height: 70px; font-size: 1.7rem; }
   .avec-conversion .choix-valeur { min-height: 92px; }
@@ -1553,7 +1578,7 @@ button.ligne { cursor: pointer; }
   .valeur-etude { min-width: 2.2em; font-size: 2rem; }
   /* Avec ±10 et ±100, la place manque : le nombre reste lisible dans la bulle du ruban. */
   .avec-grand .valeur-etude { display: none; }
-  .titre-etude { font-size: 1.3rem; }
+  .titre-etude { font-size: 1.15rem; }
   .choix-mots .btn { flex: 1; min-width: 0; min-height: 56px; padding: 0 .3em; font-size: 1.3rem; white-space: nowrap; }
   .bas .btn-suivant, .bas .btn-aide { flex: 1; min-height: 60px; }
   .etabli.nombres .etiquette { font-size: 1.6rem; padding: 0 44px 0 14px; }

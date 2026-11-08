@@ -87,6 +87,15 @@ Comme pour les longueurs, chaque bonne réponse est suivie d'une preuve (masses 
 
 Les unités ont leur lecture en petit au-dessus, comme des furigana : グラム sur g, キログラム sur kg, ミリリットル sur mL, リットル sur L, センチ sur cm, メートル sur m (réglable dans l'espace parents).
 
+## よむ / Lire ce qu'on touche
+
+Pour qui ne lit pas (ou pas encore) :
+
+- toucher une phrase (consigne, explication, rappel, égalité, nom d'un objet) la fait lire **seule**, surlignée pendant la lecture ; une longue explication se lit phrase par phrase ;
+- le bouton 👆 dans chaque en-tête active le mode « よむ » : toucher un bouton (une réponse, une carte, un poids…) le lit au lieu de l'activer. On retouche 👆 pour revenir. Les boutons ont alors un contour pointillé.
+
+Les symboles sont dits en mots (100 g → 100グラム, ＋ → たす, ＝ → は). Le bouton 🔊 relit toujours toute la consigne. Réglable dans l'espace parents.
+
 ## おうちの人へ / Pour les parents
 
 Appuyez 2 secondes sur « おうちの人 » pour ouvrir les réglages, en japonais ou en français. Vous pourrez y choisir les activités, l'écriture (hiragana, ou kanji avec furigana) et la sensibilité au toucher.

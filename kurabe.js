@@ -51,6 +51,7 @@
     nombreMax: 20,          // べんきょう : nombres jusqu'à 10, 20, 50, 100 ou 1000
     compter: true,          // べんきょう : la voix compte à chaque ＋1 / −1
     lireUnites: true,       // la lecture des unités au-dessus des symboles (グラム sur g)
+    toucherLire: true,      // toucher une phrase la fait lire ; bouton 👆 : lire les boutons au lieu de les activer
     volumeMax: 500,         // べんきょう かさ : verre doseur de 200, 500 ou 1000 mL
     version: 6,
     langue: (navigator.language || '').toLowerCase().startsWith('ja') ? 'ja' : 'fr',
@@ -122,8 +123,20 @@
   }
 
   // Comme html(), mais chaque groupe de mots (séparé par une espace) reste sur une seule ligne.
+  // Chaque phrase (jusqu'à 。！？) est aussi regroupée : on peut la toucher pour l'entendre seule.
   function htmlMots(segments) {
-    return html(segments).split(' ').filter(Boolean).map((m) => `<span class="mot">${m}</span>`).join(' ');
+    const phrases = [];
+    let phrase = [];
+    const fermer = () => {
+      if (phrase.length) phrases.push(`<span class="phrase-lue">${phrase.join(' ')}</span>`);
+      phrase = [];
+    };
+    html(segments).split(' ').filter(Boolean).forEach((m) => {
+      phrase.push(`<span class="mot">${m}</span>`);
+      if (/[。！？!?]$/.test(m.replace(/<[^>]+>/g, ''))) fermer();
+    });
+    fermer();
+    return phrases.join(' ');
   }
 
   function lecture(segments) {
@@ -202,19 +215,76 @@
     return voix.find((v) => v.localService) || voix[0] || null;
   }
 
-  function parler(segmentsOuTexte) {
-    if (!synthese) return;
+  function parler(segmentsOuTexte, fin) {
+    if (!synthese) {
+      if (fin) setTimeout(fin, 1500);
+      return;
+    }
     const texte = Array.isArray(segmentsOuTexte) ? lecture(segmentsOuTexte) : String(segmentsOuTexte);
     try {
       synthese.cancel();
       const enonce = new SpeechSynthesisUtterance(texte);
+      if (fin) {
+        enonce.onend = fin;
+        enonce.onerror = fin;
+      }
       enonce.lang = 'ja-JP';
       const voix = voixJaponaise();
       if (voix) enonce.voice = voix;
       enonce.rate = Number(reglages.vitesse) || 0.9;
       synthese.speak(enonce);
-    } catch { /* voix indisponible */ }
+    } catch {
+      if (fin) setTimeout(fin, 1500);
+    }
   }
+
+  /* ----- Lire ce qu'on touche (pour qui ne lit pas) -----
+     - Toucher une phrase (consigne, explication, rappel, égalité, nom d'un objet) : elle est lue seule.
+     - Bouton 👆 (mode « よむ ») : toucher un bouton le lit au lieu de l'activer ; on le retouche pour revenir. */
+
+  // Le texte à dire pour un élément : les furigana et les lectures d'unités (グラム) plutôt que les
+  // symboles, et les signes des égalités en mots (＋ → たす, ＝ → は, → → で).
+  function texteParle(el) {
+    const copie = el.cloneNode(true);
+    copie.querySelectorAll('svg, [aria-hidden="true"], .numero').forEach((x) => x.remove());
+    copie.querySelectorAll('.inconnu').forEach((x) => { x.textContent = ' いくつ '; });
+    copie.querySelectorAll('ruby').forEach((r) => {
+      const rt = r.querySelector('rt');
+      r.replaceWith(rt ? rt.textContent : r.textContent);
+    });
+    return versParole(copie.textContent);
+  }
+
+  // Les symboles en mots : 100 g → 100グラム, « m と cm » → メートルと センチ, ＋ → たす…
+  function versParole(texte) {
+    const unites = { g: 'グラム', kg: 'キログラム', mL: 'ミリリットル', L: 'リットル', cm: 'センチ', m: 'メートル' };
+    return String(texte)
+      .replace(/(\d)\s*(kg|mL|cm|g|L|m)(?![a-zA-Z])/g, (_, d, u) => `${d}${unites[u]}`)
+      .replace(/(^|[^a-zA-Z\d])(kg|mL|cm|g|L|m)(?![a-zA-Z])/g, (_, a, u) => `${a}${unites[u]}`)
+      .replace(/＋/g, ' たす ')
+      .replace(/−/g, ' ひく ')
+      .replace(/×/g, ' かける ')
+      .replace(/＝/g, ' は ')
+      .replace(/→/g, ' で ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  let elementLu = null;
+  function lireElement(el, texte) {
+    const t = (texte || texteParle(el)).trim();
+    if (!t) return;
+    if (elementLu) elementLu.classList.remove('en-lecture');
+    elementLu = el;
+    el.classList.add('en-lecture');
+    parler(t, () => {
+      el.classList.remove('en-lecture');
+      if (elementLu === el) elementLu = null;
+    });
+  }
+
+  let modeLecture = false;
+  const lectureActive = () => reglages.toucherLire !== false;
 
   if (synthese) synthese.getVoices();
 
@@ -291,6 +361,10 @@
       const delai = garde ? Number(reglages.antiRebond) || 0 : 0;
       if (delai && maintenant - derniereActivation < delai) return;
       derniereActivation = maintenant;
+      if (modeLecture && lectureActive() && !el.classList.contains('btn-lire')) {
+        lireElement(el, el.getAttribute('aria-label') ? versParole(el.getAttribute('aria-label')) : '');
+        return;
+      }
       action();
     };
 
@@ -2506,6 +2580,53 @@
     parler([...PHRASES.otsukare, ' ', ...texte]);
   }
 
+  // Bouton 👆 dans chaque en-tête (accueil, question, べんきょう) : même état partout.
+  const ICONE_LIRE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+    + '<path d="M9 12V5.5a1.5 1.5 0 0 1 3 0V11"/><path d="M12 10V8.5a1.5 1.5 0 0 1 3 0V12"/>'
+    + '<path d="M15 11a1.5 1.5 0 0 1 3 0v4a6 6 0 0 1-6 6h-.6a6 6 0 0 1-4.7-2.3L4.6 16a1.6 1.6 0 0 1 2.5-2l1.9 2"/>'
+    + '<path d="M17.5 2.5a5 5 0 0 1 2.5 4M16 4.6a2.6 2.6 0 0 1 1.3 2"/></svg>';
+  function basculerLecture() {
+    modeLecture = !modeLecture;
+    document.body.classList.toggle('mode-lecture', modeLecture);
+    document.querySelectorAll('.btn-lire').forEach((b) => b.setAttribute('aria-pressed', String(modeLecture)));
+    parler(modeLecture ? ['さわった ところを よむよ。 もう いちど おすと、 もとに もどるよ。'] : ['もとに もどったよ。']);
+  }
+  function majBoutonsLire() {
+    document.querySelectorAll('.btn-lire').forEach((b) => { b.hidden = !lectureActive(); });
+    if (!lectureActive() && modeLecture) {
+      modeLecture = false;
+      document.body.classList.remove('mode-lecture');
+    }
+  }
+  [['btn-parents', 'avant'], ['btn-ecouter', 'avant'], ['etude-ecouter', 'avant']].forEach(([id]) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'btn-rond btn-lire';
+    b.setAttribute('aria-label', 'さわった ところを よむ');
+    b.setAttribute('aria-pressed', 'false');
+    b.innerHTML = ICONE_LIRE;
+    $(id).before(b);
+    activable(b, basculerLecture, { garde: false });
+  });
+  majBoutonsLire();
+
+  // Toucher une phrase ou un petit texte : on l'entend (sans déclencher autre chose).
+  (() => {
+    const LISIBLE = '.consigne, .rappel, .retour, .phrase, .equation, .titre-etude, .groupe-titre, .titre small, '
+      + '.nom-mv, .balance-nom, .mesure-mv, .valeur-etude, .fin h2, .fin p, .rang-nom, .bulle-etude';
+    let depart = null;
+    document.addEventListener('pointerdown', (ev) => { depart = { x: ev.clientX, y: ev.clientY, t: performance.now() }; }, true);
+    document.addEventListener('pointerup', (ev) => {
+      if (!depart || !lectureActive()) return;
+      const bouge = Math.hypot(ev.clientX - depart.x, ev.clientY - depart.y) > 12 || performance.now() - depart.t > 1500;
+      depart = null;
+      if (bouge || ev.target.closest('button, a, input, label, select, textarea, .zone-etude')) return;
+      if (ev.target.closest('#ecran-parents, #ecran-photo')) return;
+      const bloc = ev.target.closest('.phrase-lue') || ev.target.closest(LISIBLE);
+      if (bloc) lireElement(bloc);
+    }, true);
+  })();
+
   activable($('btn-suivant'), suivant);
   activable($('btn-aide'), avancerAide);
   activable($('btn-ecouter'), parlerConsigne, { garde: false });
@@ -4229,6 +4350,7 @@
       nbQuestions: 'Questions par série',
       ecriture: 'Écriture',
       lireUnites: 'Lecture des unités en petit au-dessus des symboles (グラム sur g, センチ sur cm…)',
+      toucherLire: 'Lecture au toucher (pour qui ne lit pas) : toucher une phrase la fait lire ; avec le bouton 👆, toucher un bouton le lit au lieu de l’activer',
       hiragana: 'Hiragana seuls',
       kanji: 'Kanji avec furigana',
       nombreMax: 'べんきょう : nombres jusqu’à',
@@ -4305,6 +4427,7 @@
       nbQuestions: '1回の もんだい数',
       ecriture: 'もじ',
       lireUnites: 'たんいの よみかたを 小さく かく（g の 上に グラム）',
+      toucherLire: 'さわって よむ：ぶんを さわると よみます。👆 を おすと、ボタンを さわっても よむだけに なります',
       hiragana: 'ひらがな',
       kanji: '漢字＋ふりがな',
       nombreMax: 'べんきょう：かずの はんい',
@@ -4522,6 +4645,7 @@
       groupeChoix('nbQuestions', t('nbQuestions'), [[4, '4'], [6, '6'], [8, '8']]),
       groupeChoix('ecriture', t('ecriture'), [['hiragana', t('hiragana')], ['kanji', t('kanji')]]),
       groupeChoix('lireUnites', t('lireUnites'), [[true, t('oui')], [false, t('non')]]),
+      groupeChoix('toucherLire', t('toucherLire'), [[true, t('oui')], [false, t('non')]], { apres: majBoutonsLire }),
       groupeChoix('noms', t('noms'), [[true, t('oui')], [false, t('non')]]),
       groupeChoix('court', t('court'), [[true, t('oui')], [false, t('non')]]),
       groupeChoix('aide', t('aide'), [[true, t('oui')], [false, t('non')]]),

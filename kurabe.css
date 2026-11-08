@@ -1539,6 +1539,9 @@ body.mode-lecture button:not(.btn-lire):not([hidden]) {
 .nb-autre { font-size: 1.1rem; color: var(--encre-douce); }
 .btn-nombre { flex-direction: column; line-height: 1.15; }
 .btn-nombre .nb-yomi { font-size: .62em; }
+/* かず : réponses en liste ; la lecture en hiragana aussi grande que possible (« 文字が小さすぎる »). */
+.choix-liste .btn-nombre .nb-yomi { font-size: .8em; }
+.choix-liste .btn-nombre > .nb-yomi:only-child { font-size: 1em; }
 
 /* Objets à compter : en rangées de 5 (ou en désordre dans la même grille). */
 .a-compter {
@@ -1568,6 +1571,7 @@ body.mode-lecture button:not(.btn-lire):not([hidden]) {
 }
 
 .carte-nombre {
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1577,8 +1581,21 @@ body.mode-lecture button:not(.btn-lire):not([hidden]) {
   border-radius: 18px;
   background: var(--surface);
 }
-.carte-nombre > .nb-chiffre { font-size: clamp(3rem, 12vw, 6rem); line-height: 1; }
-.carte-nombre > .nb-yomi { font-size: clamp(1.4rem, 4vw, 2.2rem); }
+.carte-tete { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.carte-tete > .nb-chiffre { font-size: clamp(3rem, 12vw, 6rem); line-height: 1; }
+.carte-tete > .nb-yomi { font-size: clamp(1.4rem, 4vw, 2.2rem); }
+/* Place large et basse (téléphone) : le nombre à gauche, les cadres à droite. */
+.carte-nombre.en-ligne { flex-direction: row; gap: 18px; padding: 8px 14px; }
+/* Plus compact, puis seulement la légende : jamais de points minuscules. */
+:is(.carte-nombre, .rangee-mv).compacte { gap: 8px; padding: 6px 10px; }
+.carte-nombre.compacte .carte-tete { flex-direction: row; align-items: baseline; gap: .5em; }
+.carte-nombre.compacte .carte-tete > .nb-chiffre { font-size: 2.6rem; }
+.carte-nombre.compacte .carte-tete > .nb-yomi { font-size: 1.4rem; }
+.carte-nombre.compacte.en-ligne .carte-tete { flex-direction: column; align-items: center; }
+.rangee-mv.compacte .choix-comparer .nb { font-size: 2.4rem; }
+.compacte .legende-valeur { font-size: 1.2rem; }
+.compacte .legende-blocs small { font-size: .85rem; }
+.sans-cadres .blocs-rang { display: none; }
 .choix-comparer { min-width: 40%; }
 .choix-comparer .nb { font-size: clamp(3rem, 10vw, 5rem); }
 .choix-comparer.juste { border-color: var(--bon); background: var(--bon-fond); }
@@ -1600,15 +1617,18 @@ body.mode-lecture button:not(.btn-lire):not([hidden]) {
 }
 .cadre10 i { border: 2px solid var(--bord); border-radius: 50%; }
 .cadre10 i.plein { border-color: color-mix(in srgb, var(--o5) 70%, var(--encre)); background: var(--o5); }
-.barre10 {
-  display: inline-grid;
-  grid-template-rows: repeat(10, calc(var(--c, 18px) * .55));
-  gap: 1px;
-  padding: 3px;
-  border-radius: 5px;
-  background: var(--o2);
-}
-.barre10 i { width: calc(var(--c, 18px) * .55); border-radius: 50%; background: color-mix(in srgb, #fff 55%, var(--o2)); }
+/* « 10の まとまり » : un cadre de 10 plein, à peine plus marqué. */
+.cadre10.dix { border-color: color-mix(in srgb, var(--o5) 55%, var(--encre)); }
+/* Légende sous chaque groupe : « 10の まとまり 4つ / 40 よんじゅう », « ばら 4つ / 4 よん ». */
+.blocs-groupe { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.blocs.avec-legende { flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 12px 24px; }
+/* 3 dizaines par rangée au plus : 5 = 3 + 2 (et les ばら à côté quand il y a la place). */
+.blocs.avec-legende .blocs-rang { max-width: calc((var(--c, 18px) * 5 + 30px) * 3); }
+.legende-blocs { display: flex; flex-direction: column; align-items: center; line-height: 1.2; }
+.legende-blocs small { font-size: .95rem; font-weight: 700; color: var(--encre-douce); }
+.legende-valeur { display: flex; align-items: baseline; gap: .4em; font-size: 1.5rem; }
+.legende-valeur b { font-weight: 800; font-variant-numeric: tabular-nums; }
+.legende-valeur .nb-yomi { font-size: .8em; }
 .plaque100 {
   display: inline-block;
   width: calc(var(--c, 18px) * 6.2);
@@ -1621,6 +1641,9 @@ body.mode-lecture button:not(.btn-lire):not([hidden]) {
 }
 .zone-dizaines { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; max-width: 100%; }
 .cadre-groupe { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.cadre-groupe b { font-size: max(14px, calc(var(--c, 18px) * .6)); font-variant-numeric: tabular-nums; }
+.zone-dizaines.serre { gap: 4px; }
+.zone-dizaines.serre .cadre-groupe b { font-size: 11px; line-height: 1.1; }
 .zone-dizaines .cadre10 { grid-template-columns: repeat(5, var(--c)); grid-auto-rows: var(--c); }
 
 /* Leçons かず */
@@ -1628,9 +1651,9 @@ body.mode-lecture button:not(.btn-lire):not([hidden]) {
 .compte-affiche .nb { font-size: clamp(2.6rem, 9vw, 4.4rem); }
 .compte-affiche .nb-yomi { font-size: .45em; }
 .compte-plateau { display: flex; justify-content: center; }
-.compte-plateau.enlevable :is(.plaque100, .barre10, .cadre10 i.plein) { cursor: pointer; }
+.compte-plateau.enlevable :is(.plaque100, .cadre10.dix, .cadre10 i.plein) { cursor: pointer; }
 .pion-piece { display: inline-block; border-radius: 50%; background: var(--o5); border: 2px solid color-mix(in srgb, var(--o5) 70%, var(--encre)); }
-.reserve-piece .barre10 { --c: 12px; }
+.reserve-piece .cadre10 { --c: 9px; gap: 2px; padding: 3px; }
 .reserve-piece .plaque100 { --c: 7px; }
 
 @media (max-width: 560px) {
@@ -1688,6 +1711,10 @@ body.mode-lecture button:not(.btn-lire):not([hidden]) {
   .titre-etude { font-size: 1rem; line-height: 1.2; }
   .choix-mots .btn { flex: 1; min-width: 0; min-height: 56px; padding: 0 .3em; font-size: 1.3rem; white-space: nowrap; }
   .bas .btn-suivant, .bas .btn-aide { flex: 1; min-height: 60px; }
+  /* かず : une réponse par ligne, toute la largeur, le chiffre et sa lecture côte à côte. */
+  .choix-mots.choix-liste { flex-direction: column; flex-wrap: nowrap; gap: 6px; }
+  .choix-liste .btn { flex: none; width: 100%; min-height: 48px; padding-block: 2px; font-size: 1.45rem; }
+  .choix-liste .btn .nb { flex-direction: row; align-items: baseline; gap: .55em; }
   .etabli.nombres .etiquette { font-size: 1.6rem; padding: 0 44px 0 14px; }
   .etabli.nombres .ligne { min-height: 0; }
   .photo-ligne { grid-template-columns: 80px 1fr; }
@@ -1764,6 +1791,16 @@ body.mode-lecture button:not(.btn-lire):not([hidden]) {
   .avec-grand .btn-pas { flex: 1; min-width: 0; padding: 0 2px; font-size: 1.1rem; }
   .avec-grand .valeur-etude { display: none; }
   .valeur-etude { font-size: 1.6rem; min-width: 2em; }
+  /* かず : réponses l'une sous l'autre ; la colonne de gauche s'élargit, le nombre prend moins de place. */
+  #ecran-question.q-kazu { grid-template-columns: minmax(250px, 46%) 1fr; }
+  #ecran-question.q-kazu { row-gap: 5px; }
+  #ecran-question > .choix-mots.choix-liste { flex-direction: column; flex-wrap: nowrap; gap: 5px; }
+  .choix-liste .btn { flex: none; width: 100%; min-height: 37px; padding-block: 0; font-size: 1.22rem; }
+  /* L'explication à côté du bouton (わからない, つぎへ) : la colonne tient dans la hauteur. */
+  #ecran-question.q-kazu > .bas { flex-wrap: nowrap; align-items: center; }
+  #ecran-question.q-kazu > .bas .retour { flex: 1 1 0; flex-basis: 0; font-size: .9rem; line-height: 1.3; }
+  #ecran-question.q-kazu > .bas :is(.btn-suivant, .btn-aide) { flex: none; min-width: 6.5em; }
+  .choix-liste .btn .nb { flex-direction: row; align-items: baseline; gap: .55em; }
   .fin h2 { font-size: 1.8rem; }
   .fin p { font-size: 1.2rem; }
   .fin .btn { min-height: 52px; }

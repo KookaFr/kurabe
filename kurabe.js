@@ -571,7 +571,7 @@
     { n: 37, theme: 'kazu', titre: ['10の まとまり'], sous: ['10ずつ かぞえる'], fr: 'Compter des jetons rangés par 10 (11 à 99)', barres: 'k-dizaines' },
     { n: 38, theme: 'kazu', titre: ['どっちが ', OOKI, 'きい？'], sous: [SUJI, 'を くらべる'], fr: 'Comparer deux nombres (1 à 100)', barres: 'k-comparer' },
     { n: 39, theme: 'kazu', etude: 'lecon-kazu1', titre: ['1から 10まで'], sous: ['いち、 に、 さん…'], fr: 'べんきょう : compter jusqu’à 10 avec le cadre de 10 (et la lecture en hiragana)', barres: 'k-lecon1' },
-    { n: 40, theme: 'kazu', etude: 'lecon-kazu2', titre: ['10より ', OOKI, 'きい かず'], sous: ['10の ぼうで 100まで'], fr: 'べんきょう : de 11 à 100 avec les barres de 10', barres: 'k-lecon2' },
+    { n: 40, theme: 'kazu', etude: 'lecon-kazu2', titre: ['10より ', OOKI, 'きい かず'], sous: ['10の まとまりで 100まで'], fr: 'べんきょう : de 11 à 100 avec les « 10の まとまり » (cadres de 10 pleins), comptés par 10', barres: 'k-lecon2' },
     { n: 41, theme: 'kazu', etude: 'lecon-kazu3', titre: ['100より ', OOKI, 'きい かず'], sous: ['ひゃく、 せん'], fr: 'べんきょう : les centaines jusqu’à 1000 (さんびゃく, ろっぴゃく…)', barres: 'k-lecon3' },
     { n: 32, groupe: 'culture', etude: 'lecon-corps', titre: ['からだで はかる'], sous: ['あた・ひろ'], fr: 'ね、しっていた？ Mesurer avec le corps (あた, ひろ), et pourquoi le cm', barres: 'lecon-corps' },
     { n: 33, groupe: 'culture', etude: 'lecon-shaku', titre: ['しゃくと すん'], sous: ['いっすんぼうしは なん cm？'], fr: 'ね、しっていた？ 尺 et 寸 : 1 寸 ≈ 3 cm, 1 尺 ≈ 30 cm', barres: 'lecon-shaku' },
@@ -890,9 +890,10 @@
         return Array.from({ length: 10 }, (_, k) => `<circle cx="${30 + (k % 5) * 26}" cy="${18 + Math.floor(k / 5) * 26}" r="10" style="fill:${k < 7 ? 'var(--o5)' : 'none'};stroke:var(--encre-douce);stroke-width:2"/>`).join('')
           + `<text x="170" y="46" style="${texte};font-size:30px">7</text>`;
       case 'k-lecon2':
-        return [0, 1, 2].map((k) => `<rect x="${20 + k * 16}" y="6" width="12" height="54" rx="3" style="fill:var(--o2)"/>`).join('')
-          + '<circle cx="84" cy="50" r="6" style="fill:var(--o5)"/><circle cx="100" cy="50" r="6" style="fill:var(--o5)"/>'
-          + `<text x="130" y="44" style="${texte};font-size:28px">32</text>`;
+        return [0, 1, 2].map((k) => `<rect x="${6 + k * 38}" y="14" width="34" height="26" rx="3" style="fill:none;stroke:var(--encre-douce);stroke-width:1.5"/>`
+          + Array.from({ length: 10 }, (_, j) => `<circle cx="${11 + k * 38 + (j % 5) * 6}" cy="${21 + Math.floor(j / 5) * 12}" r="2.6" style="fill:var(--o5)"/>`).join('')).join('')
+          + '<circle cx="128" cy="34" r="5" style="fill:var(--o5)"/><circle cx="142" cy="34" r="5" style="fill:var(--o5)"/>'
+          + `<text x="162" y="44" style="${texte};font-size:28px">32</text>`;
       case 'k-lecon3':
         return '<rect x="14" y="6" width="54" height="54" rx="4" style="fill:var(--o4)"/><rect x="74" y="6" width="54" height="54" rx="4" style="fill:var(--o4)"/>'
           + `<text x="146" y="44" style="${texte};font-size:28px">200</text>`;
@@ -1191,12 +1192,16 @@
   function rendreQuestion() {
     const q = courante();
     rendreProgression();
+    $('ecran-question').classList.toggle('q-kazu', q.theme === 'kazu');
+    // Dès le départ (avant de mesurer la place des objets) : les réponses かず en liste.
+    $('choix-mots').classList.toggle('choix-liste', q.theme === 'kazu' && q.type !== 'comparer');
     $('consigne').innerHTML = htmlMots(consigneDe(q));
 
     const phrase = $('phrase');
     const choix = $('choix-mots');
     phrase.hidden = q.type !== 'phrase';
-    choix.hidden = q.type !== 'phrase';
+    // かず : les réponses restent affichées pendant qu'on mesure la place des objets (elles en prennent).
+    choix.hidden = q.type !== 'phrase' && !(q.theme === 'kazu' && q.type !== 'comparer');
 
     const etabli = $('etabli');
     etabli.replaceChildren();
@@ -2336,7 +2341,8 @@
   const inverse = (n) => (n >= 10 && n < 100 && n % 10 ? (n % 10) * 10 + Math.floor(n / 10) : null);
 
   function genererQuestionKazu(niveau, derniere, i, n) {
-    const base = { niveau, theme: 'kazu', essais: new Set(), resolu: false, indices: false, demande: 'plus' };
+    // aideMax : une aide avant la réponse (décomposer le nombre, compter les 10, montrer les cadres).
+    const base = { niveau, theme: 'kazu', essais: new Set(), resolu: false, indices: false, demande: 'plus', aide: 0, aideMax: niveau === 35 ? 0 : 1 };
     const tiers = Math.ceil(n / 3);
     if (niveau === 35) {
       // いくつ？ : d'abord jusqu'à 5, en rangées de 5 ; ensuite jusqu'à 10, parfois en désordre.
@@ -2409,6 +2415,7 @@
     if (q.type === 'dizaines') {
       const d = Math.floor(v / 10);
       const u = v % 10;
+      if (!u) return ['10の まとまりが ', `${d}つで `, String(v), '、 「', yomiNombre(v), '」。 ばらは ない。'];
       return ['10の まとまりが ', `${d}つで `, String(d * 10), '、 ばらが ', `${u}つで `, String(u), '。 あわせて ', String(v), '、 「', yomiNombre(v), '」。'];
     }
     const [a, b] = q.valeurs;
@@ -2425,6 +2432,32 @@
     return [...raison, String(q.valeurs[q.bonne]), 'の ほうが ', ...motKazu(q.demande), 'ね。'];
   }
 
+  // Compter par 10 : la voix dit tout (じゅう、 にじゅう、 さんじゅう…), l'écran garde court (10、 20、 30…).
+  const compterPar10 = (d) => V(d <= 3 ? Array.from({ length: d }, (_, k) => (k + 1) * 10).join('、 ') : '10、 20、 30…',
+    YOMI_DIX.slice(1, d + 1).join('、 '));
+
+  // L'aide かず : on DÉCOMPOSE le nombre (16 = 10 と 6 : 「じゅう」 と 「ろく」), on compte les 10 (じゅう、 にじゅう…).
+  function aideKazu(q) {
+    const v = q.valeur;
+    const d = Math.floor(v / 10);
+    const u = v % 10;
+    if (q.type === 'lire') {
+      if (v < 10) return ['●を かぞえて みよう。 いち、 に、 さん…'];
+      if (q.sens === 'chiffre') {
+        return u
+          ? [String(v), 'は ', String(d * 10), 'と ', String(u), '。 ', String(d * 10), 'は 「', YOMI_DIX[d], '」、 ', String(u), 'は 「', YOMI_UN[u], '」。']
+          : ['10の まとまりが ', `${d}つ。 10ずつ かぞえよう： `, compterPar10(d), '。'];
+      }
+      return u
+        ? ['「', yomiNombre(v), '」は 「', YOMI_DIX[d], '」と 「', YOMI_UN[u], '」。 「', YOMI_DIX[d], '」は ', String(d * 10), '、 「', YOMI_UN[u], '」は ', String(u), '。']
+        : ['「', yomiNombre(v), '」は 10の まとまりが ', `${d}つ。`];
+    }
+    if (q.type === 'dizaines') {
+      return ['10の まとまりを 10ずつ かぞえよう： ', compterPar10(d), '。', u ? ' それから ばらを かぞえよう。' : ''];
+    }
+    return Math.max(...q.valeurs) >= 10 ? ['10の まとまりの かずを くらべよう。'] : ['●の かずを くらべよう。'];
+  }
+
   function messageErreurKazu(q) {
     if (q.type === 'compter') return ['おしい！ ひとつずつ、 ゆびで さしながら かぞえよう。'];
     if (q.type === 'lire') return ['おしい！ こえを よく きいてね。'];
@@ -2432,27 +2465,71 @@
     return ['おしい！ 10の まとまりの かずを くらべよう。'];
   }
 
-  // Les jetons d'un nombre : centaines (plaques), dizaines (barres de 10), unités en cadres de 10.
-  // Les jetons d'un nombre (ou, dans les leçons, exactement ce que l'élève a posé : { c, d, u }).
-  function htmlBlocs(n, { cadreVide = false, etiquettes = false, parties = null } = {}) {
+  // Les jetons d'un nombre : centaines (plaques de 100), dizaines (cadres de 10 pleins : « 10の まとまり »),
+  // unités (« ばら ») dans un cadre de 10. Dans les leçons : exactement ce que l'élève a posé ({ c, d, u }).
+  // compte : sous chaque dizaine, 10, 20, 30… (on apprend à compter par 10).
+  // legende : sous chaque groupe, « 10の まとまり 4つ / 40 よんじゅう », « ばら 4つ / 4 よん » (yomi : avec la lecture).
+  function htmlBlocs(n, { cadreVide = false, etiquettes = false, parties = null, compte = false, legende = false, yomi = true } = {}) {
     const { c, d, u } = parties || { c: Math.floor(n / 100), d: Math.floor((n % 100) / 10), u: n % 10 };
-    let h = '<span class="blocs">';
-    if (c) h += `<span class="blocs-rang">${'<span class="plaque100"></span>'.repeat(c)}${etiquettes ? `<b class="ba">100 × ${c}</b>` : ''}</span>`;
-    if (d) h += `<span class="blocs-rang">${Array.from({ length: d }, () => `<span class="barre10">${'<i></i>'.repeat(10)}</span>`).join('')}${etiquettes ? `<b class="ba">10 × ${d}</b>` : ''}</span>`;
+    const legendeDe = (nom, combien, valeur) => (legende
+      ? `<span class="legende-blocs"><small>${nom} ${combien}つ</small><span class="legende-valeur"><b>${valeur}</b>${yomi ? `<span class="nb-yomi">${yomiNombre(valeur)}</span>` : ''}</span></span>`
+      : '');
+    let h = `<span class="blocs${legende ? ' avec-legende' : ''}">`;
+    if (c) {
+      h += `<span class="blocs-groupe"><span class="blocs-rang">${'<span class="plaque100"></span>'.repeat(c)}${etiquettes ? `<b class="ba">100 × ${c}</b>` : ''}</span>${legendeDe('100の いた', c, c * 100)}</span>`;
+    }
+    if (d) {
+      const dizaines = Array.from({ length: d }, (_, k) => (compte
+        ? `<span class="cadre-groupe">${htmlCadre(10, 'dix')}<b>${(k + 1) * 10}</b></span>`
+        : htmlCadre(10, 'dix'))).join('');
+      h += `<span class="blocs-groupe"><span class="blocs-rang">${dizaines}${etiquettes ? `<b class="ba">10 × ${d}</b>` : ''}</span>${legendeDe('10の まとまり', d, d * 10)}</span>`;
+    }
     if (u || cadreVide) {
       const cadres = Math.max(1, Math.ceil(u / 10));
-      h += `<span class="blocs-rang">${Array.from({ length: cadres }, (_, k) => htmlCadre(Math.min(10, u - k * 10))).join('')}${etiquettes && u ? `<b class="ba">1 × ${u}</b>` : ''}</span>`;
+      h += `<span class="blocs-groupe"><span class="blocs-rang">${Array.from({ length: cadres }, (_, k) => htmlCadre(Math.min(10, u - k * 10))).join('')}${etiquettes && u ? `<b class="ba">1 × ${u}</b>` : ''}</span>${u ? legendeDe('ばら', u, u) : ''}</span>`;
     }
     return `${h}</span>`;
   }
-  // Un cadre de 10 (2 rangées de 5) : on voit ce qui manque pour faire 10.
-  const htmlCadre = (k) => `<span class="cadre10">${Array.from({ length: 10 }, (_, i) => `<i class="${i < k ? 'plein' : ''}"></i>`).join('')}</span>`;
+  // Un cadre de 10 (2 rangées de 5) : on voit ce qui manque pour faire 10. Plein, c'est « 10の まとまり ».
+  const htmlCadre = (k, classe = '') => `<span class="cadre10${classe ? ` ${classe}` : ''}">${Array.from({ length: 10 }, (_, i) => `<i class="${i < k ? 'plein' : ''}"></i>`).join('')}</span>`;
+
+  // Réduit la taille des cases (--c) jusqu'à ce que l'élément tienne dans W × H ; renvoie true si ça tient.
+  function ajusterCases(el, W, H, cMax, cMin = 12) {
+    const tient = () => {
+      const r = el.getBoundingClientRect();
+      return r.height <= H + 1 && r.width <= W + 1 && el.scrollWidth <= el.clientWidth + 1 && el.scrollHeight <= el.clientHeight + 1;
+    };
+    for (let c = cMax; c >= cMin; c -= 2) {
+      el.style.setProperty('--c', `${c}px`);
+      if (tient()) return true;
+    }
+    return false;
+  }
+  // Sur un petit écran : d'abord plus compact (chiffres moins grands), puis, si les points deviendraient
+  // illisibles, seulement la légende (« 10の まとまり 9つ … ») : jamais de points minuscules.
+  function ajusterBlocs(el, W, H, cMax) {
+    const enLigne = el.classList.contains('en-ligne');
+    el.classList.remove('compacte', 'sans-cadres');
+    if (ajusterCases(el, W, H, cMax)) return;
+    // Compact : le chiffre et sa lecture sur une ligne, les cadres dessous.
+    el.classList.remove('en-ligne');
+    el.classList.add('compacte');
+    if (ajusterCases(el, W, H, cMax, 10)) return;
+    if (enLigne) {
+      el.classList.add('en-ligne');
+      if (ajusterCases(el, W, H, cMax, 10)) return;
+    }
+    if (el.querySelector('.legende-blocs')) el.classList.add('sans-cadres');
+  }
 
   function rendreKazuQ(q, scene, W, H) {
     const choix = $('choix-mots');
     const avecChoix = q.type !== 'comparer';
+    const aide = q.aide > 0 && !q.preuve;
     choix.hidden = !avecChoix;
     choix.replaceChildren();
+    // Les réponses en liste : une par ligne, le chiffre et sa lecture en grand.
+    choix.classList.toggle('choix-liste', avecChoix);
     if (q.type === 'compter') {
       const zone = document.createElement('div');
       zone.className = `a-compter${q.desordre ? ' desordre' : ''}`;
@@ -2486,23 +2563,54 @@
     } else if (q.type === 'lire') {
       const carte = document.createElement('div');
       carte.className = 'carte-nombre';
-      carte.innerHTML = q.sens === 'chiffre'
+      const tete = q.sens === 'chiffre'
         ? `<span class="nb-chiffre">${q.valeur}</span>${q.preuve ? `<span class="nb-yomi">${yomiNombre(q.valeur)}</span>` : ''}`
         : `<span class="nb-yomi grand">${yomiNombre(q.valeur)}</span>${q.preuve ? `<span class="nb-chiffre">${q.valeur}</span>` : ''}`;
-      if (q.preuve) carte.innerHTML += htmlBlocs(q.valeur);
+      carte.innerHTML = `<span class="carte-tete">${tete}</span>`;
+      // Aide et preuve : le nombre décomposé (10の まとまり / ばら), avec la lecture de chaque partie.
+      if (q.preuve || aide) {
+        carte.innerHTML += htmlBlocs(q.valeur, { compte: q.valeur >= 20, legende: q.valeur >= 10 });
+        carte.classList.toggle('en-ligne', W > H * 1.25);
+      }
       scene.append(carte);
+      if (q.preuve || aide) ajusterBlocs(carte, W, H - 2, 34);
     } else if (q.type === 'dizaines') {
       const zone = document.createElement('div');
       zone.className = 'zone-dizaines';
       const d = Math.floor(q.valeur / 10);
       const u = q.valeur % 10;
-      zone.innerHTML = Array.from({ length: d }, () => `<span class="cadre-groupe">${htmlCadre(10)}${q.preuve ? '<b>10</b>' : ''}</span>`).join('')
-        + (u ? `<span class="cadre-groupe">${htmlCadre(u)}${q.preuve ? `<b class="ba">${u}</b>` : ''}</span>` : '');
-      // Taille des cases : le plus grand possible, cadres sur 5 colonnes au plus.
-      const colonnes = Math.min(5, d + (u ? 1 : 0));
-      const lignes = Math.ceil((d + (u ? 1 : 0)) / 5);
-      zone.style.setProperty('--c', `${Math.max(9, Math.min(40, (W - 20 - colonnes * 22) / (colonnes * 6.2), (H - 20 - lignes * 40) / (lignes * 2.6)))}px`);
+      // Aide et preuve : on compte les 10 (10, 20, 30…), puis les ばら.
+      const compter = q.preuve || aide;
+      zone.innerHTML = Array.from({ length: d }, (_, k) => `<span class="cadre-groupe">${htmlCadre(10, 'dix')}${compter ? `<b>${(k + 1) * 10}</b>` : ''}</span>`).join('')
+        + (u ? `<span class="cadre-groupe">${htmlCadre(u)}${q.preuve ? `<b class="ba">ばら ${u}</b>` : ''}</span>` : '');
+      // Taille des cases : on essaie 1 à 5 cadres par rangée et on garde la plus grande taille qui tient
+      // (un cadre : 5 cases + 24 px de large, 2 cases + 15 px de haut, + l'étiquette 10, 20, 30…).
+      const nb = d + (u ? 1 : 0);
+      let meilleur = 9;
+      let colonnes = Math.min(5, nb);
+      for (let k = 1; k <= Math.min(5, nb); k++) {
+        const r = Math.ceil(nb / k);
+        const c = Math.min(44, (W - 8 - (k - 1) * 12 - k * 24) / (5 * k), (H - 8 - (r - 1) * 12 - r * (15 + 26)) / (2 * r));
+        if (c > meilleur) {
+          meilleur = c;
+          colonnes = k;
+        }
+      }
+      const poser = (c) => {
+        zone.style.setProperty('--c', `${c}px`);
+        zone.style.maxWidth = `${colonnes * (5 * c + 24) + (colonnes - 1) * 12 + 2}px`;
+      };
+      let c = Math.floor(meilleur);
+      poser(c);
       scene.append(zone);
+      // Vérifié sur l'écran réel (étiquettes 10, 20, 30… comprises) : on réduit si ça dépasse.
+      const depasse = () => zone.getBoundingClientRect().height > H || zone.getBoundingClientRect().width > W + 1;
+      while (c > 7 && depasse()) poser(--c);
+      // Très petit écran : étiquettes et écarts plus serrés plutôt que des cadres coupés.
+      if (depasse()) {
+        zone.classList.add('serre');
+        while (c > 5 && depasse()) poser(--c);
+      }
     } else {
       const rangee = document.createElement('div');
       rangee.className = 'rangee-mv';
@@ -2510,11 +2618,12 @@
         const b = document.createElement('button');
         b.type = 'button';
         b.className = 'carte-nombre choix-comparer';
-        b.innerHTML = nombreYomi(v) + (q.preuve ? htmlBlocs(v) : '');
+        b.innerHTML = nombreYomi(v) + (q.preuve || aide ? htmlBlocs(v, { legende: v >= 10, yomi: false }) : '');
         cible(b, k, `${yomiNombre(v)}`);
         rangee.append(b);
       });
       scene.append(rangee);
+      if (q.preuve || aide) ajusterBlocs(rangee, W, H - 2, 26);
     }
     if (avecChoix) {
       q.options.forEach((v) => {
@@ -2578,11 +2687,11 @@
     const dix = (n) => P('dix', 10, n);
     return [
       {
-        dire: ['10は 「じゅう」。 10の わくが いっぱいに なると、 10の ぼうに なる。'],
+        dire: ['10は 「じゅう」。 10の わくが いっぱいに なったら、 それが 「10の まとまり」。 10、 20、 30と、 10ずつ かぞえられるよ。'],
         scene: 'compte', contenu: [dix(1)],
       },
       {
-        dire: ['10の ぼうの よこに ●を のせて、 13に しよう。'],
+        dire: ['10の まとまりの よこに ●を のせて、 13に しよう。'],
         scene: 'compte', cadre: true, contenu: [dix(1)], reserve: [un(9)], vers: 'plateau', retirer: true, compter: true,
         fini: (e) => total(e) === 13, pendant: (e) => (total(e) < 13 ? null : ['おおすぎ！ ●を さわって おろそう。']),
         bravo: ['10と 3で 13。 「じゅうさん」。'],
@@ -2590,16 +2699,16 @@
       {
         dire: ['いくつ？'],
         scene: 'compte', contenu: [dix(1), un(7)], cache: true,
-        choix: { options: [17, 71, 7], bonne: 17, unite: '', indice: ['おしい！ 10の ぼうが 1つと、 ●が 7こ。'] },
+        choix: { options: [17, 71, 7], bonne: 17, unite: '', indice: ['おしい！ 10の まとまりが 1つと、 ●が 7こ。'] },
         bravo: ['10と 7で 17。 「じゅうなな」（「じゅうしち」）。'],
       },
       {
-        dire: ['10の ぼうを のせて、 10ずつ かぞえよう。 100まで いくよ。'],
+        dire: ['10の まとまりを のせて、 10ずつ かぞえよう。 100まで いくよ。'],
         scene: 'compte', contenu: [], reserve: [dix(10)], vers: 'plateau', compter: true, fini: (e) => total(e) === 100,
         bravo: ['10が 10こで 100。 「ひゃく」。'],
       },
       {
-        dire: ['34を つくろう。 10の ぼうと ●を つかってね。'],
+        dire: ['34を つくろう。 10の まとまりと ●を つかってね。'],
         scene: 'compte', cadre: true, contenu: [], reserve: [dix(5), un(9)], vers: 'plateau', retirer: true, compter: true,
         fini: (e) => total(e) === 34,
         pendant: (e) => (total(e) > 34 ? ['おおすぎ！ さわって おろそう。'] : null),
@@ -2608,11 +2717,11 @@
       {
         dire: ['いくつ？'],
         scene: 'compte', contenu: [dix(5), un(2)], cache: true,
-        choix: { options: [52, 25, 7], bonne: 52, unite: '', indice: ['おしい！ 10の ぼうは いくつ？ ●は いくつ？'] },
+        choix: { options: [52, 25, 7], bonne: 52, unite: '', indice: ['おしい！ 10の まとまりは いくつ？ ●は いくつ？'] },
         bravo: ['10が 5つで 50、 ●が 2つで 2。 52、 「ごじゅうに」。'],
       },
       {
-        dire: ['まとめ： ひだりの ', SUJI, 'は 10の ぼうの かず、 みぎの ', SUJI, 'は ●の かず。 34は 10が 3つと ●が 4つ。'],
+        dire: ['まとめ： ひだりの ', SUJI, 'は 10の まとまりの かず、 みぎの ', SUJI, 'は ●の かず。 34は 10が 3つと ●が 4つ。'],
         scene: 'compte', contenu: [dix(3), un(4)], etiquettes: true,
       },
     ];
@@ -2625,7 +2734,7 @@
     const cent = (n) => P('cent', 100, n);
     return [
       {
-        dire: ['10の ぼうが 10こで 100。 100の いたに なる。 「ひゃく」。'],
+        dire: ['10の まとまりが 10こで 100。 100の いたに なる。 「ひゃく」。'],
         scene: 'compte', contenu: [cent(1)],
       },
       {
@@ -2643,8 +2752,8 @@
       {
         dire: ['いくつ？'],
         scene: 'compte', contenu: [cent(4), un(8)], cache: true,
-        choix: { options: [408, 48, 480], bonne: 408, unite: '', indice: ['おしい！ 100の いたは いくつ？ 10の ぼうは ある？'] },
-        bravo: ['100が 4つ、 10の ぼうは ない、 ●が 8つ。 408、 「よんひゃく はち」。 10の ところは 0 だよ。'],
+        choix: { options: [408, 48, 480], bonne: 408, unite: '', indice: ['おしい！ 100の いたは いくつ？ 10の まとまりは ある？'] },
+        bravo: ['100が 4つ、 10の まとまりは ない、 ●が 8つ。 408、 「よんひゃく はち」。 10の ところは 0 だよ。'],
       },
       {
         dire: ['100の いたを 10まい のせると…'],
@@ -2677,16 +2786,16 @@
       : nombreYomi(n) + (et.autres && AUTRES_YOMI[n] ? `<span class="nb-autre">（${AUTRES_YOMI[n]}）</span>` : '');
     const plateau = el.querySelector('.compte-plateau');
     const nb = (v) => e.plateau.filter((x) => x.v === v).length;
-    plateau.innerHTML = htmlBlocs(n, { cadreVide: et.cadre, etiquettes: et.etiquettes, parties: { c: nb('cent'), d: nb('dix'), u: nb('pion') } });
-    // On touche une plaque, une barre ou un jeton pour l'enlever.
+    plateau.innerHTML = htmlBlocs(n, { cadreVide: et.cadre, etiquettes: et.etiquettes, compte: true, parties: { c: nb('cent'), d: nb('dix'), u: nb('pion') } });
+    // On touche une plaque, un « 10の まとまり » ou un jeton pour l'enlever.
     if (et.retirer && !e.resolu) {
       const enlever = (v) => {
         const p = [...e.plateau].reverse().find((x) => x.v === v);
         if (p) enleverPiece('plateau', p.id);
       };
       plateau.querySelectorAll('.plaque100').forEach((x) => activable(x, () => enlever('cent')));
-      plateau.querySelectorAll('.barre10').forEach((x) => activable(x, () => enlever('dix')));
-      plateau.querySelectorAll('.cadre10 i.plein').forEach((x) => activable(x, () => enlever('pion')));
+      plateau.querySelectorAll('.cadre10.dix').forEach((x) => activable(x, () => enlever('dix')));
+      plateau.querySelectorAll('.cadre10:not(.dix) i.plein').forEach((x) => activable(x, () => enlever('pion')));
       plateau.classList.add('enlevable');
     }
   }
@@ -2931,7 +3040,24 @@
 
     q.essais.add(reponse);
     sons.oups();
-    donnerAide(q, ['おしい！ '], reponse);
+    donnerAide(q, presque(q, reponse) ? ['おしい！ '] : ['もう いっかい！ '], reponse);
+  }
+
+  // « おしい » n'est vrai que si la réponse était presque juste (14 pour 15, deux longueurs très proches) ;
+  // sinon on encourage sans exagérer : « もう いっかい！ ».
+  function presque(q, reponse) {
+    if (q.theme === 'kazu') {
+      if (q.type === 'comparer') return Math.abs(q.valeurs[0] - q.valeurs[1]) <= 2;
+      return Math.abs(reponse - q.bonne) <= 1;
+    }
+    if (q.type === 'lecture') return Math.abs(reponse - q.bonne) <= (q.pas || 10);
+    const mesure = (o) => (o ? (o.cm ?? o.val ?? o.ml) : null);
+    const proches = (a, b) => a > 0 && b > 0 && Math.min(a, b) / Math.max(a, b) >= 0.85;
+    if (q.type === 'tehon') return proches(mesure(q.objets[reponse]), mesure(q.modele));
+    if (q.type === 'phrase') return proches(mesure(q.objets[0]), mesure(q.objets[1]));
+    const liste = q.type === 'nombre' ? q.valeurs : q.objets;
+    if (!Array.isArray(liste) || typeof reponse !== 'number') return false;
+    return proches(mesure(liste[reponse]), mesure(liste[q.bonne]));
   }
 
   // Question résolue (trouvée, ou montrée après « わからない ») : explication, règle, preuve, つぎへ.
@@ -2978,7 +3104,11 @@
       }
       message = q.type === 'mesures' ? regleMV(q.theme, q.demande) : messageErreurMV(q);
     }
-    if ((q.type === 'nombre' || q.type === 'mesures') && q.aide < q.aideMax) {
+    if (q.theme === 'kazu' && q.aide < q.aideMax) {
+      q.aide += 1;
+      message = aideKazu(q);
+      rendreQuestion();
+    } else if ((q.type === 'nombre' || q.type === 'mesures') && q.aide < q.aideMax) {
       q.aide += 1;
       message = messageAide(q);
       rendreQuestion();
@@ -3030,7 +3160,7 @@
     const q = courante();
     if (q.resolu) return;
     q.sansSavoir = (q.sansSavoir || 0) + 1;
-    const resteAide = ((q.type === 'nombre' || q.type === 'mesures') && q.aide < q.aideMax)
+    const resteAide = ((q.type === 'nombre' || q.type === 'mesures' || q.theme === 'kazu') && q.aide < q.aideMax)
       || (q.type === 'libre' && !q.aligne) || (q.type === 'transvaser' && q.etape === 'avant')
       || (q.type === 'devine' && q.etape === 'devine');
     if (q.sansSavoir === 1 || resteAide) {
@@ -3798,7 +3928,7 @@
     okome: { genre: 'sac', texte: 'おこめ 1kg', nom: ['おこめ ', segU(1, 'kg')] },
     gou: { genre: 'gou', nom: ['1ごうの カップ'] },
     pion: { genre: 'pion', nom: ['●'] },
-    dix: { genre: 'barre', nom: ['10の ぼう'] },
+    dix: { genre: 'barre', nom: ['10の まとまり'] },
     cent: { genre: 'plaque', nom: ['100の いた'] },
     teEnfant: { genre: 'main', taille: 0.8, nom: ['こどもの て'] },
     teAdulte: { genre: 'main', taille: 1.15, nom: ['おとなの て'] },
@@ -4469,8 +4599,8 @@
       return el;
     }
     if (vis.genre === 'barre') {
-      el.className = 'barre10 piece';
-      el.innerHTML = '<i></i>'.repeat(10);
+      el.className = 'cadre10 dix piece';
+      el.innerHTML = '<i class="plein"></i>'.repeat(10);
       return el;
     }
     if (vis.genre === 'plaque') {
@@ -4760,7 +4890,9 @@
     }
     e.essais.add(v);
     sons.oups();
-    const message = et.choix.indice || ['おしい！ はりの さきを よく ', MI, 'てね。 ', OOKI, 'きい めもりから かぞえよう。'];
+    let message = et.choix.indice || ['おしい！ はりの さきを よく ', MI, 'てね。 ', OOKI, 'きい めもりから かぞえよう。'];
+    // « おしい » seulement si c'est presque juste (17 pour 16, pas 71 pour 17).
+    if (Math.abs(v - et.choix.bonne) > Math.max(1, Math.abs(et.choix.bonne) * 0.1)) message = ['もう いっかい！ ', ...sansOshii(message)];
     messageEtude(message);
     parler(message);
     rendreLecon();
@@ -4911,7 +5043,7 @@
       etudeAide: 'Dans « べんきょう », votre enfant tire le ruban (n’importe où sur la zone, pas seulement sur la poignée) ou utilise les gros boutons ＋1 / −1. Chaque centimètre ajouté ou retiré apparaît comme un bloc numéroté. Dans « のばして みよう », la poignée bleue sous le ruban change le premier nombre sans changer le second. Avec des nombres plus grands, le geste doit être plus précis.',
       aide: 'Boutons d’aide (わからない, そろえる, うつす)',
       aideAide: 'Activités 6 et 7 : l’aide convertit d’abord dans la même unité (1 m ＝ 100 cm), puis dessine des barres à l’échelle. Activités 8 et 9 : elle fait glisser les objets jusqu’à la ligne de départ. Elle apparaît aussi d’elle-même après une erreur.',
-      aideMV: 'Nombres (かず) : chaque nombre est écrit avec sa lecture en hiragana (3 さん, 23 にじゅうさん, 300 さんびゃく). « いくつ？ » : compter jusqu’à 5, puis 10, en rangées de 5 puis en désordre ; la preuve numérote les objets dans l’ordre. « よみかた » : chiffre → hiragana puis l’inverse (1–10, 11–20, jusqu’à 99). Les leçons utilisent le cadre de 10 (2 rangées de 5), les barres de 10 et les plaques de 100 ; la voix dit le nombre à chaque jeton posé. Masses : la balance de cuisine (はかり) est l’instrument principal. « はりで くらべる » compare deux balances sans aucun nombre ; « みためと ちがう » : l’élève devine d’abord (un gros objet peut être léger), puis les balances vérifient ; « はかりを よもう » : lire l’aiguille (centaines, puis 50, puis dizaines). Leçons guidées (l’élève pose ou enlève les objets en les touchant, puis la voix explique) : « はかりの よみかた », « g と kg » (1円玉 ＝ 1 g … 1 kg ＝ 1000 g), puis l’entraînement « はかって みよう ». La rubrique « ね、しっていた？（むかしは…）» rassemble la culture : la balance à plateaux (てんびん, avec son exercice et « つりあわせよう »), 匁 et la pièce de 5 円, et pour les longueurs あた／ひろ et 尺／寸, pour les liquides 合／升. Masses 5 et 6, liquides 4 et 5 : l’aide convertit d’abord dans la même unité (1 kg ＝ 1000 g, 1 L ＝ 1000 mL), puis montre des balances de cuisine ou des verres doseurs. « うつして くらべよう » : le bouton « うつす » (ou une erreur) verse les deux récipients dans des verres identiques. « つりあわせよう » : on touche le bac pour poser une つみき (jusqu’à 20) ou une おもり (1 g et 10 g, ou 10 g et 100 g jusqu’à 1000), on touche un poids sur le plateau pour le reposer ; les poids sont rangés par 5, une sorte par rangée, les plus lourds en bas, et l’égalité les compte (10 g × 9 ＋ 1 g × 7 ＝ 97 g) ; la balance penche moins quand on approche. « はかって いれよう » : on glisse le doigt vers le haut ou le bas ; la taille du verre doseur (200 mL, 500 mL, 1 L) se choisit en haut de l’écran.',
+      aideMV: 'Nombres (かず) : chaque nombre est écrit avec sa lecture en hiragana (3 さん, 23 にじゅうさん, 300 さんびゃく). « いくつ？ » : compter jusqu’à 5, puis 10, en rangées de 5 puis en désordre ; la preuve numérote les objets dans l’ordre. « よみかた » : chiffre → hiragana puis l’inverse (1–10, 11–20, jusqu’à 99). Les dizaines sont partout des cadres de 10 pleins (« 10の まとまり »), comptés 10, 20, 30… ; les unités sont les « ばら ». Les leçons utilisent aussi les plaques de 100 ; la voix dit le nombre à chaque jeton posé. Après une erreur ou « わからない », l’aide décompose le nombre (16 ＝ 10 と 6 : « じゅう » et « ろく ») ou fait compter les 10 ; « おしい » n’est dit que si la réponse était presque juste. Masses : la balance de cuisine (はかり) est l’instrument principal. « はりで くらべる » compare deux balances sans aucun nombre ; « みためと ちがう » : l’élève devine d’abord (un gros objet peut être léger), puis les balances vérifient ; « はかりを よもう » : lire l’aiguille (centaines, puis 50, puis dizaines). Leçons guidées (l’élève pose ou enlève les objets en les touchant, puis la voix explique) : « はかりの よみかた », « g と kg » (1円玉 ＝ 1 g … 1 kg ＝ 1000 g), puis l’entraînement « はかって みよう ». La rubrique « ね、しっていた？（むかしは…）» rassemble la culture : la balance à plateaux (てんびん, avec son exercice et « つりあわせよう »), 匁 et la pièce de 5 円, et pour les longueurs あた／ひろ et 尺／寸, pour les liquides 合／升. Masses 5 et 6, liquides 4 et 5 : l’aide convertit d’abord dans la même unité (1 kg ＝ 1000 g, 1 L ＝ 1000 mL), puis montre des balances de cuisine ou des verres doseurs. « うつして くらべよう » : le bouton « うつす » (ou une erreur) verse les deux récipients dans des verres identiques. « つりあわせよう » : on touche le bac pour poser une つみき (jusqu’à 20) ou une おもり (1 g et 10 g, ou 10 g et 100 g jusqu’à 1000), on touche un poids sur le plateau pour le reposer ; les poids sont rangés par 5, une sorte par rangée, les plus lourds en bas, et l’égalité les compte (10 g × 9 ＋ 1 g × 7 ＝ 97 g) ; la balance penche moins quand on approche. « はかって いれよう » : on glisse le doigt vers le haut ou le bas ; la taille du verre doseur (200 mL, 500 mL, 1 L) se choisit en haut de l’écran.',
       theme_kazu: 'Nombres (かず)',
       theme_nagasa: 'Longueurs (ながさ)',
       theme_omosa: 'Masses (おもさ)',
@@ -4995,7 +5127,7 @@
       etudeAide: '「べんきょう」では テープを ひっぱるか（どこからでも）、＋1・−1 の ボタンを つかいます。たしたり ひいたり した 1cm ずつが ばんごうつきの ブロックで みえます。「のばして みよう」では テープの 下の あおい ●で さいしょの かずを かえられます（2つめの かずは そのまま）。かずが 大きいと こまかい うごきが ひつようです。',
       aide: 'たすけの ボタン（わからない・そろえる・うつす）',
       aideAide: '6・7：まず おなじ たんいに なおし（1m＝100cm）、つぎに ぼうで しめします。8・9：ものの はしを そろえます。まちがえたときは じどうで でます。',
-      aideMV: 'かず：すうじには いつも ひらがなの よみかたが つきます（3 さん、23 にじゅうさん、300 さんびゃく）。べんきょうでは 10の わく、10の ぼう、100の いたを つかい、のせる たびに こえで かずを いいます。おもさ：はかりが 中心です。「はりで くらべる」は すうじの ない はかりで くらべます。「みためと ちがう」は まず よそうして（大きくても かるい ものが あります）、はかりで たしかめます。「はかりを よもう」は はりを よみます。べんきょうでは「はかりの よみかた」「g と kg」（1円玉＝1g … 1kg＝1000g）「はかって みよう」を します。ものを さわって のせたり おろしたり すると、こえで せつめいします。「ね、しっていた？（むかしは…）」には てんびん、もんめ（5円玉）、あた・ひろ、しゃく・すん、ごう・しょうが あります。おもさ 5・6、かさ 4・5 は まず おなじ たんいに なおし（1kg＝1000g、1L＝1000mL）、つぎに はかりや けいりょうカップで しめします。「うつして くらべよう」は「うつす」ボタン（または まちがい）で おなじ コップに うつします。「つりあわせよう」は 20までは つみき、それより 大きいと g の おもりです。はこを さわると 1こ のり、さらの おもりを さわると はこに もどります。おもりは 5こずつ ならびます。「はかって いれよう」は ゆびを 上下に うごかします。カップの 大きさ（200mL・500mL・1L）は がめんの 上で えらべます。',
+      aideMV: 'かず：すうじには いつも ひらがなの よみかたが つきます（3 さん、23 にじゅうさん、300 さんびゃく）。10の まとまり（いっぱいの 10の わく）を 10、20、30と かぞえ、べんきょうでは 100の いたも つかい、のせる たびに こえで かずを いいます。おもさ：はかりが 中心です。「はりで くらべる」は すうじの ない はかりで くらべます。「みためと ちがう」は まず よそうして（大きくても かるい ものが あります）、はかりで たしかめます。「はかりを よもう」は はりを よみます。べんきょうでは「はかりの よみかた」「g と kg」（1円玉＝1g … 1kg＝1000g）「はかって みよう」を します。ものを さわって のせたり おろしたり すると、こえで せつめいします。「ね、しっていた？（むかしは…）」には てんびん、もんめ（5円玉）、あた・ひろ、しゃく・すん、ごう・しょうが あります。おもさ 5・6、かさ 4・5 は まず おなじ たんいに なおし（1kg＝1000g、1L＝1000mL）、つぎに はかりや けいりょうカップで しめします。「うつして くらべよう」は「うつす」ボタン（または まちがい）で おなじ コップに うつします。「つりあわせよう」は 20までは つみき、それより 大きいと g の おもりです。はこを さわると 1こ のり、さらの おもりを さわると はこに もどります。おもりは 5こずつ ならびます。「はかって いれよう」は ゆびを 上下に うごかします。カップの 大きさ（200mL・500mL・1L）は がめんの 上で えらべます。',
       theme_kazu: 'かず',
       theme_nagasa: 'ながさ',
       theme_omosa: 'おもさ',

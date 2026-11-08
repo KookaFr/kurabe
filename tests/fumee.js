@@ -30,7 +30,9 @@ function serveur() {
 const controler = (page) => page.evaluate(() => {
   const vp = window.innerWidth;
   const horizontal = document.documentElement.scrollWidth > vp;
+  // Seuls les boutons à texte comptent : les objets dessinés (.objet-libre, .verre-col, .ligne) débordent exprès.
   const coupes = [...document.querySelectorAll('button:not([hidden])')]
+    .filter((b) => !b.matches('.objet-libre, .verre-col, .ligne, .contenant-col, .cible, .piece-bouton'))
     .filter((b) => b.offsetParent !== null && b.scrollWidth > b.clientWidth + 2)
     .map((b) => `${b.className.split(' ')[1] || b.className} « ${b.textContent.trim().slice(0, 24)} » ${b.scrollWidth}>${b.clientWidth}`);
   return { horizontal, coupes };
@@ -86,7 +88,12 @@ async function jouer(page) {
           if (c.horizontal) problemes.push(`${nom} ${contexte} : débordement horizontal`);
           c.coupes.forEach((x) => problemes.push(`${nom} ${contexte} : texte coupé ${x}`));
           ecrans++;
-          await jouer(page);
+          try {
+            await jouer(page);
+          } catch (e) {
+            problemes.push(`${nom} ${contexte} : geste impossible ${String(e.message).split('\n')[0]}`);
+            break;
+          }
         }
       }
     }

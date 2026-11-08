@@ -50,7 +50,9 @@
     voixNom: '',            // une voix précise choisie par les parents ('' : automatique)
     sons: true,
     dureeAppui: 0,          // ms : le doigt doit rester posé ce temps
-    antiRebond: 0,          // ms : touchers suivants ignorés
+    antiRebond: 300,        // ms : touchers suivants ignorés (évite les doubles touches)
+    verserParTouche: false, // はんぶんこ, まぜて : verser par petites touches (20 mL) au lieu d'appuyer longtemps
+    animations: 'auto',     // 'auto' (suit le système) ou 'reduites'
     aide: true,             // boutons « わからない », « そろえる », « うつす »
     nombreMax: 20,          // べんきょう : nombres jusqu'à 10, 20, 50, 100 ou 1000
     compter: true,          // べんきょう : la voix compte à chaque ＋1 / −1
@@ -291,12 +293,13 @@
   // symboles, et les signes des égalités en mots (＋ → たす, ＝ → は, → → で).
   function texteParle(el) {
     const copie = el.cloneNode(true);
-    copie.querySelectorAll('svg, [aria-hidden="true"], .numero, pc, pd, pu').forEach((x) => x.remove());
-    copie.querySelectorAll('.inconnu').forEach((x) => { x.textContent = ' いくつ '; });
+    // D'abord les furigana (la voix lit la lecture, pas le kanji), puis le décor caché.
     copie.querySelectorAll('ruby').forEach((r) => {
       const rt = r.querySelector('rt');
       r.replaceWith(rt ? rt.textContent : r.textContent);
     });
+    copie.querySelectorAll('svg, [aria-hidden="true"], .numero, pc, pd, pu').forEach((x) => x.remove());
+    copie.querySelectorAll('.inconnu').forEach((x) => { x.textContent = ' いくつ '; });
     return versParole(copie.textContent);
   }
 
@@ -315,6 +318,13 @@
       .replace(/\s+/g, ' ')
       .trim();
   }
+
+  // Les lecteurs d'écran (VoiceOver, TalkBack) ne lisent que le kanji, pas « 長いながい » : les furigana
+  // sont cachés à l'accessibilité une fois dans la page (la balise <rt> reste sans attribut : htmlMots coupe aux espaces).
+  const cacherFurigana = (racine) => racine.querySelectorAll('rt:not([aria-hidden])').forEach((rt) => rt.setAttribute('aria-hidden', 'true'));
+  new MutationObserver((mutations) => {
+    mutations.forEach((m) => m.addedNodes.forEach((n) => { if (n.nodeType === 1) cacherFurigana(n); }));
+  }).observe(document.body, { childList: true, subtree: true });
 
   let elementLu = null;
   function lireElement(el, texte) {
@@ -396,6 +406,7 @@
      ====================================================================== */
 
   let derniereActivation = -Infinity;
+  let derniereActivationEl = null;
 
   function activable(el, action, { duree = null, garde = true, lire = true } = {}) {
     let suivi = null;
@@ -411,8 +422,11 @@
     const declencher = () => {
       const maintenant = performance.now();
       const delai = garde ? Number(reglages.antiRebond) || 0 : 0;
-      if (delai && maintenant - derniereActivation < delai) return;
+      // Jusqu'à 0,3 s, on n'ignore que les touches répétées sur le même bouton (tremblement) ;
+      // au-delà (réglage 0,5 s / 1 s), toute touche qui suit de trop près, où qu'elle soit.
+      if (delai && maintenant - derniereActivation < delai && (delai > 300 || derniereActivationEl === el)) return;
       derniereActivation = maintenant;
+      derniereActivationEl = el;
       if (lire && modeLecture && lectureActive() && !el.classList.contains('btn-lire')) {
         lireElement(el, el.getAttribute('aria-label') ? versParole(el.getAttribute('aria-label')) : '');
         return;
@@ -437,7 +451,8 @@
     });
 
     el.addEventListener('pointermove', (ev) => {
-      if (suivi && ev.pointerId === suivi.id && Math.hypot(ev.clientX - suivi.x, ev.clientY - suivi.y) > 30) terminer();
+      const tolerance = Math.max(30, Math.min(el.offsetWidth, el.offsetHeight) * 0.5);
+      if (suivi && ev.pointerId === suivi.id && Math.hypot(ev.clientX - suivi.x, ev.clientY - suivi.y) > tolerance) terminer();
     });
 
     el.addEventListener('pointerup', (ev) => {
@@ -459,6 +474,12 @@
     });
 
     el.addEventListener('contextmenu', (ev) => ev.preventDefault());
+    // Un élément qui n'est pas un vrai bouton (cadre de 10, rangée de poids) : Entrée et Espace l'activent.
+    if (!['BUTTON', 'INPUT', 'LABEL', 'A'].includes(el.tagName)) {
+      el.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); declencher(); }
+      });
+    }
   }
 
   /* ======================================================================
@@ -629,7 +650,12 @@
   }
   const numeroAffiche = (a) => ordreTheme(themeDe(a)).indexOf(a) + 1;
 
-  const animationsReduites = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const animationsReduites = () => reglages.animations === 'reduites' || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Le réglage « sans animations » des parents s'applique aussi au CSS (html[data-motion=reduce]).
+  function appliquerAnimations() {
+    if (reglages.animations === 'reduites') document.documentElement.dataset.motion = 'reduce';
+    else delete document.documentElement.dataset.motion;
+  }
   const entier = (a, b) => Math.floor(aleatoire(a, b + 1));
   const valeurCm = (c) => ({ cm: c, m: null, x: c, u: 'cm', affichage: `${c}\u00a0cm`, lecture: `${c}センチ` });
   const valeurM = (m) => ({ cm: m * 100, m, x: m, u: 'm', affichage: `${m}\u00a0m`, lecture: `${m}メートル` });
@@ -864,6 +890,14 @@
     ecranActuel = nom;
     $('maj').hidden = !(nom === 'accueil' && majEnAttente);
     window.scrollTo(0, 0);
+    focaliser($(`ecran-${nom}`).querySelector('h1, h2, .consigne'));
+  }
+
+  // Donne le focus à un titre ou une consigne (annoncé par VoiceOver / TalkBack), sans faire défiler.
+  function focaliser(el) {
+    if (!el) return;
+    el.tabIndex = -1;
+    try { el.focus({ preventScroll: true }); } catch { /* rien */ }
   }
 
   /* ----- Accueil ----- */
@@ -1186,6 +1220,7 @@
     $('rappel').hidden = true;
     rendreQuestion();
     parlerConsigne();
+    focaliser($('consigne'));
   }
 
   function parlerConsigne() {
@@ -1203,11 +1238,14 @@
   function rendreProgression() {
     const liste = $('progression');
     liste.replaceChildren();
+    const vraies = session.questions.filter((q) => q.type !== 'tuto');
+    const numero = vraies.indexOf(session.questions[session.index]) + 1;
+    liste.setAttribute('aria-label', `すすみぐあい ${Math.max(1, numero)} / ${vraies.length}`);
     session.questions.forEach((q, i) => {
       if (q.type === 'tuto') return;
       const point = document.createElement('li');
       if (i < session.index || (i === session.index && q.resolu)) point.classList.add('fait');
-      if (i === session.index) point.classList.add('actuel');
+      if (i === session.index) { point.classList.add('actuel'); point.setAttribute('aria-current', 'step'); }
       liste.append(point);
     });
   }
@@ -3487,9 +3525,17 @@
         const p = [...e.plateau].reverse().find((x) => x.v === v);
         if (p) enleverPiece('plateau', p.id);
       };
-      plateau.querySelectorAll('.plaque100').forEach((x) => activable(x, () => enlever('cent')));
-      plateau.querySelectorAll('.cadre10.dix').forEach((x) => activable(x, () => enlever('dix')));
-      plateau.querySelectorAll('.cadre10:not(.dix) i.plein').forEach((x) => activable(x, () => enlever('pion')));
+      // Tout le cadre ou toute la plaque est la cible (un jeton de 12 px ne se vise pas) : une touche enlève une pièce.
+      const retrait = (x, v, label) => {
+        x.setAttribute('role', 'button');
+        x.tabIndex = 0;
+        x.setAttribute('aria-label', label);
+        x.classList.add('enlevable');
+        activable(x, () => enlever(v));
+      };
+      plateau.querySelectorAll('.plaque100').forEach((x) => retrait(x, 'cent', '100の いたを 1まい おろす'));
+      plateau.querySelectorAll('.cadre10.dix').forEach((x) => retrait(x, 'dix', '10の まとまりを 1つ おろす'));
+      plateau.querySelectorAll('.cadre10:not(.dix)').forEach((x) => retrait(x, 'pion', 'まるを 1こ おろす'));
       plateau.classList.add('enlevable');
     }
   }
@@ -3618,6 +3664,7 @@
     return PHRASES.barres;
   }
 
+  const ICONE_AIDE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>';
   function majBoutonAide() {
     const q = courante();
     const bouton = $('btn-aide');
@@ -3627,7 +3674,7 @@
       if (q.type === 'libre' && !q.aligne) texte = 'そろえる';
       if (q.type === 'transvaser' && q.etape === 'avant') texte = 'うつす';
     }
-    bouton.textContent = texte;
+    bouton.innerHTML = texte ? `${ICONE_AIDE}${echapper(texte)}` : '';
     bouton.hidden = !texte;
     $('btn-sais-pas').hidden = !reglages.aide || q.resolu || q.type === 'tuto';
   }
@@ -5123,13 +5170,22 @@
   let versementEnCours = null;
   let rendreApresVersement = false;   // l'écran a changé de taille pendant un versement : redessiner après
 
+  const PAR_TOUCHE = 20;   // mL versés par touche, quand on ne peut pas maintenir l'appui
   function appuyerVersement(k) {
     const e = etude;
     if (!e || !e.liq || e.resolu || e.liq.demo) return;
+    if (reglages.verserParTouche) {
+      if (versementEnCours) return;
+      const L = e.liq;
+      const niveau = L.mode === 'hanbun' ? L.verres[k] : L.parts[k].ml;
+      lancerVersement(k, niveau + PAR_TOUCHE);
+      return;
+    }
     lancerVersement(k);
   }
 
   function lacherVersement(k) {
+    if (reglages.verserParTouche) return;   // la touche verse 20 mL puis s'arrête seule
     const v = versementEnCours;
     if (v && v.k === k && !v.fin) arreterVersement(true);
   }
@@ -5210,10 +5266,11 @@
       return L.verres[j] > 0.01 && (q > 0 || (dt === 0 && place > 0));
     }
     const s = L.sources[k];
-    const q = Math.min(s.reste, DEBIT * dt);
+    const place = limite == null ? Infinity : Math.max(0, limite - L.parts[k].ml);
+    const q = Math.min(s.reste, DEBIT * dt, place);
     s.reste -= q;
     L.parts[k].ml += q;
-    return s.reste > 0.01 || q > 0;
+    return (s.reste > 0.01 && place - q > 0.01) || q > 0;
   }
 
   // Penche la source au-dessus de la cible : son coin (le bec) au-dessus du bord, à 35 % de sa largeur ;
@@ -5611,7 +5668,7 @@
       elements = sel ? plan.querySelectorAll(`.compte-plateau ${sel}`) : [];
     } else {
       // (sorte : « g100 »… — la main montre un poids de cette sorte.)
-      elements = plan.querySelectorAll(sorte && VISUELS[sorte] ? `.piece-bouton[data-v="${sorte}"]` : '.piece-bouton');
+      elements = plan.querySelectorAll(sorte && VISUELS[sorte] ? `.rangee-poids[data-v="${sorte}"] > *` : '.rangee-poids > *');
     }
     const cible = elements[elements.length - 1];
     if (!cible) return;
@@ -5949,16 +6006,7 @@
     const enlevable = et.retirer && !e.resolu && (et.vers === cote);
     liste.forEach((p) => {
       const piece = creerPiece(p, taille, s);
-      let el = piece;
-      if (enlevable && VISUELS[p.v]?.genre !== 'chose') {
-        el = document.createElement('button');
-        el.type = 'button';
-        el.className = 'piece-bouton';
-        el.dataset.v = p.v;
-        el.setAttribute('aria-label', `${lecture(nomVisuel(p.v))} を おろす`);
-        el.append(piece);
-        activable(el, () => enleverPiece(cote, p.id));
-      }
+      const el = piece;
       if (['chose', 'sac'].includes(VISUELS[p.v]?.genre) || !VISUELS[p.v]) {
         zone.append(el);
         return;
@@ -5970,6 +6018,18 @@
         rangee = document.createElement('span');
         rangee.className = 'rangee-poids';
         rangee.dataset.v = p.v;
+        if (enlevable && VISUELS[p.v]?.genre !== 'chose') {
+          // La rangée entière (≥ 44 px) enlève la dernière pièce de sa sorte : une petite pièce ne se vise pas.
+          rangee.classList.add('enlevable');
+          rangee.setAttribute('role', 'button');
+          rangee.tabIndex = 0;
+          rangee.setAttribute('aria-label', `${lecture(nomVisuel(p.v))} を 1こ おろす`);
+          const sorte = p.v;
+          activable(rangee, () => {
+            const derniere = [...liste].reverse().find((x) => x.v === sorte);
+            if (derniere) enleverPiece(cote, derniere.id);
+          });
+        }
         pile.prepend(rangee);
       }
       rangee.append(el);
@@ -6444,6 +6504,13 @@
       dureeAppui: 'Temps d’appui pour valider',
       immediat: 'Immédiat',
       antiRebond: 'Ignorer les touchers répétés',
+      rebondMeme: '0,3 s (même bouton)',
+      verser: 'Verser (はんぶんこ, まぜて みよう)',
+      verserMaintenir: 'En appuyant',
+      verserTouche: 'Par touches de 20 mL',
+      animations: 'Animations',
+      animAuto: 'Comme l’appareil',
+      animReduites: 'Réduites',
       ipad: 'Sur la tablette ou le smartphone',
       ipadAide: 'iPad : Safari › Partager › « Sur l’écran d’accueil ». Pour empêcher de sortir de l’outil : Réglages › Accessibilité › Accès guidé. Android (Samsung) : Chrome › menu ⋮ › « Ajouter à l’écran d’accueil » ou « Installer l’application ». Pour bloquer l’écran sur l’outil : Paramètres › Sécurité › Épingler les applications. Les photos ajoutées restent sur l’appareil où elles ont été prises : ajoutez-les sur chaque appareil.',
       photoTitre: 'Nouvelle photo',
@@ -6530,6 +6597,13 @@
       dureeAppui: 'おしつづける じかん',
       immediat: 'すぐ',
       antiRebond: 'つづけて タッチしたときに むしする',
+      rebondMeme: '0.3びょう（おなじ ボタン）',
+      verser: 'そそぐ（はんぶんこ・まぜて みよう）',
+      verserMaintenir: 'おしている あいだ',
+      verserTouche: '1かい タッチで 20 mL',
+      animations: 'うごき（アニメーション）',
+      animAuto: 'きかいの せってい どおり',
+      animReduites: 'すくなく',
       ipad: 'タブレット・スマホで つかう',
       ipadAide: 'iPad：Safari › 共有 › 「ホーム画面に追加」。ほかの アプリに うつらないように：設定 › アクセシビリティ › アクセスガイド。Android（Galaxy）：Chrome › メニュー ⋮ › 「ホーム画面に追加」または「アプリをインストール」。画面の固定：設定 › セキュリティ › アプリの固定。しゃしんは とった きかいの 中だけに あるので、きかいごとに ついかしてください。',
       photoTitre: 'あたらしい しゃしん',
@@ -6831,7 +6905,9 @@
     const bToucher = bloc(t('toucher'));
     bToucher.append(
       groupeChoix('dureeAppui', t('dureeAppui'), [[0, t('immediat')], [300, '0,3 s'], [600, '0,6 s'], [1000, '1 s']]),
-      groupeChoix('antiRebond', t('antiRebond'), [[0, t('non')], [500, '0,5 s'], [1000, '1 s']]),
+      groupeChoix('antiRebond', t('antiRebond'), [[0, t('non')], [300, t('rebondMeme')], [500, '0,5 s'], [1000, '1 s']]),
+      groupeChoix('verserParTouche', t('verser'), [[false, t('verserMaintenir')], [true, t('verserTouche')]]),
+      groupeChoix('animations', t('animations'), [['auto', t('animAuto')], ['reduites', t('animReduites')]], { apres: appliquerAnimations }),
     );
 
     const bIpad = bloc(t('ipad'), t('ipadAide'));
@@ -7194,9 +7270,9 @@
   document.addEventListener('contextmenu', (ev) => {
     if (!ev.target.closest('input, textarea')) ev.preventDefault();
   });
-  document.addEventListener('gesturestart', (ev) => ev.preventDefault());
 
   (async () => {
+    appliquerAnimations();
     rendreAccueil();
     montrer('accueil');
     await Base.ouvrir();

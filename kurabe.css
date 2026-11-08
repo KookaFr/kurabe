@@ -1539,6 +1539,8 @@ body.mode-lecture button:not(.btn-lire):not([hidden]) {
 .nb-autre { font-size: 1.1rem; color: var(--encre-douce); }
 .btn-nombre { flex-direction: column; line-height: 1.15; }
 .btn-nombre .nb-yomi { font-size: .62em; }
+/* 3びき : le compteur un peu plus petit que le chiffre. */
+.nb-chiffre .suffixe { font-size: .62em; font-weight: 700; margin-left: .06em; }
 /* かず : réponses en liste ; la lecture en hiragana aussi grande que possible (« 文字が小さすぎる »). */
 .choix-liste .btn-nombre .nb-yomi { font-size: .8em; }
 .choix-liste .btn-nombre > .nb-yomi:only-child { font-size: 1em; }

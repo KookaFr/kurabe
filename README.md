@@ -33,9 +33,14 @@ Le premier onglet : compter et lire les nombres (programme « 数の学習 »). 
 8. ずれている: objets décalés, d'abord alignés à droite, puis pas alignés du tout
 9. ななめ: objets penchés
 
-Pour les activités 6 et 7, le bouton « ヒント » convertit d'abord dans la même unité (1 m ＝ 100 cm), puis dessine des barres à l'échelle. Pour les activités 8 et 9, le bouton « そろえる » fait glisser les objets (et les redresse) jusqu'à la ligne de départ. Ces aides s'affichent aussi d'elles-mêmes après une erreur.
+Pour les activités 6 et 7, l'aide convertit d'abord dans la même unité (1 m ＝ 100 cm), puis dessine des barres à l'échelle. Pour les activités 8 et 9, le bouton « そろえる » fait glisser les objets (et les redresse) jusqu'à la ligne de départ. Ces aides s'affichent d'elles-mêmes après une erreur, ou avec le bouton « わからない ».
 
 Les objets sont alignés sur une ligne de départ et affichés à l'échelle. En cas d'erreur, il n'y a pas de pénalité : des repères montrent le bout de chaque objet, et l'élève réessaie. La dernière question de chaque série est facile, pour finir sur une réussite.
+
+Dans tous les onglets :
+
+- un bouton « わからない » (avec un ?) est toujours là. La première fois, il rassure et aide (« だいじょうぶ！ ぼうで くらべて みよう。 ») : repères, barres, balance de cuisine, verres identiques selon la question. Ensuite, il montre la réponse avec sa preuve, sans reproche, et l'on passe à la suite ;
+- après chaque conseil (une erreur ou « わからない »), quand la voix a fini, la question est reposée 2 à 3 secondes plus tard : « じゃ、どっちが みじかい？ ».
 
 Après chaque bonne réponse, même trouvée du premier coup, l'application montre pourquoi c'est juste : une règle graduée apparaît sous les objets, la longueur de chaque objet s'affiche, la partie qui dépasse est surlignée avec l'écart en cm, et la voix explique (« うえは 15センチ、したは 8センチ。うえの ほうが 7センチ ながいね。 »). Le bouton 🔊 permet de réécouter l'explication.
 
@@ -71,7 +76,7 @@ Les activités sont numérotées 1, 2, 3… dans chaque onglet. L'instrument pri
 3. 一番 重いのは？: trois balances de cuisine ; l'aiguille la plus avancée montre le plus lourd
 4. はかりを よもう: un objet sur une balance de cuisine, 「〇〇の 重さは なん g？」, trois réponses au choix ; d'abord des centaines, puis des 50, puis des dizaines (toujours proches du vrai poids de l'objet)
 5. g で くらべる: deux masses écrites en g (300 g / 250 g), avec des pièges comme 350 g / 530 g
-6. kg と g: 1 kg / 800 g. « ヒント » convertit (1 kg ＝ 1000 g), puis montre deux balances de cuisine
+6. kg と g: 1 kg / 800 g. L'aide convertit (1 kg ＝ 1000 g), puis montre deux balances de cuisine
 
 べんきょう (leçons guidées : une consigne lue, l'élève touche les objets pour les poser ou les enlever, puis la voix explique ; つぎへ passe à l'étape suivante) :
 
@@ -83,7 +88,7 @@ Les activités sont numérotées 1, 2, 3… dans chaque onglet. L'instrument pri
 
 10. てんびん: la balance à plateaux (むかしの はかり, encore utilisée en sciences) : poser une pomme, 「つりあう」, 「下がった ほうが 重い」, inverser les côtés ; des poids identiques (この りんごは おもり 3こ ぶん) ; puis calculer : 1 poids ＝ 100 g, donc 100 ＋ 100 ＋ 100 ＝ 300 g (ou 100 × 3) ; la balle (500 g) ; une autre pomme pesée avec des poids de 100 g et 10 g (320 g : 「りんごに よって 重さは ちがう」) ; quand c'est presque équilibré, 「おしい！ もう すこし かな」
 11. てんびんで くらべる: lequel est le plus lourd sur la balance à plateaux
-12. つりあわせよう: équilibrer avec des cubes (つみき, jusqu'à 20 : « つみき なんこ ぶん ») ou des poids de 1 / 10 g ou 10 / 100 g ; la balance penche moins quand on approche
+12. つりあわせよう: équilibrer avec des cubes (つみき, jusqu'à 20 : « つみき なんこ ぶん ») ou des poids de 1 / 10 g ou 10 / 100 g. On touche un bac pour poser un cube ou un poids sur la balance, et un poids sur le plateau pour le reposer (pas de boutons ＋1 / ＋10). L'égalité compte les poids (10 g × 9 ＋ 1 g × 7 ＝ 97 g), la voix dit le total, la balance penche moins quand on approche, et « おしい！ … 1 g の おもりを のせて みよう » propose le petit poids au bon moment
 13. もんめと 5えんだま: l'ancienne unité 匁 ; la pièce de 5円 pèse exactement 1 匁 (3,75 g) ; dix pièces équilibrent 10 匁 ; 1000 匁 ＝ 1 貫 ; les perles se pèsent encore en 匁
 
 Les poids posés s'alignent par rangées de 5 (10 ＝ 5 ＋ 5), une rangée par sorte de poids.
@@ -94,7 +99,7 @@ Les poids posés s'alignent par rangées de 5 (10 ＝ 5 ＋ 5), une rangée par 
 2. 一番 多いのは？: trois verres identiques
 3. うつして くらべよう: deux récipients de formes différentes (びん, カップ, ボウル, なべ). Souvent un piège : le liquide monte plus haut dans le récipient étroit, mais il y en a moins. Le bouton « うつす » (ou une erreur) verse les deux dans des verres identiques pour comparer
 4. mL で くらべる: deux quantités en mL (200 mL / 350 mL)
-5. L と mL: 1 L / 800 mL. « ヒント » convertit (1 L ＝ 1000 mL), puis montre deux verres doseurs gradués
+5. L と mL: 1 L / 800 mL. L'aide convertit (1 L ＝ 1000 mL), puis montre deux verres doseurs gradués
 
 べんきょう : 6. はかって いれよう — remplir un verre doseur gradué jusqu'à la quantité demandée, en glissant le doigt vers le haut ou le bas, ou avec les boutons. Ensuite, le verre contient déjà du liquide : on ajoute ou on en enlève (« いま 120 mL。200 mL に しよう »). La taille du verre doseur (200 mL, 500 mL, 1 L) se choisit en haut de l'écran.
 
@@ -116,6 +121,8 @@ Les symboles sont dits en mots (100 g → 100グラム, ＋ → たす, ＝ → 
 ## おうちの人へ / Pour les parents
 
 Appuyez 2 secondes sur « おうちの人 » pour ouvrir les réglages, en japonais ou en français. Vous pourrez y choisir les activités, l'écriture (hiragana, ou kanji avec furigana) et la sensibilité au toucher.
+
+La voix peut être une voix de femme ou d'homme. Le navigateur ne dit pas si une voix est d'homme : l'application reconnaît les voix japonaises d'homme connues (Otoya et Hattori sur iPad, Ichiro ou Keita sur Windows) et liste les voix japonaises installées pour en choisir une précise. S'il n'y a pas de voix d'homme, la voix habituelle est rendue plus grave, et l'espace parents explique comment en installer une (iPad : Réglages › Accessibilité › Contenu énoncé › Voix › Japonais › Otoya).
 
 Vous pourrez aussi y ajouter des photos d'objets de la maison. Avec leur longueur en cm, ils sont affichés à leur vraie taille dans les questions de longueur. Avec leur poids en g (balance de cuisine), ils apparaissent sur la balance et sur les はかり. Avec la contenance écrite sur l'étiquette (mL), ils apparaissent dans « うつして くらべよう ». Une seule de ces trois mesures suffit.
 

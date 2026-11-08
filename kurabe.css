@@ -1202,6 +1202,8 @@ button.ligne { cursor: pointer; }
 
 .verre-col, .contenant-col { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 6px 4px; }
 .verre-ligne { display: flex; align-items: flex-end; gap: 10px; }
+/* うつして くらべよう, écran haut : le récipient vidé au-dessus de sa copie (positions mesurées dans la pile). */
+.verre-ligne.pile { position: relative; flex-direction: column; align-items: center; gap: 6px; }
 
 .verre {
   position: relative;
@@ -1226,17 +1228,27 @@ button.ligne { cursor: pointer; }
 .liquide.verse { animation: verser 1.3s var(--decalage, 0s) ease-out both; }
 .liquide.vide-anime { animation: vider 1.1s ease-in both; }
 /* Verser d'un récipient dans le verre : il monte, se penche, se vide, puis se redresse (vide). */
-.contenant.versement { transform-origin: 100% 0; animation: versement 3.3s var(--decalage, 0s) ease-in-out both; z-index: 2; }
+.contenant.versement { transform-origin: 100% 0; animation: versement 3.3s var(--decalage, 0s) ease-in-out both; z-index: 2; pointer-events: none; }
 @keyframes versement {
   0% { transform: translateY(calc((1 - var(--grand, 1)) * var(--h, 0px))) scale(var(--grand, 1)); opacity: 1; }
   14% { transform: none; opacity: 1; }
-  30% { transform: translate(var(--avance, 20px), calc(var(--monte, 60px) * -1)) rotate(62deg); opacity: 1; }
-  74% { transform: translate(var(--avance, 20px), calc(var(--monte, 60px) * -1)) rotate(62deg); opacity: 1; }
+  30% { transform: translate(var(--avance, 20px), calc(var(--monte, 60px) * -1)) rotate(var(--angle, 62deg)); opacity: 1; }
+  74% { transform: translate(var(--avance, 20px), calc(var(--monte, 60px) * -1)) rotate(var(--angle, 62deg)); opacity: 1; }
+  100% { transform: none; opacity: .55; }
+}
+/* Récipient à droite de la copie : il se penche vers la gauche. */
+.contenant.versement.vers-gauche { transform-origin: 0 0; animation-name: versement-g; }
+@keyframes versement-g {
+  0% { transform: translateY(calc((1 - var(--grand, 1)) * var(--h, 0px))) scale(var(--grand, 1)); opacity: 1; }
+  14% { transform: none; opacity: 1; }
+  30% { transform: translate(calc(var(--avance, 20px) * -1), calc(var(--monte, 60px) * -1)) rotate(calc(var(--angle, 62deg) * -1)); opacity: 1; }
+  74% { transform: translate(calc(var(--avance, 20px) * -1), calc(var(--monte, 60px) * -1)) rotate(calc(var(--angle, 62deg) * -1)); opacity: 1; }
   100% { transform: none; opacity: .55; }
 }
 .versement .liquide.vide-anime { animation: vider 1.4s calc(1.05s + var(--decalage, 0s)) ease-in both; }
-.verre:has(.filet) .liquide.verse { animation: verser 1.4s calc(1.05s + var(--decalage, 0s)) ease-out both; }
-.verre .filet { position: absolute; left: 22%; top: 0; bottom: 0; width: 7px; border-radius: 4px; background: var(--c, var(--eau)); opacity: 0; animation: filet 1.5s calc(1s + var(--decalage, 0s)) ease both; }
+:is(.verre, .contenant):has(.filet) .liquide.verse { animation: verser 1.4s calc(1.05s + var(--decalage, 0s)) ease-out both; }
+:is(.verre, .contenant) .filet { position: absolute; left: 22%; top: 0; bottom: 0; width: 7px; border-radius: 4px; background: var(--c, var(--eau)); opacity: 0; z-index: 1; animation: filet 1.5s calc(1s + var(--decalage, 0s)) ease both; }
+.filet.droite { left: auto; }
 @keyframes filet { 0% { opacity: 0; transform: scaleY(0); transform-origin: top; } 12% { opacity: .9; transform: scaleY(1); } 85% { opacity: .9; } 100% { opacity: 0; } }
 @keyframes verser { from { height: 0; } }
 @keyframes vider { from { height: var(--h0); } to { height: 0; } }

@@ -1690,7 +1690,7 @@
       const p = paireContenants(facile);
       piege = p.piege;
       const boissons = melanger([...BOISSONS]).slice(0, 2);
-      objets = melanger(p.objets.map((o, k) => ({ yomi: o.c.yomi, kanji: o.c.kanji || null, contenant: o.c, val: o.val, couleur: boissons[k].couleur })));
+      objets = melanger(p.objets.map((o, k) => ({ yomi: o.c.yomi, kanji: o.c.kanji || null, contenant: o.c, val: o.val, couleur: boissons[k].couleur, boisson: boissons[k] })));
     }
     const maxV = Math.max(...objets.map((o) => o.val));
     return avecBonne({
@@ -1798,7 +1798,9 @@
     } else if (q.type === 'verres') {
       debut = regleVerres(q.demande);
     } else if (q.type === 'transvaser') {
-      debut = [ONAJI, 'じ コップに うつすと、 ', referenceMV(q, lourd), 'の ほうが たかいね。 '];
+      // Les deux liquides sont dans des récipients identiques : on dit aussi lequel (なべの おちゃ).
+      const liquide = (i) => (avecContenants(q) && t[i].boisson ? [referenceMV(q, i), 'の ', nomDe(t[i].boisson)] : [referenceMV(q, i)]);
+      debut = [...ouVerser(q), ' うつすと、 ', ...liquide(lourd), 'の ほうが たかいね。 '];
       if (q.piege) debut.push(referenceMV(q, leger), 'は たかく ', MI, 'えた けど、 ', SUKU, 'なかったね。 ');
     }
     const ecart = Math.abs(t[0].val - t[1].val);
@@ -1818,7 +1820,7 @@
     if (q.type === 'lecture') return ['おしい！ はりの さきを よく ', MI, 'てね。 ', OOKI, 'きい めもりから かぞえよう。'];
     if (q.type === 'transvaser' && q.versePourErreur) {
       q.versePourErreur = false;
-      return ['おしい！ ', ONAJI, 'じ コップに うつして くらべよう。 うつしても かさは かわらないよ。'];
+      return ['おしい！ ', ...ouVerser(q), ' うつして くらべよう。 うつしても かさは かわらないよ。'];
     }
     return ['おしい！ たかさを よく ', MI, 'てね。'];
   }
@@ -2194,15 +2196,32 @@
   // Verres identiques (aussi après avoir versé, activité 21). « avant » : petits récipients vides à côté.
   function rendreVerresQ(q, scene, W, H, objets, avant) {
     const n = objets.length;
-    const colW = Math.min(250, (W - 16 * (n - 1)) / n);
+    let colW = Math.min(250, (W - 16 * (n - 1)) / n);
     // Écran très bas (téléphone, explication affichée) : les verres d'abord, les noms ensuite.
     const avecNoms = reglages.noms && H >= 190;
     const hNom = avecNoms ? 30 : 0;
-    // Après avoir versé : les verres un peu moins hauts, pour laisser la place au récipient penché au-dessus.
-    const h = Math.max(48, Math.min(H - hNom - 64 - (avant ? 46 : 0), 330));
-    // Verser : le récipient d'origine reste assez grand (environ 40 % de la colonne), à côté du verre.
-    const wMini = avant ? colW * 0.42 : 0;
-    const w = Math.max(36, Math.min((colW - wMini) * 0.75, h * 0.55, 150));
+    let h = Math.max(48, Math.min(H - hNom - 64, 330));
+    let w = Math.max(36, Math.min(colW * 0.75, h * 0.55, 150));
+    // Après avoir versé (うつして くらべよう) : récipients et verres À LA MÊME ÉCHELLE (S2 px par unité),
+    // avec le même modèle que les récipients (contenance ＝ largeur² × hauteur × 2600 mL) : le liquide
+    // a le même volume avant et après ; il monte plus haut dans le verre étroit, c'est tout.
+    let S2 = 0;
+    let largeurs = null;
+    if (avant) {
+      const formes = objets.map((o) => o.contenant || { w: 0.8, h: 0.8 });
+      const Wg = 0.45;                                              // largeur des verres (identiques)
+      const hLiquide = Math.max(...objets.map((o) => o.val)) / (2600 * Wg * Wg);
+      const hVerre = Math.max(hLiquide * 1.12, ...formes.map((c) => c.h), 0.6);
+      const largeurTotale = formes.reduce((t, c) => t + c.w + Wg + 0.2, 0);
+      // 46 px au-dessus pour le récipient penché ; pas plus grand qu'avant (c'est le même récipient).
+      S2 = Math.max(30, Math.min((W - 16 * (n - 1) - 12 * n) / largeurTotale, (H - hNom - 64 - (q.preuve ? 0 : 46)) / hVerre, q.tailleAvant || 400));
+      w = Wg * S2;
+      h = hVerre * S2;
+      q.cap = Math.round(2600 * Wg * Wg * hVerre);                 // ce que contient un verre plein
+      // (Au moins la largeur d'une étiquette « 1000 mL » : elles ne se chevauchent pas.)
+      largeurs = formes.map((c) => Math.max((c.w + Wg + 0.2) * S2 + 12, Math.min(96, (W - 16 * (n - 1)) / n)));
+      colW = Math.max(...largeurs);
+    }
     const rangee = document.createElement('div');
     rangee.className = 'rangee-mv';
     rangee.classList.toggle('sans-noms-mv', !avecNoms);
@@ -2217,7 +2236,7 @@
       const col = document.createElement('button');
       col.type = 'button';
       col.className = 'verre-col';
-      col.style.width = `${colW}px`;
+      col.style.width = `${largeurs ? largeurs[k] : colW}px`;
       const pill = etiquetteMesure(o.val, 'ml');
       pill.style.visibility = q.preuve ? 'visible' : 'hidden';
       const ligne = document.createElement('span');
@@ -2227,8 +2246,7 @@
       if (avant) {
         // Le récipient d'origine : il monte au-dessus du verre, se penche et se vide pendant que le verre
         // se remplit (la même quantité : « うつしても かさは かわらない »), puis se redresse, vide.
-        const c = o.contenant || { w: 0.8, h: 0.8 };
-        taille = Math.max(30, Math.min(wMini / c.w, (h * 0.7) / c.h, 160));
+        taille = S2;
         mini = creerContenant(o, taille);
         mini.classList.add('mini');
         const liq = mini.querySelector('.liquide');
@@ -2270,13 +2288,16 @@
   }
 
   // Preuve : un trait au niveau le plus bas, et la partie en plus dans le verre le plus rempli.
-  function preuveVerres(q, scene, objets) {
-    const verres = [...scene.querySelectorAll('.verre')];
+  // (sel, cap : les récipients identiques à comparer et ce qu'ils contiennent ; des verres par défaut.)
+  function preuveVerres(q, scene, objets, sel = '.verre', cap = q.cap) {
+    const verres = [...scene.querySelectorAll(sel)];
     if (verres.length < 2) return;
     const base = scene.getBoundingClientRect();
     const niveaux = verres.map((v, k) => {
       const r = v.getBoundingClientRect();
-      return { r, y: r.bottom - 4 - (objets[k].val / q.cap) * (r.height - 4) - base.top };
+      // Niveau calculé (pas mesuré) : juste même si le liquide est encore en train de monter.
+      const bord = parseFloat(getComputedStyle(v).borderBottomWidth) || 0;
+      return { r, y: r.bottom - bord - Math.min(1, objets[k].val / cap) * v.clientHeight - base.top };
     });
     const bas = niveaux.reduce((m, x) => (x.y > m.y ? x : m));
     const trait = document.createElement('span');
@@ -2295,14 +2316,215 @@
     }
   }
 
+  // うつして くらべよう avec deux récipients dessinés : on verse l'un dans un récipient IDENTIQUE à l'autre.
+  // Celui-ci (la référence) est un récipient où les deux quantités tiennent ; le plus étroit si possible,
+  // car les hauteurs s'y distinguent mieux. Son liquide ne bouge pas.
+  const avecContenants = (q) => q.objets.every((o) => o.contenant);
+  function refTransvaser(q) {
+    if (q.ref === undefined) {
+      const t = q.objets;
+      const maxV = Math.max(...t.map((o) => o.val));
+      const tient = t.map((o, k) => k).filter((k) => capacite(t[k].contenant) >= maxV * 1.08);
+      q.ref = tient.length
+        ? tient.reduce((m, k) => (t[k].contenant.w < t[m].contenant.w ? k : m))
+        : idxMaxV(t.map((o) => ({ val: capacite(o.contenant) })));
+    }
+    return q.ref;
+  }
+
+  // Où l'on verse, pour les phrases : 「おなじ ボウルに」 (「おなじ コップに」 avec les photos).
+  function ouVerser(q) {
+    if (q.type !== 'transvaser' || !avecContenants(q)) return [ONAJI, 'じ コップに'];
+    const c = q.objets[refTransvaser(q)].contenant;
+    return [ONAJI, 'じ ', reglages.noms ? nomDe(c) : 'いれもの', 'に'];
+  }
+
+  // Même échelle avant et après avoir versé : la référence ne change pas de taille, et le récipient versé
+  // garde la sienne. La place « après » compte : référence ＋ récipient versé ＋ sa copie, et la place du
+  // récipient penché. Deux dispositions : côte à côte (écran large), ou le récipient à verser AU-DESSUS de
+  // sa copie (écran haut, téléphone debout) ; on garde celle qui donne les plus grands récipients.
+  // (Preuve affichée : plus d'animation, la place du récipient penché n'est plus nécessaire.)
+  function echelleTransvaser(q, W, H, hNom) {
+    const libre = Boolean(q.preuve);
+    const t = q.objets;
+    const formes = t.map((o) => o.contenant || { w: 0.8, h: 0.8 });
+    const S = Math.min((H - hNom - 30) / Math.max(...formes.map((c) => c.h)), (W - 60) / formes.reduce((s, c) => s + c.w * 1.15, 0), 380);
+    if (!avecContenants(q)) return Math.max(30, S);
+    const r = refTransvaser(q);
+    const rc = formes[r];
+    const ac = formes[1 - r];
+    const hMax = Math.max(rc.h, ac.h);
+    const hDispo = H - hNom - 64;
+    // Côte à côte. Un récipient haut (びん) qui se penche déborde sur le côté (0,88 × hauteur − 0,53 × largeur).
+    // (Colonnes : bordure 3 px et marge 4 px de chaque côté ; 14 px entre elles, 10 px dans la colonne.)
+    const deborde = Math.max(0, 0.88 * ac.h - 0.53 * ac.w);
+    const cote = Math.min(S, (W - 56) / (2 * rc.w + ac.w), (W - 120) / (rc.w + ac.w), (hDispo - 10) / hMax,
+      libre ? 999 : (W - 44) / (2 * rc.w + ac.w + deborde), libre ? 999 : (hDispo + 16) / (hMax + 0.9 * ac.w));
+    // L'un au-dessus de l'autre. Penché (85°), il s'allonge au-dessus de la référence : sa largeur en haut.
+    const large = Math.max(ac.w, rc.w);
+    const pile = Math.min(S, (W - 50) / (large + rc.w), (hDispo - 42) / (ac.h + rc.h),
+      libre ? 999 : (hDispo + 20) / (rc.h + 0.1 * ac.h + ac.w), libre ? 999 : (W - 30) / ((large - rc.w) / 2 + 0.35 * rc.w + 0.1 * ac.w + ac.h));
+    if (q.empile === undefined) q.empile = pile > cote * 1.1;
+    return Math.max(30, q.empile ? pile : cote);
+  }
+
+  function rendreTransvaserApres(q, scene, W, H) {
+    const t = q.objets;
+    const r = refTransvaser(q);
+    const refC = t[r].contenant;
+    const avecNoms = reglages.noms && H >= 190;
+    const hNom = avecNoms ? 30 : 0;
+    const S = Math.min(echelleTransvaser(q, W, H, hNom), q.tailleAvant || 400);
+    const ECART = 10;   // entre le récipient versé et sa copie (.verre-ligne)
+    const rangee = document.createElement('div');
+    rangee.className = 'rangee-mv';
+    rangee.classList.toggle('sans-noms-mv', !avecNoms);
+    // Côte à côte, la référence et sa copie sont voisines : assez d'écart pour leurs étiquettes (≈ 90 px).
+    if (!q.empile) rangee.style.gap = `${Math.max(14, Math.round(76 - refC.w * S))}px`;
+    // L'animation dure 3,3 s ; si l'écran se redessine pendant ce temps, elle reprend où elle en était.
+    const maintenant = performance.now();
+    if (!q.vuVerres) q.debutVerse = maintenant;
+    const ecoule = maintenant - (q.debutVerse || 0);
+    const verser = !animationsReduites() && ecoule < 3300;
+    rangee.style.setProperty('--decalage', `${-Math.round(ecoule)}ms`);
+    let penche = null;
+    t.forEach((obj, k) => {
+      const col = document.createElement('button');
+      col.type = 'button';
+      col.className = 'verre-col';
+      const pill = etiquetteMesure(obj.val, 'ml');
+      pill.style.visibility = q.preuve ? 'visible' : 'hidden';
+      const ligne = document.createElement('span');
+      ligne.className = 'verre-ligne';
+      if (k === r) {
+        // La référence : le même récipient qu'avant, avec son liquide.
+        const ref = creerContenant(obj, S);
+        ref.classList.add('a-comparer');
+        ligne.append(ref);
+        col.append(pill, ligne, nomMV(obj));
+      } else {
+        // L'autre : son récipient se penche et se vide dans une copie de la référence. Côte à côte, le
+        // récipient vidé est du côté extérieur (les deux récipients identiques au milieu) ; empilés, il est
+        // au-dessus de sa copie et, penché, s'allonge au-dessus de la référence.
+        const aGauche = k === 0;
+        const copie = creerContenant({ ...obj, contenant: refC }, S);
+        copie.classList.add('a-comparer');
+        const mini = creerContenant(obj, S);
+        mini.classList.add('mini');
+        const liq = mini.querySelector('.liquide');
+        liq.style.setProperty('--h0', liq.style.height);
+        liq.style.height = '0%';
+        const wCopie = refC.w * S;
+        const hMini = obj.contenant.h * S;
+        const wMini = obj.contenant.w * S;
+        const filet = document.createElement('span');
+        filet.className = 'filet';
+        filet.style.setProperty('--c', obj.couleur);
+        penche = { mini, copie, filet, aGauche, wMini, hMini, empile: q.empile };
+        if (q.empile) {
+          // Il verse par le coin du côté de sa colonne et s'allonge vers la référence.
+          penche.pivotGauche = aGauche;
+          ligne.classList.add('pile');
+          ligne.append(mini, pill, copie);
+          col.append(ligne, nomMV(obj));
+        } else {
+          // Son bord monte au-dessus de la copie ; en tournant, l'autre bord remonte (0,88 × sa largeur)
+          // et le fond part sur le côté (0,88 × sa hauteur).
+          const avance = Math.min(wCopie * 0.35, 40);
+          const monte = Math.max(0, refC.h * S - hMini + 14);
+          Object.assign(penche, { pivotGauche: !aGauche, avance, monte, haut: hMini + monte + wMini * 0.88, cote: hMini * 0.88 - wMini * 0.53 - avance });
+          filet.style[aGauche ? 'left' : 'right'] = `${Math.max(4, avance - ECART - 3)}px`;
+          if (aGauche) ligne.append(mini, copie); else ligne.append(copie, mini);
+          // L'étiquette (mL) au-dessus de la copie, pas au milieu de la colonne.
+          pill.style.transform = `translateX(${(aGauche ? 1 : -1) * (wMini + ECART) / 2}px)`;
+          col.append(pill, ligne, nomMV(obj));
+        }
+        filet.classList.toggle('droite', q.empile ? !penche.pivotGauche : !aGauche);
+        if (verser) {
+          liq.classList.add('vide-anime');
+          copie.querySelector('.liquide').classList.add('verse');
+          copie.append(filet);
+          penche.verser = true;   // l'animation du récipient démarre une fois sa place calculée
+          mini.style.setProperty('--grand', String(Math.max(1, Math.min(1.5, (q.tailleAvant || S) / S))));
+          mini.style.setProperty('--h', `${hMini}px`);
+        }
+      }
+      cible(col, k, `${POSITIONS_MV[2][k] || ''} ${obj.yomi}`);
+      rangee.append(col);
+    });
+    q.vuVerres = true;
+    scene.append(rangee);
+    if (penche && penche.verser) placerVersement(scene, rangee, penche, ECART);
+    if (q.preuve) preuveVerres(q, scene, t, '.a-comparer', capacite(refC));
+  }
+
+  // Le récipient penché ne sort pas du cadre : la rangée se décale (vers le bas, sur le côté) s'il y a de
+  // la place, sinon il monte moins haut. Même décalage avant et après l'animation : rien ne saute.
+  function placerVersement(scene, rangee, p, ecart) {
+    const cadre = scene.parentElement.getBoundingClientRect();
+    const rc = p.copie.getBoundingClientRect();
+    const rr = rangee.getBoundingClientRect();
+    let dx = 0;
+    let dy = 0;
+    if (p.empile) {
+      // Le coin qui verse (pivot) au-dessus de la copie, à 35 % de son bord ; penché à 85°, le récipient
+      // s'étend au-dessus du pivot (sa largeur) et vers la référence (sa hauteur), sans descendre plus bas
+      // que le bord de la copie. (offsetLeft/offsetTop : positions sans l'animation, dans la .pile.)
+      const { mini, copie, wMini: wM, hMini: hM } = p;
+      const wC = copie.offsetWidth;
+      const px = p.pivotGauche ? copie.offsetLeft + 0.35 * wC : copie.offsetLeft + 0.65 * wC;
+      const py = copie.offsetTop - 10 - 0.09 * hM;
+      const pivotX = p.pivotGauche ? mini.offsetLeft : mini.offsetLeft + mini.offsetWidth;
+      mini.style.setProperty('--angle', '85deg');
+      mini.style.setProperty('--avance', `${Math.round(p.pivotGauche ? pivotX - px : px - pivotX)}px`);
+      mini.style.setProperty('--monte', `${Math.round(mini.offsetTop - py)}px`);
+      p.filet.style[p.pivotGauche ? 'left' : 'right'] = `${Math.round(0.35 * wC - 3)}px`;
+      const haut = rc.top - 10 - 0.09 * hM - wM;
+      dy = Math.max(0, Math.min(cadre.top + 8 - haut, cadre.bottom - 2 - rr.bottom));
+      const bout = 0.35 * wC + 0.09 * wM + hM;
+      if (p.pivotGauche) {
+        const droite = rc.left + bout;
+        dx = -Math.max(0, Math.min(droite - (cadre.right - 4), rr.left - (cadre.left + 2)));
+      } else {
+        const gauche = rc.right - bout;
+        dx = Math.max(0, Math.min(cadre.left + 4 - gauche, cadre.right - 2 - rr.right));
+      }
+    } else {
+      p.mini.style.setProperty('--avance', `${p.avance}px`);
+      if (p.cote > 0) {
+        if (p.aGauche) {
+          const gauche = rc.left - ecart - p.wMini - p.cote;
+          dx = Math.max(0, Math.min(cadre.left + 2 - gauche, cadre.right - 2 - rr.right));
+        } else {
+          const droite = rc.right + ecart + p.wMini + p.cote;
+          dx = -Math.max(0, Math.min(droite - (cadre.right - 2), rr.left - (cadre.left + 2)));
+        }
+      }
+      const haut = rc.bottom - p.haut;
+      dy = Math.max(0, Math.min(cadre.top + 8 - haut, cadre.bottom - 2 - rr.bottom));
+      const manque = cadre.top + 8 - (haut + dy);
+      p.mini.style.setProperty('--monte', `${Math.max(0, p.monte - Math.max(0, manque))}px`);
+    }
+    if (dx || dy) {
+      rangee.style.position = 'relative';
+      rangee.style.left = `${Math.round(dx)}px`;
+      rangee.style.top = `${Math.round(dy)}px`;
+    }
+    // Seulement maintenant : une animation déjà lancée garderait les anciennes valeurs (--monte…) dans Chrome.
+    if (p.verser) {
+      p.mini.classList.add('versement');
+      p.mini.classList.toggle('vers-gauche', p.pivotGauche);
+    }
+  }
+
   function rendreTransvaserQ(q, scene, W, H) {
     if (q.etape === 'apres') {
-      rendreVerresQ(q, scene, W, H, q.objets, true);
+      if (avecContenants(q)) rendreTransvaserApres(q, scene, W, H);
+      else rendreVerresQ(q, scene, W, H, q.objets, true);
       return;
     }
     const hNom = reglages.noms ? 30 : 0;
-    const formes = q.objets.map((o) => o.contenant || { w: 0.8, h: 0.8 });
-    const S = Math.max(50, Math.min((H - hNom - 30) / Math.max(...formes.map((c) => c.h)), (W - 60) / formes.reduce((s, c) => s + c.w * 1.15, 0), 380));
+    const S = echelleTransvaser(q, W, H, hNom);
     q.tailleAvant = S;   // pour que le récipient parte de cette taille quand on verse
     const rangee = document.createElement('div');
     rangee.className = 'rangee-mv';
@@ -3333,7 +3555,7 @@
       if (q.etape !== 'avant') return;
       q.etape = 'apres';
       rendreQuestion();
-      const m = [ONAJI, 'じ コップに うつしたよ。 うつしても かさは かわらないよ。'];
+      const m = [...ouVerser(q), ' うつしたよ。 うつしても かさは かわらないよ。'];
       $('retour').innerHTML = htmlMots(m);
       $('retour').classList.remove('ok');
       parlerPuisRelancer(m, q);

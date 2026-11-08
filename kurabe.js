@@ -36,7 +36,7 @@
 
   const CLE_REGLAGES = 'kurabe.reglages';
   const DEFAUT = {
-    activites: Array.from({ length: 28 }, (_, i) => i + 1),
+    activites: Array.from({ length: 34 }, (_, i) => i + 1),
     theme: 'nagasa',        // onglet de l'accueil : ながさ | おもさ | かさ
     nbQuestions: 6,
     ecriture: 'hiragana',   // hiragana | kanji (avec furigana)
@@ -50,8 +50,9 @@
     aide: true,             // bouton « ヒント » / « そろえる »
     nombreMax: 20,          // べんきょう : nombres jusqu'à 10, 20, 50, 100 ou 1000
     compter: true,          // べんきょう : la voix compte à chaque ＋1 / −1
+    lireUnites: true,       // la lecture des unités au-dessus des symboles (グラム sur g)
     volumeMax: 500,         // べんきょう かさ : verre doseur de 200, 500 ou 1000 mL
-    version: 5,
+    version: 6,
     langue: (navigator.language || '').toLowerCase().startsWith('ja') ? 'ja' : 'fr',
   };
 
@@ -73,7 +74,11 @@
       if (stocke.activites && (stocke.version || 1) < 5) {
         stocke.activites = [...new Set([...stocke.activites, 25, 26, 27, 28])];
       }
-      return { ...DEFAUT, ...stocke, version: 5 };
+      // Version 6 : はかりを よもう, はかって みよう, et la rubrique ね、しっていた？ (29 à 34).
+      if (stocke.activites && (stocke.version || 1) < 6) {
+        stocke.activites = [...new Set([...stocke.activites, 29, 30, 31, 32, 33, 34])];
+      }
+      return { ...DEFAUT, ...stocke, version: 6 };
     } catch {
       return { ...DEFAUT };
     }
@@ -95,9 +100,21 @@
   // Valeur avec unité : affichée « 10 cm », lue « 10センチ ».
   const V = (d, s) => ({ d, s });
 
+  // Symbole d'unité, avec sa lecture en petit au-dessus (comme des furigana) : g → グラム.
+  const LECTURES_UNITES = { g: 'グラム', kg: 'キログラム', ml: 'ミリリットル', l: 'リットル', cm: 'センチ', m: 'メートル' };
+  const SYMBOLES_UNITES = { g: 'g', kg: 'kg', ml: 'mL', l: 'L', cm: 'cm', m: 'm' };
+  function uniteHtml(u) {
+    const sym = SYMBOLES_UNITES[u] || u;
+    if (reglages.lireUnites === false || !LECTURES_UNITES[u]) return echapper(sym);
+    // Sans espace dans la balise : htmlMots() coupe le texte aux espaces.
+    return `<ruby>${echapper(sym)}<rt>${LECTURES_UNITES[u]}</rt></ruby>`;
+  }
+  const nombreUnite = (x, u) => `${echapper(String(x))}\u00a0${uniteHtml(u)}`;
+
   function html(segments) {
     return segments.map((s) => {
       if (typeof s === 'string' || typeof s === 'number') return echapper(s);
+      if (s.u) return nombreUnite(s.x, s.u);
       if (s.d !== undefined) return echapper(s.d);
       if (reglages.ecriture === 'kanji' && s.k) return `<ruby>${echapper(s.k)}<rt>${echapper(s.y)}</rt></ruby>`;
       return echapper(s.y);
@@ -119,6 +136,9 @@
   const TEHON = K('手本', 'てほん');
   const ONAJI = K('同', 'おな');
   const KAZU = K('数', 'かず');
+  // Ce qu'on compare, c'est le nombre écrit (sur la règle, la はかり, l'étiquette) : 「すうじ」.
+  // (「かず」 évoque d'abord le nombre d'objets qu'on compte.)
+  const SUJI = K('数字', 'すうじ');
   const OOKI = K('大', 'おお');    // 大きい
   const CHIISA = K('小', 'ちい');  // 小さい
   const OMO = K('重', 'おも');     // 重い
@@ -437,41 +457,51 @@
     { n: 7, titre: ['m と cm'], sous: ['1\u00a0m ＝ 100\u00a0cm'], fr: 'Mètres et centimètres (1 m ou 75 cm ?)', barres: 'mcm' },
     { n: 8, titre: ['ずれている'], sous: ['はしが そろっていない'], fr: 'Objets décalés (pas alignés à gauche)', barres: 'decale' },
     { n: 9, titre: ['ななめ'], sous: ['かたむいている'], fr: 'Objets penchés', barres: 'incline' },
-    { n: 10, etude: 'libre', titre: ['のばして みよう'], sous: [KAZU, 'が かわるよ'], fr: 'べんきょう : étirer le ruban et voir les nombres changer', barres: 'etude-libre' },
+    { n: 10, etude: 'libre', titre: ['のばして みよう'], sous: [SUJI, 'が かわるよ'], fr: 'べんきょう : étirer le ruban et voir les nombres changer', barres: 'etude-libre' },
     { n: 11, etude: 'plus', titre: ['たしざん'], sous: ['みぎに のばす（＋）'], fr: 'べんきょう : additionner en tirant vers la droite', barres: 'etude-plus' },
     { n: 12, etude: 'moins', titre: ['ひきざん'], sous: ['ひだりに もどす（−）'], fr: 'べんきょう : soustraire en tirant vers la gauche', barres: 'etude-moins' },
-    { n: 13, theme: 'omosa', titre: ['どっちが ', OMO, 'い？'], sous: ['てんびんで くらべる'], fr: 'Lequel est le plus lourd ? (balance)', barres: 'balance' },
-    { n: 14, theme: 'omosa', titre: [MI, 'ためと ちがう'], sous: ['よそうして、 てんびんで たしかめる'], fr: 'Gros mais léger : deviner, puis vérifier sur la balance', barres: 'devine' },
+    { n: 32, groupe: 'culture', etude: 'lecon-corps', titre: ['からだで はかる'], sous: ['あた・ひろ'], fr: 'ね、しっていた？ Mesurer avec le corps (あた, ひろ), et pourquoi le cm', barres: 'lecon-corps' },
+    { n: 33, groupe: 'culture', etude: 'lecon-shaku', titre: ['しゃくと すん'], sous: ['いっすんぼうしは なん cm？'], fr: 'ね、しっていた？ 尺 et 寸 : 1 寸 ≈ 3 cm, 1 尺 ≈ 30 cm', barres: 'lecon-shaku' },
     { n: 25, theme: 'omosa', titre: ['はりで くらべる'], sous: ['はかりの はりが たくさん まわった ほう'], fr: 'Balances de cuisine sans nombres : l’aiguille qui a le plus tourné', barres: 'hakari-simple' },
+    { n: 14, theme: 'omosa', titre: [MI, 'ためと ちがう'], sous: ['よそうして、 はかりで たしかめる'], fr: 'Gros mais léger : deviner, puis vérifier sur les balances de cuisine', barres: 'devine' },
     { n: 15, theme: 'omosa', titre: [ICHIBAN, ' ', OMO, 'いのは？'], sous: ['はかりで くらべる'], fr: 'Le plus lourd parmi trois (balances de cuisine)', barres: 'hakari' },
+    { n: 29, theme: 'omosa', titre: ['はかりを よもう'], sous: ['はりは なん g？'], fr: 'Lire une balance de cuisine (trois nombres au choix)', barres: 'lecture-hakari' },
     { n: 16, theme: 'omosa', titre: ['g で くらべる'], sous: ['300\u00a0g と 250\u00a0g'], fr: 'Nombres en g (300 g ou 250 g ?)', barres: 'g' },
     { n: 17, theme: 'omosa', titre: ['kg と g'], sous: ['1\u00a0kg ＝ 1000\u00a0g'], fr: 'Kilogrammes et grammes (1 kg ou 800 g ?)', barres: 'kgg' },
-    { n: 26, theme: 'omosa', etude: 'lecon-balance', titre: ['てんびんの しくみ'], sous: ['のせると どう なる？'], fr: 'べんきょう : comment marche la balance (leçon guidée, poids identiques)', barres: 'lecon-balance' },
-    { n: 27, theme: 'omosa', etude: 'lecon-unites', titre: ['おもりと たんい'], sous: ['1\u00a0g・10\u00a0g・100\u00a0g・1\u00a0kg'], fr: 'べんきょう : les unités avec des poids (1円玉 ＝ 1 g … 1 kg ＝ 1000 g)', barres: 'lecon-unites' },
-    { n: 18, theme: 'omosa', etude: 'balance', titre: ['つりあわせよう'], sous: ['つみきや おもりを のせる'], fr: 'べんきょう : équilibrer la balance avec des cubes ou des poids', barres: 'etude-balance' },
     { n: 28, theme: 'omosa', etude: 'lecon-hakari', titre: ['はかりの よみかた'], sous: ['はりの うごきと めもり'], fr: 'べんきょう : lire une balance de cuisine (l’aiguille, les graduations)', barres: 'lecon-hakari' },
+    { n: 27, theme: 'omosa', etude: 'lecon-unites', titre: ['g と kg'], sous: ['1えんだまは 1\u00a0g'], fr: 'べんきょう : les unités sur la balance de cuisine (1円玉 ＝ 1 g … 1 kg ＝ 1000 g)', barres: 'lecon-unites' },
+    { n: 30, theme: 'omosa', etude: 'lecon-pratique', titre: ['はかって みよう'], sous: ['おもりを のせて ○\u00a0g に'], fr: 'べんきょう : poser des poids pour que l’aiguille montre une masse donnée', barres: 'lecon-pratique' },
+    { n: 26, theme: 'omosa', groupe: 'culture', etude: 'lecon-balance', titre: ['てんびん'], sous: ['むかしの はかり'], fr: 'ね、しっていた？ La balance à plateaux (leçon guidée, poids identiques)', barres: 'lecon-balance' },
+    { n: 13, theme: 'omosa', groupe: 'culture', titre: ['てんびんで くらべる'], sous: [SAGA, 'がった ほうが ', OMO, 'い'], fr: 'ね、しっていた？ Lequel est le plus lourd ? (balance à plateaux)', barres: 'balance' },
+    { n: 18, theme: 'omosa', groupe: 'culture', etude: 'balance', titre: ['つりあわせよう'], sous: ['つみきや おもりを のせる'], fr: 'ね、しっていた？ Équilibrer la balance avec des cubes ou des poids', barres: 'etude-balance' },
+    { n: 31, theme: 'omosa', groupe: 'culture', etude: 'lecon-monme', titre: ['もんめと 5えんだま'], sous: ['むかしの ', OMO, 'さの たんい'], fr: 'ね、しっていた？ 匁 (もんめ) : la pièce de 5 円 pèse 1 匁 (3,75 g)', barres: 'lecon-monme' },
     { n: 19, theme: 'kasa', titre: ['どっちが ', OO_I, 'い？'], sous: [ONAJI, 'じ コップで くらべる'], fr: 'Lequel contient le plus ? (verres identiques)', barres: 'verres' },
     { n: 20, theme: 'kasa', titre: [ICHIBAN, ' ', OO_I, 'いのは？'], sous: ['3つから えらぶ'], fr: 'Le plus rempli parmi trois verres', barres: 'verres3' },
     { n: 21, theme: 'kasa', titre: ['うつして くらべよう'], sous: ['かたちが ちがう いれもの'], fr: 'Récipients différents : verser dans des verres identiques', barres: 'transvaser' },
     { n: 22, theme: 'kasa', titre: ['mL で くらべる'], sous: ['200\u00a0mL と 350\u00a0mL'], fr: 'Nombres en mL (200 mL ou 350 mL ?)', barres: 'ml' },
     { n: 23, theme: 'kasa', titre: ['L と mL'], sous: ['1\u00a0L ＝ 1000\u00a0mL'], fr: 'Litres et millilitres (1 L ou 800 mL ?)', barres: 'lml' },
     { n: 24, theme: 'kasa', etude: 'verre', titre: ['はかって いれよう'], sous: ['カップの めもりを よむ'], fr: 'べんきょう : remplir un verre doseur jusqu’à la bonne quantité', barres: 'etude-verre' },
+    { n: 34, theme: 'kasa', groupe: 'culture', etude: 'lecon-gou', titre: ['ごうと しょう'], sous: ['おこめの カップ'], fr: 'ね、しっていた？ 合 et 升 : 1 合 ＝ 180 mL (le riz), 1 升 ＝ 1,8 L', barres: 'lecon-gou' },
   ];
   const themeDe = (a) => a.theme || 'nagasa';
   // Numéro affiché : 1, 2, 3… dans chaque onglet (les もんだい, puis les べんきょう).
+  // Trois groupes : もんだい, べんきょう, puis ね、しっていた？ (la culture : むかしは…).
+  const groupeDe = (a) => a.groupe || (a.etude ? 'etude' : 'probleme');
   function ordreTheme(theme) {
     const liste = ACTIVITES.filter((a) => themeDe(a) === theme);
-    return [...liste.filter((a) => !a.etude), ...liste.filter((a) => a.etude)];
+    return ['probleme', 'etude', 'culture'].flatMap((g) => liste.filter((a) => groupeDe(a) === g));
   }
   const numeroAffiche = (a) => ordreTheme(themeDe(a)).indexOf(a) + 1;
 
   const animationsReduites = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const entier = (a, b) => Math.floor(aleatoire(a, b + 1));
-  const valeurCm = (c) => ({ cm: c, m: null, affichage: `${c}\u00a0cm`, lecture: `${c}センチ` });
-  const valeurM = (m) => ({ cm: m * 100, m, affichage: `${m}\u00a0m`, lecture: `${m}メートル` });
-  const segValeur = (v) => V(v.affichage, v.lecture);
+  const valeurCm = (c) => ({ cm: c, m: null, x: c, u: 'cm', affichage: `${c}\u00a0cm`, lecture: `${c}センチ` });
+  const valeurM = (m) => ({ cm: m * 100, m, x: m, u: 'm', affichage: `${m}\u00a0m`, lecture: `${m}メートル` });
+  // Nombre + unité : affiché « 10 g » (avec グラム en petit au-dessus), lu « 10グラム ».
+  const segUnite = (x, u) => ({ x, u, d: `${x}\u00a0${SYMBOLES_UNITES[u]}`, s: `${x}${LECTURES_UNITES[u]}` });
+  const segValeur = (v) => (v.u ? segUnite(v.x, v.u) : V(v.affichage, v.lecture));
   const cmTexte = (x) => String(Math.round(x * 10) / 10);
-  const segCm = (x) => V(`${cmTexte(x)}\u00a0cm`, `${cmTexte(x)}センチ`);
+  const segCm = (x) => segUnite(cmTexte(x), 'cm');
 
   // Activité 6 : deux longueurs en cm. Quelques pièges : chiffres inversés (34 / 43), 1 chiffre contre 2 (9 / 12).
   function paireCm(i, derniere) {
@@ -730,6 +760,24 @@
           + '<rect x="178" y="6" width="56" height="54" rx="6" style="fill:color-mix(in srgb, var(--metal) 70%, var(--encre-douce))"/>'
           + `<text x="83" y="51" text-anchor="middle" style="${texte};font-size:10px">10g</text><text x="136" y="46" text-anchor="middle" style="${texte};font-size:12px">100g</text>`
           + `<text x="206" y="40" text-anchor="middle" style="${texte};font-size:16px">1kg</text>`;
+      case 'lecture-hakari':
+        return `${cadran(70, 2.1)}<text x="130" y="44" style="${texte}">？ g</text>`;
+      case 'lecon-pratique':
+        return `${cadran(70, 1.6)}<path d="M112 34h30M134 26l8 8-8 8" style="${trait}"/>`
+          + '<rect x="160" y="26" width="20" height="30" rx="3" style="fill:var(--metal)"/><rect x="186" y="38" width="14" height="18" rx="3" style="fill:var(--metal)"/><rect x="204" y="38" width="14" height="18" rx="3" style="fill:var(--metal)"/>';
+      case 'lecon-monme':
+        return '<circle cx="70" cy="34" r="22" style="fill:#c9a227"/><circle cx="70" cy="34" r="6" style="fill:var(--surface)"/>'
+          + `<text x="110" y="44" style="${texte}">＝ 1もんめ</text>`;
+      case 'lecon-corps':
+        return '<rect x="10" y="10" width="236" height="12" rx="3" style="fill:var(--bois)"/>'
+          + [0, 1, 2, 3].map((k) => `<path d="M${14 + k * 58} 34h52" style="stroke:var(--o2);stroke-width:3"/><text x="${30 + k * 58}" y="60" style="font-size:22px">✋</text>`).join('');
+      case 'lecon-shaku':
+        return '<rect x="10" y="20" width="236" height="34" rx="4" style="fill:var(--bois)"/>'
+          + Array.from({ length: 11 }, (_, k) => `<path d="M${10 + k * 22.4} 20v12" style="stroke:var(--encre);stroke-width:2"/>`).join('')
+          + '<rect x="10" y="20" width="22.4" height="34" style="fill:var(--o5);opacity:.4"/><text x="12" y="16" style="font-size:16px">🧒</text>';
+      case 'lecon-gou':
+        return `${verre(60, 44, 'var(--eau)', 40)}<text x="62" y="20" style="${texte};font-size:14px">1ごう</text>`
+          + `<path d="M110 34h30M132 26l8 8-8 8" style="${trait}"/><text x="152" y="44" style="${texte}">180 mL</text>`;
       case 'lecon-hakari':
         return `${cadran(70, 2.4)}<path d="M120 34h40M150 24l10 10-10 10" style="${trait}"/>`
           + [0, 1, 2].map((k) => `<rect x="${186 + k * 18}" y="${40 - k * 0}" width="15" height="18" rx="3" style="fill:var(--metal)"/>`).join('');
@@ -827,8 +875,9 @@
     zone.scrollTop = 0;
     const duTheme = ACTIVITES.filter((a) => themeDe(a) === actif.cle);
     const groupes = [
-      { titre: ['もんだい'], liste: duTheme.filter((a) => !a.etude) },
-      { titre: [K('勉強', 'べんきょう')], liste: duTheme.filter((a) => a.etude) },
+      { titre: ['もんだい'], liste: duTheme.filter((a) => groupeDe(a) === 'probleme') },
+      { titre: [K('勉強', 'べんきょう')], liste: duTheme.filter((a) => groupeDe(a) === 'etude') },
+      { titre: ['ね、 しっていた？', V('（むかしは…）', '')], liste: duTheme.filter((a) => groupeDe(a) === 'culture') },
     ];
     groupes.forEach((groupe) => {
       const visibles = groupe.liste.filter((a) => reglages.activites.includes(a.n));
@@ -899,19 +948,21 @@
     const mot = sens === 'long' ? NAGA : MIJIKA;
     const taille = sens === 'long' ? [OOKI, 'きい'] : [CHIISA, 'さい'];
     return superlatif
-      ? [ICHIBAN, ' ', mot, 'いのは ', KAZU, 'が ', ICHIBAN, ' ', ...taille, ' ほう。 ']
-      : [mot, 'いのは ', KAZU, 'が ', ...taille, ' ほう。 '];
+      ? [ICHIBAN, ' ', mot, 'いのは ', SUJI, 'が ', ICHIBAN, ' ', ...taille, ' ほう。 ']
+      : [mot, 'いのは ', SUJI, 'が ', ...taille, ' ほう。 '];
   }
 
   // La même règle, en court, affichée sous la consigne après une bonne réponse.
   function rappelDe(q) {
     if (estMV(q)) return rappelMV(q);
-    if (q.type === 'tehon') return [ONAJI, 'じ ', NAGA, 'さ ＝ ', ONAJI, 'じ ', KAZU];
+    if (q.type === 'tehon') return [ONAJI, 'じ ', NAGA, 'さ ＝ ', ONAJI, 'じ ', SUJI];
     const sens = q.type === 'phrase' ? q.bonne : q.demande;
     const mot = sens === 'long' ? NAGA : MIJIKA;
     const taille = sens === 'long' ? [OOKI, 'きい'] : [CHIISA, 'さい'];
-    if (q.type === 'trio') return [ICHIBAN, ' ', mot, 'い ＝ ', KAZU, 'が ', ICHIBAN, ' ', ...taille];
-    return [mot, 'い ＝ ', KAZU, 'が ', ...taille];
+    if (q.type === 'trio') return [ICHIBAN, ' ', mot, 'い ＝ ', SUJI, 'が ', ICHIBAN, ' ', ...taille];
+    // 1 m et 75 cm : la règle ne vaut qu'une fois dans la même unité.
+    const unite = q.mixte ? [ONAJI, 'じ たんいなら '] : [];
+    return [...unite, mot, 'い ＝ ', SUJI, 'が ', ...taille];
   }
 
   // L'explication donne toujours les longueurs, la règle, puis la conclusion avec l'écart.
@@ -928,7 +979,7 @@
       return [segValeur(m), 'は ', segCm(m.cm), '。 ', segCm(m.cm), 'と ', segCm(c.cm), '。 ', ...fin];
     }
     if (q.type === 'tehon') {
-      return [TEHON, 'は ', segCm(q.modele.cm), '。 これも ', segCm(q.objets[q.bonne].cm), '。 ', ONAJI, 'じ ', KAZU, 'だから、 ', ONAJI, 'じ ', NAGA, 'さだね。'];
+      return [TEHON, 'は ', segCm(q.modele.cm), '。 これも ', segCm(q.objets[q.bonne].cm), '。 ', ONAJI, 'じ ', SUJI, 'だから、 ', ONAJI, 'じ ', NAGA, 'さだね。'];
     }
     const longueurs = [];
     q.objets.forEach((o, i) => {
@@ -1048,7 +1099,7 @@
         if (v.m && q.aide >= 1) {
           const conversion = document.createElement('span');
           conversion.className = 'conversion';
-          conversion.textContent = `＝ ${v.cm}\u00a0cm`;
+          conversion.innerHTML = `＝ ${nombreUnite(v.cm, 'cm')}`;
           l.etiq.append(conversion);
         }
         l.piste.hidden = !barres;
@@ -1223,7 +1274,7 @@
     ml: { d: 'mL', s: 'ミリリットル', facteur: 1 },
     l: { d: 'L', s: 'リットル', facteur: 1000 },
   };
-  const segU = (x, u) => V(`${x}\u00a0${UNITES[u].d}`, `${x}${UNITES[u].s}`);
+  const segU = (x, u) => segUnite(x, u);
   const uniteDe = (theme) => (theme === 'omosa' ? 'g' : 'ml');
   const valeurU = (x, u) => ({
     x, u, val: x * UNITES[u].facteur, grande: UNITES[u].facteur > 1,
@@ -1417,12 +1468,25 @@
       const piege = !derniere && Math.random() < 0.7;
       const [gros, petit] = choisir(piege ? PIEGES : EVIDENTS);
       const objets = melanger([objetChose(chose(gros)), objetChose(chose(petit))]);
-      return avecBonne({ ...base, theme: 'omosa', type: 'devine', etape: 'devine', piege, objets, demande: sensMV(i === 0 || derniere) }, objets);
+      return avecBonne({ ...base, theme: 'omosa', type: 'devine', etape: 'devine', simple: true, max: 1000, piege, objets, demande: sensMV(i === 0 || derniere) }, objets);
     }
     if (niveau === 25) {
       const photosOk = utiliserPhotosAvec('g') && pairePhotosAvec('g', facile ? 2.5 : 1.6, 9999);
       const objets = melanger(photosOk || paireChoses(facile ? 3 : 1.6, 9999, 20));
       return avecBonne({ ...base, theme: 'omosa', type: 'hakari', simple: true, objets, max: 1000, demande: sensMV(i === 0 || derniere) }, objets);
+    }
+    if (niveau === 29) {
+      // D'abord des centaines (100, 200…), puis des 50, puis des dizaines ; la dernière est facile.
+      const tiers = Math.ceil(n / 3);
+      const pas = derniere || i < tiers ? 100 : i < 2 * tiers ? 50 : 10;
+      const possibles = CHOSES.filter((c) => {
+        const v = Math.round(c.val / pas) * pas;
+        // Le nombre lu reste proche du vrai poids (à 15 % près) : un œuf ne pèse pas 100 g.
+        return v >= pas && v <= 500 && (pas === 100 || v % 100 !== 0) && Math.abs(v - c.val) <= c.val * 0.15;
+      });
+      const c = choisir(possibles);
+      const v = Math.round(c.val / pas) * pas;
+      return { ...base, theme: 'omosa', type: 'lecture', objets: [objetChose(c)], valeur: v, options: choixLecture(v), bonne: v, pas, max: 500, demande: 'plus' };
     }
     if (niveau === 15) {
       const objets = melanger((utiliserPhotosAvec('g') && trioPhotosAvec('g', derniere ? 1.5 : 1.2)) || trioChoses(derniere ? 1.5 : 1.25));
@@ -1482,8 +1546,8 @@
     const mot = motDe(theme, sens);
     const taille = sens === 'plus' ? [OOKI, 'きい'] : [CHIISA, 'さい'];
     return superlatif
-      ? [ICHIBAN, ' ', ...mot, 'のは ', KAZU, 'が ', ICHIBAN, ' ', ...taille, ' ほう。 ']
-      : [...mot, 'のは ', KAZU, 'が ', ...taille, ' ほう。 '];
+      ? [ICHIBAN, ' ', ...mot, 'のは ', SUJI, 'が ', ICHIBAN, ' ', ...taille, ' ほう。 ']
+      : [...mot, 'のは ', SUJI, 'が ', ...taille, ' ほう。 '];
   }
 
   const regleBalance = (sens) => (sens === 'plus'
@@ -1495,6 +1559,7 @@
     : [ONAJI, 'じ コップなら、 ひくい ほうが ', SUKU, 'ない。 ']);
 
   function consigneMV(q) {
+    if (q.type === 'lecture') return [nomDe(q.objets[0]), 'の ', OMO, 'さは ', segU('なん', 'g'), '？'];
     const mot = motDe(q.theme, q.demande);
     if (q.type === 'devine' && q.etape === 'devine') return ['どっちが ', ...mot, 'と おもう？'];
     if (q.objets.length === 3) return [ICHIBAN, ' ', ...mot, 'のは どれ？'];
@@ -1502,19 +1567,25 @@
   }
 
   function rappelMV(q) {
+    if (q.type === 'lecture') {
+      if (q.pas === 100) return [SUJI, 'の めもりは ', segU(100, 'g'), ' ずつ'];
+      return ['ちいさい めもり 1つ ＝ ', segU(10, 'g')];
+    }
     const mot = motDe(q.theme, q.demande);
     const taille = q.demande === 'plus' ? [OOKI, 'きい'] : [CHIISA, 'さい'];
-    if (q.type === 'balance' || q.type === 'devine') {
+    if (q.type === 'balance') {
       return q.demande === 'plus' ? [SAGA, 'がった ほう ＝ ', OMO, 'い'] : [AGA, 'がった ほう ＝ ', KARU, 'い'];
     }
-    if (q.type === 'hakari' && q.simple) {
+    if ((q.type === 'hakari' && q.simple) || q.type === 'devine') {
       return q.demande === 'plus' ? ['はりが たくさん まわった ほう ＝ ', OMO, 'い'] : ['はりが すこし まわった ほう ＝ ', KARU, 'い'];
     }
-    if (q.objets.length === 3) return [ICHIBAN, ' ', ...mot, ' ＝ ', KAZU, 'が ', ICHIBAN, ' ', ...taille];
-    return [...mot, ' ＝ ', KAZU, 'が ', ...taille];
+    if (q.objets.length === 3) return [ICHIBAN, ' ', ...mot, ' ＝ ', SUJI, 'が ', ICHIBAN, ' ', ...taille];
+    const unite = q.mixte ? [ONAJI, 'じ たんいなら '] : [];
+    return [...unite, ...mot, ' ＝ ', SUJI, 'が ', ...taille];
   }
 
   function explicationMV(q) {
+    if (q.type === 'lecture') return [...lectureHakari(q.valeur), ' この ', nomDe(q.objets[0]), 'は ', segU(q.valeur, 'g'), '。'];
     const mot = motDe(q.theme, q.demande);
     const u = uniteDe(q.theme);
     const t = q.objets;
@@ -1528,7 +1599,9 @@
       return [segValeur(g), 'は ', segU(g.val, u), '。 ', segU(g.val, u), 'と ', segU(p.val, u), '。 ', ...fin];
     }
     const mesures = [];
-    t.forEach((o, k) => mesures.push(referenceMV(q, k), 'は ', segU(o.val, u), k < t.length - 1 ? '、 ' : '。 '));
+    // « この りんご » : toutes les pommes n'ont pas le même poids.
+    const cette = (k) => (q.theme === 'omosa' && !Object.values(POSITIONS_MV).flat().includes(referenceMV(q, k)) ? 'この ' : '');
+    t.forEach((o, k) => mesures.push(cette(k), referenceMV(q, k), 'は ', segU(o.val, u), k < t.length - 1 ? '、 ' : '。 '));
     if (t.length === 3) {
       const aiguille = q.demande === 'plus'
         ? ['はりが ', ICHIBAN, ' すすんだ ものが ', ICHIBAN, ' ', OMO, 'い。 ']
@@ -1538,10 +1611,11 @@
     }
     const lourd = idxMaxV(t);
     const leger = 1 - lourd;
-    if (q.type === 'hakari') {
+    if (q.type === 'hakari' || q.type === 'devine') {
+      const piege = q.type === 'devine' && q.piege ? [referenceMV(q, leger), 'は ', OOKI, 'きい けど ', KARU, 'いね。 '] : [];
       return q.demande === 'plus'
-        ? ['はりが たくさん まわった ほうが ', OMO, 'い。 ', referenceMV(q, lourd), 'の はりの ほうが たくさん まわったね。 だから ', referenceMV(q, q.bonne), 'の ほうが ', OMO, 'い。']
-        : ['はりが すこししか まわらない ほうが ', KARU, 'い。 ', referenceMV(q, leger), 'の はりは すこししか まわって いないね。 だから ', referenceMV(q, q.bonne), 'の ほうが ', KARU, 'い。'];
+        ? ['はりが たくさん まわった ほうが ', OMO, 'い。 ', referenceMV(q, lourd), 'の はりの ほうが たくさん まわったね。 ', ...piege, 'だから ', referenceMV(q, q.bonne), 'の ほうが ', OMO, 'い。']
+        : ['はりが すこししか まわらない ほうが ', KARU, 'い。 ', referenceMV(q, leger), 'の はりは すこししか まわって いないね。 ', ...piege, 'だから ', referenceMV(q, q.bonne), 'の ほうが ', KARU, 'い。'];
     }
     let debut = [];
     if (q.type === 'balance' || q.type === 'devine') {
@@ -1560,12 +1634,15 @@
   }
 
   function messageErreurMV(q) {
-    if (q.type === 'balance' || q.type === 'devine') {
-      return q.type === 'devine' && q.etape === 'balance' && q.essais.size === 1
-        ? ['おしい！ てんびんで たしかめよう。 ', ...regleBalance(q.demande)]
-        : ['おしい！ ', ...regleBalance(q.demande)];
+    if (q.type === 'devine') {
+      const regle = q.demande === 'plus'
+        ? ['はりが たくさん まわった ほうが ', OMO, 'い。']
+        : ['はりが すこししか まわらない ほうが ', KARU, 'い。'];
+      return q.essais.size === 1 ? ['おしい！ はかりで たしかめよう。 ', ...regle] : ['おしい！ ', ...regle];
     }
+    if (q.type === 'balance') return ['おしい！ ', ...regleBalance(q.demande)];
     if (q.type === 'hakari') return ['おしい！ はりを よく ', MI, 'てね。'];
+    if (q.type === 'lecture') return ['おしい！ はりの さきを よく ', MI, 'てね。 ', OOKI, 'きい めもりから かぞえよう。'];
     if (q.type === 'transvaser' && q.versePourErreur) {
       q.versePourErreur = false;
       return ['おしい！ ', ONAJI, 'じ コップに うつして くらべよう。'];
@@ -1605,10 +1682,11 @@
     return el;
   }
 
-  function etiquetteMesure(texte) {
+  function etiquetteMesure(x, u) {
     const pill = document.createElement('span');
     pill.className = 'mesure-mv';
-    pill.textContent = texte;
+    if (u) pill.innerHTML = nombreUnite(x, u);
+    else pill.textContent = x;
     return pill;
   }
 
@@ -1820,8 +1898,9 @@
     scene.className = 'scene';
     etabli.append(scene);
     if (q.type === 'devine' && q.etape === 'devine') rendreDevine(q, scene, W, H);
-    else if (q.type === 'balance' || q.type === 'devine') rendreBalanceQ(q, scene, W, H);
-    else if (q.type === 'hakari') rendreHakariQ(q, scene, W, H);
+    else if (q.type === 'balance') rendreBalanceQ(q, scene, W, H);
+    else if (q.type === 'hakari' || q.type === 'devine') rendreHakariQ(q, scene, W, H);
+    else if (q.type === 'lecture') rendreLectureQ(q, scene, W, H);
     else if (q.type === 'verres') rendreVerresQ(q, scene, W, H, q.objets.map((o) => o));
     else if (q.type === 'transvaser') rendreTransvaserQ(q, scene, W, H);
     else rendreMesuresQ(q, scene, W, H);
@@ -1831,13 +1910,48 @@
     const b = creerBalance(W, H, { interactif: true, noms: reglages.noms });
     q.objets.forEach((o, k) => {
       const { el, charge } = b.plateaux[k];
-      if (q.preuve) charge.append(etiquetteMesure(`${o.val}\u00a0g`));
+      if (q.preuve) charge.append(etiquetteMesure(o.val, 'g'));
       charge.append(creerChose(o, b.geo.taille));
       b.noms[k].innerHTML = html([nomDe(o)]);
       cible(el, k, `${POSITIONS_MV[2][k]} ${o.yomi}`);
     });
     scene.append(b);
     poserBalance(b, angleBalance(q.objets[0].val, q.objets[1].val), q);
+  }
+
+  function rendreLectureQ(q, scene, W, H) {
+    const col = document.createElement('div');
+    col.className = 'hakari hakari-lecture';
+    const hCharge = Math.max(50, Math.min(140, H * 0.3));
+    const D = Math.max(90, Math.min(H - hCharge - 24, W * 0.6, 300));
+    const charge = document.createElement('span');
+    charge.className = 'hakari-charge';
+    charge.style.height = `${hCharge}px`;
+    if (q.preuve) charge.append(etiquetteMesure(q.valeur, 'g'));
+    charge.append(creerChose(q.objets[0], Math.max(24, Math.min((hCharge - 34) / 1.6, 80))));
+    const plateau = document.createElement('span');
+    plateau.className = 'hakari-plateau';
+    plateau.style.width = `${D * 1.05}px`;
+    const corps = creerHakari(D, q.max, { etiquette: 100, trait: 10 });
+    const svg = corps.querySelector('svg');
+    if (q.preuve) svg.classList.add('avec-secteur');
+    col.append(charge, plateau, corps);
+    scene.append(col);
+    if (q.vuAiguilles || animationsReduites()) tournerAiguille(svg, q.valeur, q.max);
+    else setTimeout(() => { scene.classList.add('anime'); tournerAiguille(svg, q.valeur, q.max); }, 400);
+    q.vuAiguilles = true;
+    // Les trois réponses, en grands boutons sous l'établi.
+    const choix = $('choix-mots');
+    choix.hidden = false;
+    choix.replaceChildren();
+    q.options.forEach((v) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'btn';
+      b.innerHTML = nombreUnite(v, 'g');
+      cible(b, v, `${v}グラム`);
+      choix.append(b);
+    });
   }
 
   // « みためと ちがう » : d'abord deviner, objets posés sur la table, à leur grosseur.
@@ -1880,7 +1994,7 @@
       const charge = document.createElement('span');
       charge.className = 'hakari-charge';
       charge.style.height = `${hCharge}px`;
-      if (q.preuve && !q.simple) charge.append(etiquetteMesure(`${o.val}\u00a0g`));
+      if (q.preuve && !q.simple) charge.append(etiquetteMesure(o.val, 'g'));
       charge.append(creerChose(o, px));
       const plateau = document.createElement('span');
       plateau.className = 'hakari-plateau';
@@ -1919,7 +2033,7 @@
       col.type = 'button';
       col.className = 'verre-col';
       col.style.width = `${colW}px`;
-      const pill = etiquetteMesure(`${o.val}\u00a0mL`);
+      const pill = etiquetteMesure(o.val, 'ml');
       pill.style.visibility = q.preuve ? 'visible' : 'hidden';
       const ligne = document.createElement('span');
       ligne.className = 'verre-ligne';
@@ -2012,8 +2126,8 @@
       const bouton = document.createElement('button');
       bouton.type = 'button';
       bouton.className = 'choix-valeur';
-      bouton.innerHTML = `<span class="valeur-texte">${echapper(v.affichage)}</span>`;
-      if (v.grande && q.aide >= 1) bouton.innerHTML += `<span class="conversion">＝ ${v.val}\u00a0${UNITES[u].d}</span>`;
+      bouton.innerHTML = `<span class="valeur-texte">${html([segValeur(v)])}</span>`;
+      if (v.grande && q.aide >= 1) bouton.innerHTML += `<span class="conversion">＝ ${nombreUnite(v.val, u)}</span>`;
       cible(bouton, k, v.lecture);
       col.append(bouton);
       if (jauges) {
@@ -2276,7 +2390,7 @@
       q.resolu = true;
       q.preuve = true;
       // Deviner / verser : la balance ou les verres identiques montrent pourquoi c'est juste.
-      if (q.type === 'devine') q.etape = 'balance';
+      if (q.type === 'devine') q.etape = 'hakari';
       if (q.type === 'transvaser') q.etape = 'apres';
       sons.succes();
       const message = [...PHRASES.seikai, ...explication(q)];
@@ -2309,7 +2423,7 @@
     if (q.type === 'libre') message = PHRASES.oshiiSoroe;
     if (estMV(q)) {
       // Après une erreur : la balance se montre, ou l'on verse dans des verres identiques.
-      if (q.type === 'devine' && q.etape === 'devine') q.etape = 'balance';
+      if (q.type === 'devine' && q.etape === 'devine') q.etape = 'hakari';
       if (q.type === 'transvaser' && q.etape === 'avant') {
         q.etape = 'apres';
         q.versePourErreur = true;
@@ -2517,7 +2631,7 @@
     const e = etude;
     if (estLecon()) return e.resolu && e.etape.bravo ? [...e.etape.dire, ' ', ...e.etape.bravo] : e.etape.dire;
     if (estEtudeMV()) return consigneEtudeMV();
-    if (e.mode === 'libre') return ['テープを ひっぱって みよう。 ', KAZU, 'が かわるよ。'];
+    if (e.mode === 'libre') return ['テープを ひっぱって みよう。 ', SUJI, 'が かわるよ。'];
     const geste = e.mode === 'plus' ? ['みぎに ', String(e.pas), ' のばそう。'] : ['ひだりに ', String(e.pas), ' もどそう。'];
     if (!pourVoix) return geste;
     const op = e.mode === 'plus' ? ' たす ' : ' ひく ';
@@ -2770,8 +2884,8 @@
   function majCommandesEtude() {
     const e = etude;
     const mv = estEtudeMV();
-    const unite = e.mode === 'verre' ? '\u00a0mL' : e.mode === 'balance' ? (enTsumiki() ? 'こ' : '\u00a0g') : '';
-    $('etude-valeur').textContent = `${e.valeur}${unite}`;
+    const unite = e.mode === 'verre' ? `\u00a0${uniteHtml('ml')}` : e.mode === 'balance' ? (enTsumiki() ? 'こ' : `\u00a0${uniteHtml('g')}`) : '';
+    $('etude-valeur').innerHTML = `${e.valeur}${unite}`;
     $('etude-equation').innerHTML = equationEtude();
     const [min, max] = bornesEtude();
     const { petit, grand, avecGrand } = pasBoutons();
@@ -2941,14 +3055,14 @@
     if (e.mode === 'balance') {
       const nom = html([nomDe(e.objet)]);
       const val = e.resolu ? `<span class="resultat">${e.cible}</span>` : '<span class="resultat inconnu">？</span>';
-      return enTsumiki() ? `${nom} ＝ つみき ${val}こ` : `${nom} ＝ ${val} g`;
+      return enTsumiki() ? `${nom} ＝ つみき ${val}こ` : `${nom} ＝ ${val} ${uniteHtml('g')}`;
     }
     const d = e.cible - e.base;
     const signe = d > 0 ? '＋' : '−';
     const delta = e.resolu
       ? `<span class="${d > 0 ? 'terme-plus' : 'terme-moins'}">${signe}${Math.abs(d)}</span>`
       : `<span class="${d > 0 ? 'terme-plus' : 'terme-moins'}">${signe}</span> ？`;
-    return `<span class="terme-base">${e.base}</span> ${delta} → <span class="resultat">${e.cible}</span> mL`;
+    return `<span class="terme-base">${e.base}</span> ${delta} → <span class="resultat">${e.cible}</span> ${uniteHtml('ml')}`;
   }
 
   function dessinerEtudeMV() {
@@ -2999,7 +3113,7 @@
     remplirPile(b.querySelector('.pile'), e.valeur, b.geo);
     b.noms[1].innerHTML = html([texteBalance(e.valeur)]);
     b.querySelector('.plateau.gauche .mesure-mv')?.remove();
-    if (e.resolu) b.plateaux[0].charge.prepend(etiquetteMesure(texteBalance(e.cible).d));
+    if (e.resolu) b.plateaux[0].charge.prepend(enTsumiki() ? etiquetteMesure(texteBalance(e.cible).d) : etiquetteMesure(e.cible, 'g'));
     incliner(b, angleBalance(e.cible, e.valeur, true));
   }
 
@@ -3085,7 +3199,7 @@
     const e = etude;
     let message;
     if (e.mode === 'balance') {
-      message = ['つりあった！ ', nomDe(e.objet), 'は ', texteBalance(e.cible), '。'];
+      message = ['つりあった！ この ', nomDe(e.objet), 'は ', texteBalance(e.cible), '。'];
     } else if (!e.base) {
       message = [...PHRASES.seikai, segU(e.cible, 'ml'), '。'];
     } else {
@@ -3096,12 +3210,16 @@
   }
 
   /* ======================================================================
-     べんきょう おもさ : leçons guidées
-     - てんびんの しくみ : à quoi sert la balance, ce qui se passe quand on pose un objet,
-       « つりあう », puis des poids identiques (りんごは おもり 3こ ぶん).
-     - おもりと たんい : 1円玉 = 1 g, 10 g = 10 × 1 g, 100 g = 10 × 10 g, 1 kg = 1000 g.
+     Leçons guidées
+     べんきょう (la balance de cuisine, l'instrument principal) :
      - はかりの よみかた : l'aiguille tourne quand on ajoute des poids, revient quand on
        les enlève ; grandes et petites graduations ; lire, puis composer une masse.
+     - g と kg : 1円玉 = 1 g, 10 × 1 g = 10 g, 10 × 10 g = 100 g, 10 × 100 g = 1 kg.
+     - はかって みよう : entraînement (poser des poids pour que l'aiguille montre … g).
+     ね、しっていた？ (むかしは…) :
+     - てんびん : la balance à plateaux, « つりあう », poids identiques (おもり 3こ ぶん) ;
+     - もんめ : 5円玉 = 1 匁 = 3,75 g ; - からだで はかる : あた, ひろ, et pourquoi le cm ;
+     - しゃくと すん : 1 寸 ≈ 3 cm (一寸法師), 1 尺 ≈ 30 cm ; - ごうと しょう : 1 合 = 180 mL.
      À chaque étape : une consigne lue, une action (poser ou enlever, ou choisir un nombre),
      puis une explication ; つぎへ passe à l'étape suivante.
      ====================================================================== */
@@ -3114,9 +3232,16 @@
     hon: { genre: 'chose', c: 'ほん' },
     omori: { genre: 'fundou', taille: 1, texte: '', nom: ['おもり'] },
     yen1: { genre: 'yen', nom: ['1えんだま'] },
-    g10: { genre: 'fundou', taille: 0.78, texte: '10g', unite: 10, nom: [V('10\u00a0g の おもり', '10グラムの おもり')] },
-    g100: { genre: 'fundou', taille: 1.05, texte: '100g', unite: 100, nom: [V('100\u00a0g の おもり', '100グラムの おもり')] },
-    kg1: { genre: 'fundou', taille: 1.7, texte: '1kg', unite: 1000, nom: [V('1\u00a0kg の おもり', '1キログラムの おもり')] },
+    g10: { genre: 'fundou', taille: 0.78, texte: '10g', unite: 10, nom: [segU(10, 'g'), 'の おもり'] },
+    g100: { genre: 'fundou', taille: 1.05, texte: '100g', unite: 100, nom: [segU(100, 'g'), 'の おもり'] },
+    kg1: { genre: 'fundou', taille: 1.7, texte: '1kg', unite: 1000, nom: [segU(1, 'kg'), 'の おもり'] },
+    yen5: { genre: 'yen5', nom: ['5えんだま'] },
+    monme1: { genre: 'fundou', taille: 0.75, texte: '1匁', nom: ['1もんめの おもり'] },
+    monme10: { genre: 'fundou', taille: 1.25, texte: '10匁', nom: ['10もんめの おもり'] },
+    okome: { genre: 'sac', texte: 'おこめ 1kg', nom: ['おこめ ', segU(1, 'kg')] },
+    gou: { genre: 'gou', nom: ['1ごうの カップ'] },
+    teEnfant: { genre: 'main', taille: 0.8, nom: ['こどもの て'] },
+    teAdulte: { genre: 'main', taille: 1.15, nom: ['おとなの て'] },
   };
   const enG = (x) => segU(x, 'g');
   const enKg = (x) => segU(x, 'kg');
@@ -3124,82 +3249,235 @@
   const somme = (liste) => liste.reduce((s, p) => s + p.m, 0);
   const nomVisuel = (v) => (VISUELS[v].genre === 'chose' ? [nomDe(chose(VISUELS[v].c))] : VISUELS[v].nom);
   const MAX_HAKARI = 500;
+  const sceneDe = (et) => et.scene || (et.hakari ? 'hakari' : 'balance');
 
   const equilibre = (e) => Math.abs(somme(e.cotes[0]) - somme(e.cotes[1])) < 1e-9;
   const unePose = (e) => e.cotes[e.etape.vers].length > 0;
 
+  // てんびん (むかしの はかり) : à partir des poids identiques, les masses sont en g (おもり 1こ ＝ 100 g).
   function etapesBalance() {
+    const g100 = (n) => P('g100', 100, n);
     return [
       {
-        dire: ['これは てんびん。 ２つの ものの ', OMO, 'さを くらべる どうぐ だよ。 なにも のって いない とき、 てんびんは まっすぐ。 まんなかの はりも まんなかを さして いる。'],
+        dire: ['これは てんびん。 むかしは これで ', OMO, 'さを くらべたり はかったり したよ。 いまでも りかの じっけんで つかう。 なにも のって いない とき、 てんびんは まっすぐ。 まんなかの はりも まんなかを さして いる。'],
         balance: [[], []],
       },
       {
         dire: ['りんごを さわって、 ひだりの さらに のせよう。'],
-        balance: [[], []], reserve: [P('ringo', 3)], vers: 0, fini: unePose,
+        balance: [[], []], reserve: [P('ringo', 300)], vers: 0, fini: unePose,
         bravo: ['りんごを のせた ほうが ', SAGA, 'がったね。 りんごの ', OMO, 'さで ', SAGA, 'がったよ。'],
       },
       {
         dire: ['もう ひとつの りんごを、 みぎの さらに のせよう。'],
-        balance: [[P('ringo', 3)], []], reserve: [P('ringo', 3)], vers: 1, fini: unePose,
+        balance: [[P('ringo', 300)], []], reserve: [P('ringo', 300)], vers: 1, fini: unePose,
         bravo: ['まっすぐに なった！ ', ONAJI, 'じ ', OMO, 'さだと まっすぐ。 これを「つりあう」と いうよ。'],
       },
       {
         dire: ['こんどは いちごを、 みぎの さらに のせよう。'],
-        balance: [[P('ringo', 3)], []], reserve: [P('ichigo', 0.3)], vers: 1, fini: unePose,
+        balance: [[P('ringo', 300)], []], reserve: [P('ichigo', 20)], vers: 1, fini: unePose,
         bravo: ['りんごの ほうが ', SAGA, 'がった。 ', SAGA, 'がった ほうが ', OMO, 'い。 いちごの ほうは ', AGA, 'がった。 ', AGA, 'がった ほうが ', KARU, 'い。'],
       },
       {
         dire: ['ひだりと みぎを かえて みよう。 りんごを みぎの さらに のせよう。'],
-        balance: [[P('ichigo', 0.3)], []], reserve: [P('ringo', 3)], vers: 1, fini: unePose,
+        balance: [[P('ichigo', 20)], []], reserve: [P('ringo', 300)], vers: 1, fini: unePose,
         bravo: ['こんどは みぎが ', SAGA, 'がった。 ひだりでも みぎでも、 ', OMO, 'い ほうが ', SAGA, 'がるよ。'],
       },
       {
         dire: ['これは おもり。 ぜんぶ ', ONAJI, 'じ ', OMO, 'さ だよ。 りんごと つりあう まで、 おもりを みぎに のせよう。'],
-        balance: [[P('ringo', 3)], []], reserve: [P('omori', 1, 6)], vers: 1, retirer: true, fini: equilibre,
-        bravo: ['つりあった！ りんごは おもり 3こ ぶんの ', OMO, 'さ。'],
+        balance: [[P('ringo', 300)], []], reserve: [P('omori', 100, 6)], vers: 1, retirer: true, fini: equilibre,
+        bravo: ['つりあった！ この りんごは おもり 3こ ぶんの ', OMO, 'さ。'],
+      },
+      {
+        dire: ['この おもりは 1こ ', segU(100, 'g'), '。 この りんごは ', segU('なん', 'g'), '？'],
+        balance: [[P('ringo', 300)], [g100(3)]], cache: true,
+        choix: { options: [300, 3, 100], bonne: 300, indice: ['おしい！ ', segU(100, 'g'), 'の おもりが 3こ。 100 ＋ 100 ＋ 100 は？'] },
+        bravo: ['100 ＋ 100 ＋ 100 ＝ 300。 100 × 3 ＝ 300 でも いいね。 この りんごは ', segU(300, 'g'), '。'],
       },
       {
         dire: ['こんどは ボール。 おもりを のせて、 つりあわせよう。'],
-        balance: [[P('booru', 5)], []], reserve: [P('omori', 1, 8)], vers: 1, retirer: true, fini: equilibre,
-        bravo: ['つりあった！ ボールは おもり 5こ ぶん。 りんごは 3こ ぶん だったね。 5は 3より ', OOKI, 'きい。 だから ボールの ほうが ', OMO, 'い。'],
+        balance: [[P('booru', 500)], []], reserve: [P('omori', 100, 8)], vers: 1, retirer: true, fini: equilibre,
+        bravo: ['つりあった！ この ボールは おもり 5こ ぶん。'],
       },
       {
-        dire: ['たしかめよう。 りんごと ボールを のせたよ。 ボールの ほうが ', SAGA, 'がったね。 おもりの かずが ', OO_I, 'い ほうが ', OMO, 'い！'],
-        balance: [[P('ringo', 3)], [P('booru', 5)]],
+        dire: ['おもりは 1こ ', segU(100, 'g'), '。 この ボールは ', segU('なん', 'g'), '？'],
+        balance: [[P('booru', 500)], [g100(5)]], cache: true,
+        choix: { options: [500, 5, 100], bonne: 500, indice: ['おしい！ ', segU(100, 'g'), 'の おもりが 5こ だよ。'] },
+        bravo: ['100が 5つで 500。 この ボールは ', segU(500, 'g'), '。 りんごより ', OMO, 'いね。'],
+      },
+      {
+        dire: ['べつの りんごを はかろう。 ', segU(100, 'g'), 'と ', segU(10, 'g'), 'の おもりを つかってね。'],
+        balance: [[P('ringo', 320)], []], reserve: [P('g100', 100, 4), P('g10', 10, 9)], vers: 1, retirer: true, fini: equilibre,
+        bravo: ['つりあった！ ', segU(100, 'g'), 'が 3こで ', segU(300, 'g'), '、 ', segU(10, 'g'), 'が 2こで ', segU(20, 'g'), '。 この りんごは ', segU(320, 'g'), '。 さっきの りんごより ', segU(20, 'g'), ' ', OMO, 'い。 りんごに よって ', OMO, 'さは ちがうね。'],
+      },
+      {
+        dire: ['たしかめよう。 りんご（', segU(300, 'g'), '）と ボール（', segU(500, 'g'), '）を のせたよ。 ボールの ほうが ', SAGA, 'がったね。 ', SUJI, 'が ', OOKI, 'きい ほうが ', OMO, 'い！'],
+        balance: [[P('ringo', 300)], [P('booru', 500)]],
       },
     ];
   }
 
+  // g と kg, sur la balance de cuisine : 1 g bouge à peine l'aiguille ; 10, 100, 1000 g.
   function etapesUnites() {
+    const total = (e) => somme(e.plateau);
     return [
       {
-        dire: ['1えんだまの ', OMO, 'さは、 ちょうど ', enG(1), '。 ', V('g（グラム）', 'グラム'), 'は ', OMO, 'さの たんい だよ。'],
-        balance: [[P('yen1', 1)], []],
+        dire: ['1えんだま 1こは ちょうど ', enG(1), '。 ', V('g（グラム）', 'グラム'), 'は ', OMO, 'さの たんい だよ。 ', enG(1), 'は とても ', KARU, 'いので、 はりは ほとんど うごかないね。'],
+        hakari: [P('yen1', 1)],
       },
       {
-        dire: ['これは ', enG(10), 'の おもり。 1えんだまを みぎに のせて、 つりあわせよう。'],
-        balance: [[P('g10', 10)], []], reserve: [P('yen1', 1, 12)], vers: 1, retirer: true, fini: equilibre,
-        bravo: ['1えんだま 10こで つりあった。 ', enG(10), 'は ', enG(1), 'の 10こ ぶん。'],
+        dire: ['1えんだまを のせて、 ぜんぶで 10こに しよう。'],
+        hakari: [P('yen1', 1)], reserve: [P('yen1', 1, 9)], vers: 'plateau', retirer: true, fini: (e) => total(e) === 10,
+        bravo: [enG(1), 'が 10こで ', enG(10), '。 はりが ちいさい めもり 1つ ぶん うごいた。'],
       },
       {
-        dire: ['これは ', enG(100), 'の おもり。 ', enG(10), 'の おもりで つりあわせよう。'],
-        balance: [[P('g100', 100)], []], reserve: [P('g10', 10, 12)], vers: 1, retirer: true, fini: equilibre,
-        bravo: [enG(10), 'が 10こで つりあった。 ', enG(100), 'は ', enG(10), 'の 10こ ぶん。'],
+        dire: ['こんどは ', enG(10), 'の おもりを 10こ のせよう。'],
+        hakari: [], reserve: [P('g10', 10, 10)], vers: 'plateau', retirer: true, fini: (e) => total(e) === 100,
+        bravo: [enG(10), 'が 10こで ', enG(100), '。'],
       },
       {
-        dire: ['りんごの ', OMO, 'さを はかろう。 ', enG(100), 'と ', enG(10), 'の おもりを つかってね。'],
-        balance: [[P('ringo', 320)], []], reserve: [P('g100', 100, 4), P('g10', 10, 9)], vers: 1, retirer: true, fini: equilibre,
-        bravo: ['つりあった！ ', enG(100), 'が 3こで ', enG(300), '、 ', enG(10), 'が 2こで ', enG(20), '。 りんごは ', enG(320), '。'],
+        dire: [enG(100), 'の おもりを 5こ のせよう。'],
+        hakari: [], reserve: [P('g100', 100, 5)], vers: 'plateau', retirer: true, fini: (e) => total(e) === 500,
+        bravo: [enG(100), 'が 5こで ', enG(500), '。 この はかりの いちばん ', OOKI, 'きい めもり。'],
       },
       {
-        dire: ['これは ', V('1\u00a0kg（キログラム）', '1キログラム'), 'の おもり。 ', enG(100), 'の おもりで つりあわせよう。'],
-        balance: [[P('kg1', 1000)], []], reserve: [P('g100', 100, 12)], vers: 1, retirer: true, fini: equilibre,
-        bravo: [enG(100), 'が 10こで つりあった。 ', enG(1000), 'を ', enKg(1), 'と いうよ。 ', enKg(1), ' ＝ ', enG(1000), '。'],
+        dire: [OOKI, 'きい はかりに かえたよ（', segU(2, 'kg'), ' まで）。 ', enG(100), 'の おもりを 10こ のせよう。'],
+        hakari: [], max: 2000, reserve: [P('g100', 100, 10)], vers: 'plateau', retirer: true, fini: (e) => total(e) === 1000,
+        bravo: [enG(100), 'が 10こで ', enG(1000), '。 ', enG(1000), 'を ', segU(1, 'kg'), 'と いうよ。'],
       },
       {
-        dire: ['まとめ： ', enKg(1), ' ＝ ', enG(1000), ' ＝ ', enG(100), 'が 10こ。 ', V('g も kg も', 'グラムも キログラムも'), ' ', OMO, 'さの たんい。 かずが ', OOKI, 'きい ほうが ', OMO, 'い。'],
-        balance: [[P('kg1', 1000)], [P('g100', 100)]],
+        dire: ['おこめの ふくろを のせたよ。 はりは ', segU('なん', 'g'), '？'],
+        hakari: [P('okome', 1000)], max: 2000, choix: { options: [1000, 100, 10], bonne: 1000 },
+        bravo: ['はりは 1000を さして いる。 おこめは ', enG(1000), '、 つまり ', enKg(1), '。'], cache: true,
+      },
+      {
+        dire: ['まとめ： ', enKg(1), ' ＝ ', enG(1000), '。 ', V('g も kg も', 'グラムも キログラムも'), ' ', OMO, 'さの たんい。 ', ONAJI, 'じ たんいなら、 ', SUJI, 'が ', OOKI, 'きい ほうが ', OMO, 'い。'],
+        hakari: [P('g100', 100, 10)], max: 2000,
+      },
+    ];
+  }
+
+  // Entraînement : poser des poids pour que l'aiguille montre une masse donnée.
+  function etapesPratique() {
+    const n = Number(reglages.nbQuestions) || 6;
+    return Array.from({ length: n }, (_, k) => {
+      const cible = k === 0 || k === n - 1 ? entier(1, 4) * 100 : entier(5, 48) * 10;
+      return {
+        dire: ['はかりが ', enG(cible), 'を さす ように、 おもりを のせよう。'],
+        hakari: [], reserve: [P('g100', 100, 4), P('g10', 10, 9)], vers: 'plateau', retirer: true, cache: true,
+        fini: (e) => somme(e.plateau) === cible,
+        pendant: (e) => {
+          const t = somme(e.plateau);
+          return t < cible ? ['あと ', enG(cible - t), '。'] : [OMO, 'すぎ！ ', enG(t - cible), ' おろそう。'];
+        },
+        bravo: ['できた！ ', ...lectureHakari(cible)],
+      };
+    });
+  }
+
+  // もんめ : l'ancienne unité ; la pièce de 5 円 pèse exactement 1 匁 (3,75 g).
+  function etapesMonme() {
+    return [
+      {
+        dire: ['むかしの にほんでは、 ', OMO, 'さを 「もんめ」で あらわしたよ。 5えんだま 1こが ちょうど 1もんめ。 てんびんで くらべると、 つりあうね。'],
+        balance: [[P('monme1', 3.75)], [P('yen5', 3.75)]],
+      },
+      {
+        dire: ['10もんめの おもりと つりあう まで、 5えんだまを みぎに のせよう。'],
+        balance: [[P('monme10', 37.5)], []], reserve: [P('yen5', 3.75, 12)], vers: 1, retirer: true, fini: equilibre,
+        bravo: ['5えんだま 10こで つりあった。 10もんめは ', segU(37.5, 'g'), '。'],
+      },
+      {
+        dire: ['1000もんめで 1かん（', segU(3.75, 'kg'), '）。 いまでも しんじゅ（パール）は もんめで はかるよ。 5えんだまを みたら、 おもいだしてね。'],
+        balance: [[P('monme10', 37.5)], [P('yen5', 3.75, 10)]],
+      },
+    ];
+  }
+
+  // からだで はかる : あた (empan) d'un enfant et d'un adulte sur le même bureau, puis la règle.
+  const BUREAU = 72;
+  function etapesCorps() {
+    const mains = (e, v) => somme(e.plateau.filter((p) => p.v === v));
+    return [
+      {
+        dire: ['むかしは ものさしが なかった。 からだで ', NAGA, 'さを はかったよ。 おやゆびと なかゆびを ひろげた ', NAGA, 'さを 「あた」と いう。'],
+        scene: 'corps', contenu: [],
+      },
+      {
+        dire: ['こどもの てで、 つくえの ', NAGA, 'さを はかろう。 て を さわって、 ならべよう。'],
+        scene: 'corps', contenu: [], reserve: [P('teEnfant', 12, 8)], vers: 'plateau', fini: (e) => mains(e, 'teEnfant') >= BUREAU,
+        bravo: ['つくえは こどもの あた 6つ ぶん。'],
+      },
+      {
+        dire: ['こんどは おとなの てで はかろう。'],
+        scene: 'corps', contenu: [P('teEnfant', 12, 6)], reserve: [P('teAdulte', 18, 6)], vers: 'plateau', fini: (e) => mains(e, 'teAdulte') >= BUREAU,
+        bravo: ['おとなの あた 4つ ぶん。 こどもは 6つ、 おとなは 4つ。 ', ONAJI, 'じ つくえ なのに、 ', SUJI, 'が ちがうね。'],
+      },
+      {
+        dire: ['ひとに よって ちがうと こまるね。 だから、 だれが はかっても ', ONAJI, 'じに なる 「cm」や 「m」が つくられたよ。 つくえは ', segU(72, 'cm'), '。'],
+        scene: 'corps', regle: true, contenu: [P('teEnfant', 12, 6), P('teAdulte', 18, 4)],
+      },
+      {
+        dire: ['りょうてを ひろげた ', NAGA, 'さは 「ひろ」。 せの たかさと だいたい ', ONAJI, 'じ だよ。 おうちの ひとと くらべて みよう！'],
+        scene: 'hiro',
+      },
+    ];
+  }
+
+  // しゃくと すん : 1 寸 ≈ 3 cm (一寸法師), 10 寸 = 1 尺 ≈ 30 cm (une règle de 30 cm).
+  function etapesShaku() {
+    return [
+      {
+        dire: ['むかしの にほんでは、 ', NAGA, 'さを 「すん」と 「しゃく」で あらわしたよ。 うえが すん、 したが cm。'],
+        scene: 'shaku',
+      },
+      {
+        dire: ['1すんは だいたい ', segU(3, 'cm'), '。 おやゆびの はばくらい。'],
+        scene: 'shaku', surligne: 'sun',
+      },
+      {
+        dire: ['むかしばなしの 「いっすんぼうし」。 せの たかさは 1すん。 ', segU('なん', 'cm'), ' くらい？'],
+        scene: 'shaku', surligne: 'sun', boushi: true,
+        choix: { options: [3, 30, 100], bonne: 3, unite: 'cm', indice: ['おしい！ 1すんは だいたい ', segU(3, 'cm'), '。 ものさしを ', MI, 'てね。'] },
+        bravo: ['いっすんぼうしは だいたい ', segU(3, 'cm'), '。 とても ', CHIISA, 'さいね！'],
+      },
+      {
+        dire: ['10すんで 1しゃく。 1しゃくは だいたい ', segU(30, 'cm'), '。 30 cm の ものさしと ほとんど ', ONAJI, 'じ ', NAGA, 'さ。'],
+        scene: 'shaku', surligne: 'shaku',
+      },
+      {
+        dire: ['いまでも だいくさんは 「しゃく」や 「すん」を つかう ことが あるよ。 はしらや いたの ', NAGA, 'さ だね。'],
+        scene: 'shaku', surligne: 'shaku',
+      },
+    ];
+  }
+
+  // ごうと しょう : la mesure du riz, encore utilisée : 1 合 = 180 mL, 10 合 = 1 升 = 1,8 L.
+  function etapesGou() {
+    const total = (e) => somme(e.plateau);
+    return [
+      {
+        dire: ['これは 1ごうの カップ。 おこめを はかる ときに、 いまも つかうよ。 すいはんきの めもりも 「ごう」だね。'],
+        scene: 'verre', contenu: [], reserve: [P('gou', 180, 1)],
+      },
+      {
+        dire: ['1ごうの カップで、 みずを 1かい いれよう。'],
+        scene: 'verre', contenu: [], reserve: [P('gou', 180, 5)], vers: 'plateau', fini: (e) => total(e) === 180,
+        bravo: [segU(180, 'ml'), '。 1ごうは ', segU(180, 'ml'), '。'],
+      },
+      {
+        dire: ['もう 1かい いれよう。'],
+        scene: 'verre', contenu: [P('gou', 180)], reserve: [P('gou', 180, 4)], vers: 'plateau', fini: (e) => total(e) === 360,
+        bravo: ['2ごうで ', segU(360, 'ml'), '。 「おこめを 2ごう たく」と いうね。'],
+      },
+      {
+        dire: ['3ごうは ', segU('なん', 'ml'), '？ 180が 3つ だよ。'],
+        scene: 'verre', contenu: [], reserve: [P('gou', 180, 3)],
+        choix: { options: [540, 300, 180], bonne: 540, unite: 'mL', indice: ['おしい！ 1ごうは 180 mL。 それが 3つ だよ。'] },
+        bravo: ['180が 3つで ', segU(540, 'ml'), '。'],
+      },
+      {
+        dire: ['10ごうで 1しょう。 1しょうは ', segU(1.8, 'l'), '（', segU(1800, 'ml'), '）。 ', OOKI, 'きな びんを 「いっしょうびん」と いうよ。'],
+        scene: 'verre', cap: 2000, bouteille: true, contenu: [P('gou', 180, 10)],
       },
     ];
   }
@@ -3226,7 +3504,7 @@
     const objetLecture = (min, max, rond, petites) => {
       const c = choisir(CHOSES.filter((x) => {
         const v = Math.round(x.val / rond) * rond;
-        return x.val >= min && x.val <= max && (!petites || v % 100 !== 0);
+        return x.val >= min && x.val <= max && (!petites || v % 100 !== 0) && Math.abs(v - x.val) <= x.val * 0.15;
       }));
       const v = Math.max(rond, Math.round(c.val / rond) * rond);
       return { c, v };
@@ -3235,7 +3513,7 @@
     const seconde = objetLecture(20, 480, 10, true);
     const cible = entier(5, 48) * 10;
     const etapeLecture = ({ c, v }) => ({
-      dire: [nomDe(c), 'を はかりに のせたよ。 はりは ', V('なん g', 'なんグラム'), '？'],
+      dire: [nomDe(c), 'を はかりに のせたよ。 はりは ', segU('なん', 'g'), '？'],
       hakari: [{ v: 'chose', c, m: v, n: 1 }], choix: { options: choixLecture(v), bonne: v },
       bravo: lectureHakari(v), cache: true,
     });
@@ -3288,7 +3566,16 @@
     ];
   }
 
-  const LECONS = { 'lecon-balance': etapesBalance, 'lecon-unites': etapesUnites, 'lecon-hakari': etapesHakari };
+  const LECONS = {
+    'lecon-balance': etapesBalance,
+    'lecon-unites': etapesUnites,
+    'lecon-hakari': etapesHakari,
+    'lecon-pratique': etapesPratique,
+    'lecon-monme': etapesMonme,
+    'lecon-corps': etapesCorps,
+    'lecon-shaku': etapesShaku,
+    'lecon-gou': etapesGou,
+  };
   const estLecon = () => Boolean(etude && LECONS[etude.mode]);
 
   let compteurPieces = 0;
@@ -3308,7 +3595,7 @@
     const et = e.etapes[e.index];
     e.etape = et;
     e.cotes = (et.balance || [[], []]).map(deplier);
-    e.plateau = deplier(et.hakari || []);
+    e.plateau = deplier(et.hakari || et.contenu || []);
     e.reserve = (et.reserve || []).map((r) => ({ ...r }));
     e.resolu = !et.fini && !et.choix;
     e.essais = new Set();
@@ -3338,7 +3625,7 @@
         const b = document.createElement('button');
         b.type = 'button';
         b.className = 'btn btn-choix-lecon';
-        b.textContent = `${v} g`;
+        b.innerHTML = nombreUnite(v, ({ mL: 'ml', cm: 'cm', g: 'g' })[et.choix.unite || 'g']);
         if (e.essais.has(v)) b.classList.add('essaye');
         if (e.resolu && v === et.choix.bonne) b.classList.add('juste');
         activable(b, () => choisirLecon(v));
@@ -3354,9 +3641,13 @@
     const avecReserve = e.reserve.length > 0 || et.retirer;
     const hReserve = avecReserve ? Math.max(64, Math.min(104, H * 0.26)) : 0;
     let instrument;
-    if (et.hakari) {
-      instrument = creerHakariLecon(W, H - hReserve);
-    } else {
+    const scene = sceneDe(et);
+    if (scene === 'hakari') instrument = creerHakariLecon(W, H - hReserve, et.max || MAX_HAKARI);
+    else if (scene === 'verre') instrument = creerVerreLecon(W, H - hReserve, et);
+    else if (scene === 'corps') instrument = creerCorpsLecon(W, H - hReserve, et);
+    else if (scene === 'shaku') instrument = creerShakuLecon(W, H - hReserve, et);
+    else if (scene === 'hiro') instrument = creerHiroLecon(W, H - hReserve);
+    else {
       instrument = creerBalance(W, H - hReserve, { noms: true });
       instrument.classList.add('balance-lecon');
     }
@@ -3373,7 +3664,7 @@
     $('etude-suivant').hidden = !e.resolu;
   }
 
-  function creerHakariLecon(W, H) {
+  function creerHakariLecon(W, H, max) {
     const el = document.createElement('div');
     el.className = 'hakari hakari-lecon';
     const hCharge = Math.max(56, Math.min(150, H * 0.36));
@@ -3385,21 +3676,189 @@
     const plateau = document.createElement('span');
     plateau.className = 'hakari-plateau';
     plateau.style.width = `${D * 1.15}px`;
-    const corps = creerHakari(D, MAX_HAKARI, { etiquette: 100, trait: 10 });
+    // 500 g : un nombre tous les 100 g, un trait tous les 10 g ; 2 kg : tous les 500 g et 100 g.
+    const pas = max <= 500 ? { etiquette: 100, trait: 10 } : max <= 1000 ? { etiquette: 200, trait: 20 } : { etiquette: 500, trait: 100 };
+    const corps = creerHakari(D, max, pas);
     el.append(charge, plateau, corps);
-    el.geo = { taille: Math.max(26, Math.min(hCharge * 0.55, 90)), s: Math.max(16, Math.min(30, D / 8)) };
+    el.geo = { max, taille: Math.max(26, Math.min(hCharge * 0.55, 90)), s: Math.max(16, Math.min(30, D / 8)) };
     return el;
   }
+
+  // Verre doseur (et, pour 1 升, une grande bouteille à côté).
+  function creerVerreLecon(W, H, et) {
+    const el = document.createElement('div');
+    el.className = 'verre-lecon';
+    const cap = et.cap || 1000;
+    const h = Math.max(100, Math.min(H - 40, 360));
+    const w = Math.max(64, Math.min(150, W * 0.24, h * 0.55));
+    el.append(creerVerreGradue(w, h, 0, cap * 1.1, cap, 'var(--eau)'));
+    if (et.bouteille) {
+      const col = document.createElement('span');
+      col.className = 'bouteille-col';
+      col.innerHTML = `<span class="contenant forme-bin" style="width:${w * 0.5}px;height:${h * 0.9}px"><span class="liquide" style="height:90%;--c:var(--eau)"></span></span>`
+        + '<span class="nom-mv">いっしょうびん</span>';
+      el.append(col);
+    }
+    el.geo = { cap: cap * 1.1, taille: 40, s: Math.max(18, Math.min(30, w / 4)) };
+    return el;
+  }
+
+  // Un bureau de 72 cm ; dessous, les empans (あた) de l'enfant puis ceux de l'adulte.
+  function creerCorpsLecon(W, H, et) {
+    const el = document.createElement('div');
+    el.className = 'corps-lecon';
+    const hTotal = Math.max(150, Math.min(H, 320));
+    const x0 = 16;
+    const ppc = (W - 2 * x0 - 40) / BUREAU;
+    const hRang = Math.max(44, Math.min(78, (hTotal - (et.regle ? 96 : 58)) / 2));
+    el.style.width = `${W}px`;
+    el.style.height = `${hTotal}px`;
+    let contenu = `<span class="bureau" style="left:${x0}px;width:${BUREAU * ppc}px">つくえ</span>`;
+    ['teEnfant', 'teAdulte'].forEach((v, k) => {
+      contenu += `<span class="rang" data-v="${v}" style="top:${42 + k * (hRang + 6)}px;height:${hRang}px"></span>`;
+    });
+    if (et.regle) {
+      const y = 42 + 2 * (hRang + 6);
+      let traits = '';
+      for (let c = 0; c <= BUREAU; c += 2) {
+        const x = c * ppc;
+        const grand = c % 10 === 0;
+        traits += `<line x1="${x}" y1="0" x2="${x}" y2="${grand ? 12 : 6}"/>`;
+        if (grand) traits += `<text x="${x}" y="26">${c}</text>`;
+      }
+      traits += `<line x1="${BUREAU * ppc}" y1="0" x2="${BUREAU * ppc}" y2="14" class="fin"/><text class="unite" x="${BUREAU * ppc + 4}" y="26">72 cm</text>`;
+      contenu += `<div class="regle" style="left:${x0}px;top:${y}px;width:${BUREAU * ppc}px"><svg width="${BUREAU * ppc + 60}" height="32" aria-hidden="true">${traits}</svg></div>`;
+    }
+    el.innerHTML = contenu;
+    el.geo = { ppc, x0, hRang, taille: 36, s: 26 };
+    return el;
+  }
+
+  function majCorpsLecon(el, e) {
+    const { ppc, x0, hRang } = el.geo;
+    el.querySelectorAll('.rang').forEach((rang) => {
+      const v = rang.dataset.v;
+      const mains = e.plateau.filter((p) => p.v === v);
+      rang.replaceChildren();
+      if (!mains.length) return;
+      let x = x0;
+      mains.forEach((p, k) => {
+        const empan = document.createElement('span');
+        empan.className = `empan ${v}`;
+        empan.style.left = `${x}px`;
+        empan.style.width = `${p.m * ppc}px`;
+        empan.innerHTML = `<span class="main" style="font-size:${Math.min(hRang * 0.5, p.m * ppc * 0.8)}px">✋</span><span class="numero-empan">${k + 1}</span>`;
+        rang.append(empan);
+        x += p.m * ppc;
+      });
+      const nom = document.createElement('span');
+      nom.className = 'rang-nom';
+      nom.style.left = `${x + 6}px`;
+      nom.textContent = v === 'teEnfant' ? 'こども' : 'おとな';
+      rang.append(nom);
+    });
+  }
+
+  // Une règle de 32 cm : en haut les 寸 (1 寸 ≈ 3,03 cm), en bas les cm.
+  function creerShakuLecon(W, H, et) {
+    const el = document.createElement('div');
+    el.className = 'shaku-lecon';
+    const x0 = 16;
+    const L = 32;
+    const SUN = 3.03;
+    const ppc = (W - 2 * x0) / L;
+    const hBoushi = et.boushi ? Math.max(30, Math.min(110, SUN * ppc * 1.8, H - 170)) : 0;
+    const y = 44 + hBoushi;
+    const hR = 72;
+    // Texte un peu plus grand sur grand écran.
+    el.style.setProperty('--t', `${Math.max(11, Math.min(17, ppc * 0.5))}px`);
+    let t = `<rect class="bois" x="${x0}" y="${y}" width="${L * ppc}" height="${hR}" rx="4"/>`;
+    if (et.surligne) {
+      const fin = et.surligne === 'sun' ? SUN : SUN * 10;
+      t += `<rect class="surligne" x="${x0}" y="${y}" width="${fin * ppc}" height="${hR}"/>`;
+      const texte = et.surligne === 'sun' ? '1すん ≈ 3 cm' : '1しゃく ≈ 30 cm';
+      t += `<text class="titre-sun" x="${Math.max(x0 + 50, x0 + (fin * ppc) / 2)}" y="${y - 8 - hBoushi}">${texte}</text>`;
+    }
+    for (let k = 0; k <= 10; k++) {
+      const x = x0 + k * SUN * ppc;
+      t += `<line x1="${x}" y1="${y}" x2="${x}" y2="${y + 24}"/>`;
+      if (k) t += `<text x="${x - (SUN * ppc) / 2}" y="${y + 20}" class="petit">${k}</text>`;
+    }
+    // Les unités, hors de la règle (elles ne gênent pas les nombres) : すん au-dessus, cm en dessous.
+    t += `<text class="unite-gauche" x="${x0 + L * ppc - 18}" y="${y - 8}">すん</text>`;
+    for (let c = 0; c <= L; c++) {
+      const x = x0 + c * ppc;
+      const grand = c % 5 === 0;
+      if (ppc >= 5 || grand) t += `<line x1="${x}" y1="${y + hR}" x2="${x}" y2="${y + hR - (grand ? 16 : 8)}"/>`;
+      if (grand) t += `<text x="${x}" y="${y + hR - 22}">${c}</text>`;
+    }
+    t += `<text class="unite-gauche" x="${x0 + L * ppc - 14}" y="${y + hR + 18}">cm</text>`;
+    el.innerHTML = `<svg width="${W}" height="${y + hR + 26}" aria-hidden="true">${t}</svg>`;
+    if (et.boushi) {
+      const b = document.createElement('span');
+      b.className = 'boushi';
+      b.textContent = '🧒';
+      b.style.left = `${x0 + (SUN * ppc) / 2}px`;
+      b.style.top = `${y - 2}px`;
+      b.style.fontSize = `${hBoushi * 0.85}px`;
+      el.append(b);
+    }
+    el.geo = { taille: 40, s: 26 };
+    return el;
+  }
+
+  // 「ひろ」 : les bras écartés, à peu près la taille.
+  function creerHiroLecon(W, H) {
+    const el = document.createElement('div');
+    el.className = 'hiro-lecon';
+    const h = Math.max(140, Math.min(H - 10, 320));
+    el.innerHTML = `<svg viewBox="0 0 250 220" height="${h}" aria-hidden="true">`
+      + '<path class="fleche" d="M30 22h170M30 22l8-6M30 22l8 6M200 22l-8-6M200 22l-8 6"/><text x="115" y="14">ひろ</text>'
+      + '<path class="fleche" d="M222 36v174M222 36l-6 8M222 36l6 8M222 210l-6-8M222 210l6-8"/><text x="238" y="128">せ</text>'
+      + '<circle class="personnage" cx="115" cy="50" r="14"/><path class="personnage" d="M115 64v80M30 82h170M115 144l-28 64M115 144l28 64"/>'
+      + '</svg>';
+    el.geo = { taille: 40, s: 26 };
+    return el;
+  }
+
 
   function creerPiece(p, taille, s) {
     const vis = VISUELS[p.v] || { genre: 'chose' };
     if (vis.genre === 'chose') return creerChose(objetChose(p.c || chose(vis.c)), taille);
     const el = document.createElement('span');
+    if (vis.genre === 'yen5') {
+      el.className = 'yen yen5';
+      el.style.width = `${s * 1.3}px`;
+      el.style.height = `${s * 1.3}px`;
+      return el;
+    }
+    if (vis.genre === 'sac') {
+      el.className = 'sac';
+      el.style.width = `${taille * 1.3}px`;
+      el.style.height = `${taille * 1.5}px`;
+      el.style.fontSize = `${Math.max(10, taille * 0.24)}px`;
+      el.textContent = vis.texte;
+      return el;
+    }
+    if (vis.genre === 'gou') {
+      el.className = 'gou';
+      el.style.width = `${s * 1.8}px`;
+      el.style.height = `${s * 1.5}px`;
+      el.style.fontSize = `${Math.max(10, s * 0.38)}px`;
+      el.textContent = '1ごう';
+      return el;
+    }
+    if (vis.genre === 'main') {
+      el.className = 'main-piece';
+      el.style.fontSize = `${s * 1.3 * vis.taille}px`;
+      el.textContent = '✋';
+      return el;
+    }
     if (vis.genre === 'yen') {
       el.className = 'yen';
-      el.style.width = `${s * 0.85}px`;
-      el.style.height = `${s * 0.85}px`;
-      el.style.fontSize = `${Math.max(9, s * 0.4)}px`;
+      el.style.width = `${s * 1.3}px`;
+      el.style.height = `${s * 1.3}px`;
+      el.style.fontSize = `${Math.max(11, s * 0.6)}px`;
       el.textContent = '1';
       return el;
     }
@@ -3417,7 +3876,7 @@
     const et = e.etape;
     zone.replaceChildren();
     const pile = document.createElement('span');
-    pile.className = 'pile';
+    pile.className = 'pile pile-rangees';
     const enlevable = et.retirer && !e.resolu && (et.vers === cote);
     liste.forEach((p) => {
       const piece = creerPiece(p, taille, s);
@@ -3430,8 +3889,20 @@
         el.append(piece);
         activable(el, () => enleverPiece(cote, p.id));
       }
-      if (VISUELS[p.v]?.genre === 'chose' || !VISUELS[p.v]) zone.append(el);
-      else pile.append(el);
+      if (['chose', 'sac'].includes(VISUELS[p.v]?.genre) || !VISUELS[p.v]) {
+        zone.append(el);
+        return;
+      }
+      // Une rangée par sorte de poids, 5 au plus par rangée : 10 = 5 + 5, comme en classe.
+      const rangees = [...pile.querySelectorAll(`.rangee-poids[data-v="${p.v}"]`)];
+      let rangee = rangees.find((r) => r.childElementCount < 5);
+      if (!rangee) {
+        rangee = document.createElement('span');
+        rangee.className = 'rangee-poids';
+        rangee.dataset.v = p.v;
+        pile.prepend(rangee);
+      }
+      rangee.append(el);
     });
     if (pile.childElementCount) zone.prepend(pile);
   }
@@ -3442,10 +3913,15 @@
     const { instrument, reserve } = e.scene;
     const geo = instrument.geo;
     const s = geo.s || Math.max(16, Math.min(30, geo.Pw / 6.5));
-    if (et.hakari) {
+    const scene = sceneDe(et);
+    if (scene === 'hakari') {
       remplirPlateauLecon(instrument.querySelector('.hakari-charge'), e.plateau, 'plateau', geo.taille, s);
-      tournerAiguille(instrument.querySelector('svg'), somme(e.plateau), MAX_HAKARI);
-    } else {
+      tournerAiguille(instrument.querySelector('svg'), somme(e.plateau), geo.max);
+    } else if (scene === 'verre') {
+      instrument.querySelector('.verre .liquide').style.height = `${(somme(e.plateau) / geo.cap) * 100}%`;
+    } else if (scene === 'corps') {
+      majCorpsLecon(instrument, e);
+    } else if (scene === 'balance') {
       [0, 1].forEach((k) => {
         remplirPlateauLecon(instrument.plateaux[k].charge, e.cotes[k], k, geo.taille, s);
         instrument.noms[k].innerHTML = html(nomCote(e.cotes[k]));
@@ -3479,6 +3955,8 @@
     return [compterPieces(liste).map(([v, n]) => {
       const vis = VISUELS[v];
       if (vis.genre === 'yen') return `1えんだま × ${n}`;
+      if (vis.genre === 'yen5') return `5えんだま × ${n}`;
+      if (vis.texte && !vis.unite) return `${vis.texte.replace('匁', 'もんめ')}${n > 1 ? ` × ${n}` : ''}`;
       if (!vis.unite) return `おもり ${n}こ`;
       return `${vis.texte.replace(/(\d)([a-z])/, '$1\u00a0$2')} × ${n}`;
     }).join(' ＋ ')];
@@ -3494,19 +3972,31 @@
   function equationLecon() {
     const e = etude;
     const et = e.etape;
+    const scene = sceneDe(et);
+    if (scene === 'verre') return et.choix ? '' : `<span class="resultat">${somme(e.plateau)}</span> ${uniteHtml('ml')}`;
+    if (scene === 'corps') {
+      return ['teEnfant', 'teAdulte'].map((v) => {
+        const n = e.plateau.filter((p) => p.v === v).length;
+        return n ? `${v === 'teEnfant' ? 'こども' : 'おとな'}の あた <span class="resultat">${n}</span>つ` : '';
+      }).filter(Boolean).join('　');
+    }
+    if (scene !== 'hakari' && scene !== 'balance') return '';
+    if (scene === 'balance' && et.vers !== undefined && e.cotes[et.vers].some((p) => p.v === 'yen5')) {
+      return `5えんだま <span class="resultat">${e.cotes[et.vers].length}</span>こ`;
+    }
     // Balance : seulement le plateau qu'on remplit (rien pendant les explications sans action).
-    const liste = et.hakari ? e.plateau : (et.vers === undefined ? [] : e.cotes[et.vers]);
-    const pieces = compterPieces(liste.filter((p) => VISUELS[p.v] && VISUELS[p.v].genre !== 'chose'));
-    if (!pieces.length) return et.hakari && !et.cache ? `<span class="resultat">${somme(e.plateau)}</span> g` : '';
+    const liste = scene === 'hakari' ? e.plateau : (et.vers === undefined ? [] : e.cotes[et.vers]);
+    const pieces = compterPieces(liste.filter((p) => VISUELS[p.v] && (VISUELS[p.v].unite || VISUELS[p.v].genre === 'yen' || (VISUELS[p.v].genre === 'fundou' && !VISUELS[p.v].texte))));
+    if (!pieces.length) return scene === 'hakari' && !et.cache ? `<span class="resultat">${somme(e.plateau)}</span> ${uniteHtml('g')}` : '';
     if (pieces.every(([v]) => !VISUELS[v].unite && VISUELS[v].genre === 'fundou')) {
       return `おもり <span class="resultat">${pieces[0][1]}</span>こ`;
     }
     const termes = pieces.map(([v, n]) => {
       const u = v === 'yen1' ? 1 : VISUELS[v].unite;
-      return `<span class="terme-plus">${u} g × ${n}</span>`;
+      return `<span class="terme-plus">${nombreUnite(u, 'g')} × ${n}</span>`;
     });
     const total = pieces.reduce((t, [v, n]) => t + (v === 'yen1' ? 1 : VISUELS[v].unite) * n, 0);
-    return `${termes.join(' ＋ ')} ＝ <span class="resultat">${total}</span> g`;
+    return `${termes.join(' ＋ ')} ＝ <span class="resultat">${total}</span> ${uniteHtml('g')}`;
   }
 
   function poserPiece(k) {
@@ -3567,7 +4057,9 @@
       const dispo = e.reserve.filter((r) => r.n > 0).sort((x, y) => y.m - x.m);
       const petit = dispo.find((r) => r.m <= la - ici);
       if (ici < la && dispo.length && dispo[0].m > la - ici && petit) {
-        message = ['あと すこし。 ', ...nomVisuel(petit.v), 'を のせよう。'];
+        message = ['おしい！ もう すこし かな。 ', ...nomVisuel(petit.v), 'を のせて みよう。'];
+      } else if (ici < la && la - ici <= la * 0.1) {
+        message = ['おしい！ もう すこし かな。'];
       } else {
         message = ici < la
           ? ['まだ ', ...nomCote(e.cotes[1 - v]), 'の ほうが ', OMO, 'い。 もっと のせよう。']
@@ -3594,7 +4086,7 @@
     }
     e.essais.add(v);
     sons.oups();
-    const message = ['おしい！ はりの さきを よく ', MI, 'てね。 ', OOKI, 'きい めもりから かぞえよう。'];
+    const message = et.choix.indice || ['おしい！ はりの さきを よく ', MI, 'てね。 ', OOKI, 'きい めもりから かぞえよう。'];
     messageEtude(message);
     parler(message);
     rendreLecon();
@@ -3736,6 +4228,7 @@
       activitesAide: 'Gardez au moins une activité. Commencez par la 1, puis ajoutez les autres quand elle est réussie.',
       nbQuestions: 'Questions par série',
       ecriture: 'Écriture',
+      lireUnites: 'Lecture des unités en petit au-dessus des symboles (グラム sur g, センチ sur cm…)',
       hiragana: 'Hiragana seuls',
       kanji: 'Kanji avec furigana',
       nombreMax: 'べんきょう : nombres jusqu’à',
@@ -3743,7 +4236,7 @@
       etudeAide: 'Dans « べんきょう », votre enfant tire le ruban (n’importe où sur la zone, pas seulement sur la poignée) ou utilise les gros boutons ＋1 / −1. Chaque centimètre ajouté ou retiré apparaît comme un bloc numéroté. Dans « のばして みよう », la poignée bleue sous le ruban change le premier nombre sans changer le second. Avec des nombres plus grands, le geste doit être plus précis.',
       aide: 'Bouton d’aide (ヒント, そろえる)',
       aideAide: 'Activités 6 et 7 : l’aide convertit d’abord dans la même unité (1 m ＝ 100 cm), puis dessine des barres à l’échelle. Activités 8 et 9 : elle fait glisser les objets jusqu’à la ligne de départ. Elle apparaît aussi d’elle-même après une erreur.',
-      aideMV: 'Masses : pour commencer, faites les leçons « てんびんの しくみ » (comment marche la balance, puis des poids identiques : りんごは おもり 3こ ぶん), « おもりと たんい » (1円玉 ＝ 1 g, 10 g, 100 g, 1 kg ＝ 1000 g) et « はかりの よみかた » (l’aiguille d’une balance de cuisine, les graduations). Dans chaque leçon, l’élève pose ou enlève les objets en les touchant, puis la voix explique. « はりで くらべる » compare deux balances de cuisine sans aucun nombre. Masses 5 et 6, liquides 4 et 5 : l’aide convertit d’abord dans la même unité (1 kg ＝ 1000 g, 1 L ＝ 1000 mL), puis montre des balances de cuisine ou des verres doseurs. « みためと ちがう » : l’élève devine d’abord (un gros objet peut être léger), puis la balance vérifie. « うつして くらべよう » : le bouton « うつす » (ou une erreur) verse les deux récipients dans des verres identiques. « つりあわせよう » : des cubes jusqu’à 20 (« つみき なんこ ぶん »), puis des poids en g ; la balance penche moins quand on approche. « はかって いれよう » : on glisse le doigt vers le haut ou le bas ; la taille du verre doseur (200 mL, 500 mL, 1 L) se choisit en haut de l’écran.',
+      aideMV: 'Masses : la balance de cuisine (はかり) est l’instrument principal. « はりで くらべる » compare deux balances sans aucun nombre ; « みためと ちがう » : l’élève devine d’abord (un gros objet peut être léger), puis les balances vérifient ; « はかりを よもう » : lire l’aiguille (centaines, puis 50, puis dizaines). Leçons guidées (l’élève pose ou enlève les objets en les touchant, puis la voix explique) : « はかりの よみかた », « g と kg » (1円玉 ＝ 1 g … 1 kg ＝ 1000 g), puis l’entraînement « はかって みよう ». La rubrique « ね、しっていた？（むかしは…）» rassemble la culture : la balance à plateaux (てんびん, avec son exercice et « つりあわせよう »), 匁 et la pièce de 5 円, et pour les longueurs あた／ひろ et 尺／寸, pour les liquides 合／升. Masses 5 et 6, liquides 4 et 5 : l’aide convertit d’abord dans la même unité (1 kg ＝ 1000 g, 1 L ＝ 1000 mL), puis montre des balances de cuisine ou des verres doseurs. « うつして くらべよう » : le bouton « うつす » (ou une erreur) verse les deux récipients dans des verres identiques. « つりあわせよう » : des cubes jusqu’à 20 (« つみき なんこ ぶん »), puis des poids en g ; la balance penche moins quand on approche. « はかって いれよう » : on glisse le doigt vers le haut ou le bas ; la taille du verre doseur (200 mL, 500 mL, 1 L) se choisit en haut de l’écran.',
       theme_nagasa: 'Longueurs (ながさ)',
       theme_omosa: 'Masses (おもさ)',
       theme_kasa: 'Liquides (かさ)',
@@ -3811,6 +4304,7 @@
       activitesAide: '1つ以上 えらんでください。1から はじめて、できたら ほかの もんだいを ふやしましょう。',
       nbQuestions: '1回の もんだい数',
       ecriture: 'もじ',
+      lireUnites: 'たんいの よみかたを 小さく かく（g の 上に グラム）',
       hiragana: 'ひらがな',
       kanji: '漢字＋ふりがな',
       nombreMax: 'べんきょう：かずの はんい',
@@ -3818,7 +4312,7 @@
       etudeAide: '「べんきょう」では テープを ひっぱるか（どこからでも）、＋1・−1 の ボタンを つかいます。たしたり ひいたり した 1cm ずつが ばんごうつきの ブロックで みえます。「のばして みよう」では テープの 下の あおい ●で さいしょの かずを かえられます（2つめの かずは そのまま）。かずが 大きいと こまかい うごきが ひつようです。',
       aide: 'ヒントの ボタン（ヒント・そろえる）',
       aideAide: '6・7：まず おなじ たんいに なおし（1m＝100cm）、つぎに ぼうで しめします。8・9：ものの はしを そろえます。まちがえたときは じどうで でます。',
-      aideMV: 'おもさ：まず「てんびんの しくみ」（てんびんの つかいかた、おなじ おもりで「りんごは おもり 3こ ぶん」）、「おもりと たんい」（1円玉＝1g、10g、100g、1kg＝1000g）、「はかりの よみかた」（はりの うごき、めもり）の べんきょうを しましょう。ものを さわって のせたり おろしたり すると、こえで せつめいします。「はりで くらべる」は かずの ない はかりで くらべます。おもさ 5・6、かさ 4・5 は まず おなじ たんいに なおし（1kg＝1000g、1L＝1000mL）、つぎに はかりや けいりょうカップで しめします。「みためと ちがう」は まず よそうして（大きくても かるい ものが あります）、てんびんで たしかめます。「うつして くらべよう」は「うつす」ボタン（または まちがい）で おなじ コップに うつします。「つりあわせよう」は 20までは つみき、それより 大きいと g の おもりです。「はかって いれよう」は ゆびを 上下に うごかします。カップの 大きさ（200mL・500mL・1L）は がめんの 上で えらべます。',
+      aideMV: 'おもさ：はかりが 中心です。「はりで くらべる」は すうじの ない はかりで くらべます。「みためと ちがう」は まず よそうして（大きくても かるい ものが あります）、はかりで たしかめます。「はかりを よもう」は はりを よみます。べんきょうでは「はかりの よみかた」「g と kg」（1円玉＝1g … 1kg＝1000g）「はかって みよう」を します。ものを さわって のせたり おろしたり すると、こえで せつめいします。「ね、しっていた？（むかしは…）」には てんびん、もんめ（5円玉）、あた・ひろ、しゃく・すん、ごう・しょうが あります。おもさ 5・6、かさ 4・5 は まず おなじ たんいに なおし（1kg＝1000g、1L＝1000mL）、つぎに はかりや けいりょうカップで しめします。「うつして くらべよう」は「うつす」ボタン（または まちがい）で おなじ コップに うつします。「つりあわせよう」は 20までは つみき、それより 大きいと g の おもりです。「はかって いれよう」は ゆびを 上下に うごかします。カップの 大きさ（200mL・500mL・1L）は がめんの 上で えらべます。',
       theme_nagasa: 'ながさ',
       theme_omosa: 'おもさ',
       theme_kasa: 'かさ',
@@ -4027,6 +4521,7 @@
       groupeActivites(),
       groupeChoix('nbQuestions', t('nbQuestions'), [[4, '4'], [6, '6'], [8, '8']]),
       groupeChoix('ecriture', t('ecriture'), [['hiragana', t('hiragana')], ['kanji', t('kanji')]]),
+      groupeChoix('lireUnites', t('lireUnites'), [[true, t('oui')], [false, t('non')]]),
       groupeChoix('noms', t('noms'), [[true, t('oui')], [false, t('non')]]),
       groupeChoix('court', t('court'), [[true, t('oui')], [false, t('non')]]),
       groupeChoix('aide', t('aide'), [[true, t('oui')], [false, t('non')]]),

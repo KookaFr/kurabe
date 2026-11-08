@@ -22,7 +22,7 @@ Les objets sont alignés sur une ligne de départ et affichés à l'échelle. En
 
 Après chaque bonne réponse, même trouvée du premier coup, l'application montre pourquoi c'est juste : une règle graduée apparaît sous les objets, la longueur de chaque objet s'affiche, la partie qui dépasse est surlignée avec l'écart en cm, et la voix explique (« うえは 15センチ、したは 8センチ。うえの ほうが 7センチ ながいね。 »). Le bouton 🔊 permet de réécouter l'explication.
 
-L'explication rappelle aussi la règle : « ながいのは かずが おおきい ほう » (le plus long, c'est le plus grand nombre), « みじかいのは かずが ちいさい ほう ». Elle s'affiche sous la consigne.
+L'explication rappelle aussi la règle : « ながいのは すうじが おおきい ほう » (le plus long, c'est le plus grand nombre), « みじかいのは すうじが ちいさい ほう ». Elle s'affiche sous la consigne.
 
 ### べんきょう / Apprendre
 
@@ -38,25 +38,38 @@ La limite des nombres (〜10, 〜20, 〜50, 〜100, 〜1000) se choisit en haut 
 - les boutons ＋10 / −10 s'ajoutent (＋10 / ＋100 pour 1000, où l'on compte en dizaines) ;
 - le 2e nombre peut aller jusqu'à la moitié de la limite (37 ＋ 25, 480 ＋ 390…).
 
+### ね、しっていた？（むかしは…）
+
+- からだで はかる: autrefois on mesurait avec le corps ; l'empan (あた) d'un enfant et celui d'un adulte sur le même bureau (6 contre 4) : c'est pour ça qu'on a inventé le cm ; 「ひろ」, les bras écartés, à peu près la taille
+- しゃくと すん: 1 寸 ≈ 3 cm (一寸法師 mesure 1 寸 : 「なん cm くらい？」), 10 寸 ＝ 1 尺 ≈ 30 cm (une règle de 30 cm) ; les charpentiers les utilisent encore
+
 ## おもさ / Masses
 
-Les activités sont numérotées 1, 2, 3… dans chaque onglet.
+Les activités sont numérotées 1, 2, 3… dans chaque onglet. L'instrument principal est la balance de cuisine à cadran (はかり) ; la balance à plateaux est rangée dans « ね、しっていた？ ».
 
 もんだい :
 
-1. どっちが 重い？: deux objets sur une balance à plateaux (上皿てんびん). Elle part à plat, puis penche : 「下がった ほうが 重い」
-2. 見ためと ちがう: deux objets posés sur la table, souvent un gros mais léger (ふうせん) et un petit mais lourd (いし). L'élève devine d'abord, puis la balance vérifie
-3. はりで くらべる: deux balances de cuisine à cadran, **sans aucun nombre** : on compare seulement de combien l'aiguille a tourné (「はりが たくさん まわった ほうが 重い」) ; la preuve colore l'angle parcouru
-4. 一番 重いのは？: trois balances de cuisine, avec des nombres ; l'aiguille la plus avancée montre le plus lourd
+1. はりで くらべる: deux balances de cuisine **sans aucun nombre** : on compare seulement de combien l'aiguille a tourné (「はりが たくさん まわった ほうが 重い」) ; la preuve colore l'angle parcouru
+2. 見ためと ちがう: deux objets posés sur la table, souvent un gros mais léger (ふうせん) et un petit mais lourd (いし). L'élève devine d'abord, puis deux balances de cuisine vérifient
+3. 一番 重いのは？: trois balances de cuisine ; l'aiguille la plus avancée montre le plus lourd
+4. はかりを よもう: un objet sur une balance de cuisine, 「〇〇の 重さは なん g？」, trois réponses au choix ; d'abord des centaines, puis des 50, puis des dizaines (toujours proches du vrai poids de l'objet)
 5. g で くらべる: deux masses écrites en g (300 g / 250 g), avec des pièges comme 350 g / 530 g
 6. kg と g: 1 kg / 800 g. « ヒント » convertit (1 kg ＝ 1000 g), puis montre deux balances de cuisine
 
 べんきょう (leçons guidées : une consigne lue, l'élève touche les objets pour les poser ou les enlever, puis la voix explique ; つぎへ passe à l'étape suivante) :
 
-7. てんびんの しくみ: à quoi sert la balance ; une pomme posée → ce plateau descend ; deux pommes → 「つりあう」 ; pomme contre fraise → 「下がった ほうが 重い、上がった ほうが 軽い」 ; on inverse les côtés ; puis des poids identiques : 「りんごは おもり 3こ ぶん」, 「ボールは 5こ ぶん」 → 5 est plus grand que 3, la balle est plus lourde
-8. おもりと たんい: 1円玉 ＝ 1 g ; dix 1円玉 équilibrent 10 g ; dix 10 g équilibrent 100 g ; peser une pomme avec des poids de 100 g et 10 g (320 g) ; dix 100 g ＝ 1 kg ＝ 1000 g. Quand le plus gros poids dépasserait, la voix conseille un plus petit
-9. つりあわせよう: entraînement — un objet sur un plateau ; on pose des cubes (つみき, jusqu'à 20 : « つみき なんこ ぶん ») ou des poids de 1 / 10 g ou 10 / 100 g sur l'autre, jusqu'à l'équilibre. Elle penche moins quand on approche. Les objets ont leur vrai poids, à 15 % près
-10. はかりの よみかた: une balance de cuisine de 500 g ; on pose des poids de 100 g un par un et l'aiguille tourne de plus en plus ; on les enlève et elle revient à 0 ; les petites graduations (10 g) ; lire 「はりは なん g？」 (trois réponses au choix) ; puis poser les poids pour que l'aiguille montre une masse donnée
+7. はかりの よみかた: une balance de cuisine de 500 g ; on pose des poids de 100 g un par un et l'aiguille tourne de plus en plus ; on les enlève et elle revient à 0 ; les petites graduations (10 g) ; lire 「はりは なん g？」 ; puis poser les poids pour que l'aiguille montre une masse donnée
+8. g と kg: sur la balance de cuisine : un 1円玉 (1 g) fait à peine bouger l'aiguille ; dix 1円玉 ＝ 10 g ; dix 10 g ＝ 100 g ; cinq 100 g ＝ 500 g ; sur une balance de 2 kg, dix 100 g ＝ 1000 g ＝ 1 kg ; un sac de riz de 1 kg
+9. はかって みよう: entraînement — poser des poids de 100 g et 10 g pour que l'aiguille montre la masse demandée (« あと 30 g », « 重すぎ！ »)
+
+ね、しっていた？（むかしは…） :
+
+10. てんびん: la balance à plateaux (むかしの はかり, encore utilisée en sciences) : poser une pomme, 「つりあう」, 「下がった ほうが 重い」, inverser les côtés ; des poids identiques (この りんごは おもり 3こ ぶん) ; puis calculer : 1 poids ＝ 100 g, donc 100 ＋ 100 ＋ 100 ＝ 300 g (ou 100 × 3) ; la balle (500 g) ; une autre pomme pesée avec des poids de 100 g et 10 g (320 g : 「りんごに よって 重さは ちがう」) ; quand c'est presque équilibré, 「おしい！ もう すこし かな」
+11. てんびんで くらべる: lequel est le plus lourd sur la balance à plateaux
+12. つりあわせよう: équilibrer avec des cubes (つみき, jusqu'à 20 : « つみき なんこ ぶん ») ou des poids de 1 / 10 g ou 10 / 100 g ; la balance penche moins quand on approche
+13. もんめと 5えんだま: l'ancienne unité 匁 ; la pièce de 5円 pèse exactement 1 匁 (3,75 g) ; dix pièces équilibrent 10 匁 ; 1000 匁 ＝ 1 貫 ; les perles se pèsent encore en 匁
+
+Les poids posés s'alignent par rangées de 5 (10 ＝ 5 ＋ 5), une rangée par sorte de poids.
 
 ## かさ / Liquides
 
@@ -68,7 +81,11 @@ Les activités sont numérotées 1, 2, 3… dans chaque onglet.
 
 べんきょう : 6. はかって いれよう — remplir un verre doseur gradué jusqu'à la quantité demandée, en glissant le doigt vers le haut ou le bas, ou avec les boutons. Ensuite, le verre contient déjà du liquide : on ajoute ou on en enlève (« いま 120 mL。200 mL に しよう »). La taille du verre doseur (200 mL, 500 mL, 1 L) se choisit en haut de l'écran.
 
-Comme pour les longueurs, chaque bonne réponse est suivie d'une preuve (masses en g sur les plateaux, niveau le plus bas tracé sur les verres avec la quantité en plus) et de la règle : « 重いのは 数が 大きい ほう », « 少ないのは 数が 小さい ほう ».
+ね、しっていた？ : 7. ごうと しょう — la mesure du riz, toujours utilisée : verser des 1合 (180 mL) dans un verre doseur ; 2合 ＝ 360 mL (「おこめを 2ごう たく」) ; 3合 ＝ ? ; 10合 ＝ 1升 ＝ 1,8 L (一升瓶).
+
+Comme pour les longueurs, chaque bonne réponse est suivie d'une preuve (masses en g, niveau le plus bas tracé sur les verres avec la quantité en plus) et de la règle : « 重いのは 数字が 大きい ほう », « 少ないのは 数字が 小さい ほう ». On parle de 「すうじ」 (le nombre qu'on lit sur la règle, la balance ou l'étiquette) plutôt que de 「かず」, qui évoque d'abord le nombre d'objets qu'on compte ; quand les unités sont différentes (1 kg et 900 g), le rappel précise 「おなじ たんいなら」.
+
+Les unités ont leur lecture en petit au-dessus, comme des furigana : グラム sur g, キログラム sur kg, ミリリットル sur mL, リットル sur L, センチ sur cm, メートル sur m (réglable dans l'espace parents).
 
 ## おうちの人へ / Pour les parents
 

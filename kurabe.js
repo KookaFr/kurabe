@@ -2922,6 +2922,28 @@
 
   /* ----- Leçons かず : le cadre de 10, les dizaines, les centaines ----- */
 
+  // « 235を つくろう » : on guide sorte par sorte, de la plus grande à la plus petite.
+  // Trop : on dit laquelle enlever (100の いた, 10の まとまり ou ●), et la démonstration enlève celle-là.
+  // Après avoir enlevé : « 100の いたは これで いいね。 こんどは 10の まとまりを のせよう。 »
+  // (m.cle : l'état, pour ne le dire qu'une fois ; m.retirer : la sorte à enlever.)
+  const guideComposition = (cible) => (e) => {
+    const nb = (v) => e.plateau.filter((x) => x.v === v).length;
+    const [c, d, u] = [nb('cent'), nb('dix'), nb('pion')];
+    const [tc, td, tu] = [Math.floor(cible / 100), Math.floor((cible % 100) / 10), cible % 10];
+    const avec = (m, cle, retirer) => Object.assign(m, { cle, retirer });
+    if (somme(e.plateau) > cible) {
+      if (c > tc) return avec(['おおすぎ！ 100の いたが おおいよ。 さわって おろそう。'], 'trop-cent', 'cent');
+      if (d > td) return avec(['おおすぎ！ 10の まとまりが おおいよ。 さわって おろそう。'], 'trop-dix', 'dix');
+      return avec(['おおすぎ！ ●が おおいよ。 さわって おろそう。'], 'trop-un', 'pion');
+    }
+    // Tant que l'élève n'a rien enlevé, on le laisse faire (seule la voix compte).
+    if (!e.guide) return null;
+    if (c < tc) return avec(['100の いたを のせよう。'], 'plus-cent');
+    if (d < td) return avec([tc ? '100の いたは これで いいね。 ' : '', 'こんどは 10の まとまりを のせよう。'], 'plus-dix');
+    if (u < tu) return avec([td ? '10の まとまりも これで いいね。 ' : tc ? '100の いたは これで いいね。 ' : '', 'こんどは ●を のせよう。'], 'plus-un');
+    return null;
+  };
+
   const parlerNombre = (n) => parler(yomiNombre(n));
 
   function etapesKazu1() {
@@ -2957,7 +2979,7 @@
         dire: ['●を 8こ のせよう。'],
         scene: 'compte', cadre: true, contenu: [], reserve: [un(10)], vers: 'plateau', retirer: true, compter: true, cache: true,
         fini: (e) => total(e) === 8,
-        pendant: (e) => (total(e) < 8 ? null : ['おおすぎ！ ●を さわって おろそう。']),
+        pendant: guideComposition(8),
         bravo: [ecrit('8！ '), '「はち」。 10まで あと 2つ。'],
       },
     ];
@@ -2975,7 +2997,7 @@
       {
         dire: ['10の まとまりの よこに ●を のせて、 13に しよう。'],
         scene: 'compte', cadre: true, contenu: [dix(1)], reserve: [un(9)], vers: 'plateau', retirer: true, compter: true,
-        fini: (e) => total(e) === 13, pendant: (e) => (total(e) < 13 ? null : ['おおすぎ！ ●を さわって おろそう。']),
+        fini: (e) => total(e) === 13, pendant: guideComposition(13),
         bravo: ['10と 3で ', ecrit('13。 '), '「じゅうさん」。'],
       },
       {
@@ -2993,7 +3015,7 @@
         dire: ['34を つくろう。 10の まとまりと ●を つかってね。'],
         scene: 'compte', cadre: true, contenu: [], reserve: [dix(5), un(9)], vers: 'plateau', retirer: true, compter: true,
         fini: (e) => total(e) === 34,
-        pendant: (e) => (total(e) > 34 ? ['おおすぎ！ さわって おろそう。'] : null),
+        pendant: guideComposition(34),
         bravo: ['10が 3つで 30、 ●が 4つで 4。 ', ecrit('34、 '), '「さんじゅうよん」。'],
       },
       {
@@ -3028,7 +3050,7 @@
         dire: ['235を つくろう。'],
         scene: 'compte', contenu: [], reserve: [cent(4), dix(9), un(9)], vers: 'plateau', retirer: true, compter: true,
         fini: (e) => total(e) === 235,
-        pendant: (e) => (total(e) > 235 ? ['おおすぎ！ さわって おろそう。'] : null),
+        pendant: guideComposition(235),
         bravo: ['100が 2つ、 10が 3つ、 ●が 5つ。 ', ecrit('235、 '), '「にひゃく さんじゅう ご」。'],
       },
       {
@@ -4660,6 +4682,7 @@
     e.resolu = !et.fini && !et.choix;
     e.essais = new Set();
     e.etatLecon = null;
+    e.guide = false;
     e.vu = false;
     messageEtude([]);
     rendreLecon();
@@ -4670,7 +4693,7 @@
 
   // Montrer comment enlever : un doigt touche la dernière pièce posée, elle descend vers la table…
   // puis revient à sa place (ce n'est qu'un exemple ; c'est à l'élève de le faire).
-  function montrerRetrait() {
+  function montrerRetrait(sorte) {
     const e = etude;
     const et = e.etape;
     const liste = et.vers === 'plateau' || et.vers === undefined ? e.plateau : e.cotes[et.vers];
@@ -4679,7 +4702,7 @@
     const plan = $('etude-plan');
     let elements;
     if (sceneDe(et) === 'compte') {
-      const sel = { cent: '.plaque100', dix: '.cadre10.dix', pion: '.cadre10:not(.dix) i.plein' }[dernier.v];
+      const sel = { cent: '.plaque100', dix: '.cadre10.dix', pion: '.cadre10:not(.dix) i.plein' }[sorte || dernier.v];
       elements = sel ? plan.querySelectorAll(`.compte-plateau ${sel}`) : [];
     } else {
       elements = plan.querySelectorAll('.piece-bouton');
@@ -5173,6 +5196,7 @@
     const i = liste.findIndex((p) => p.id === id);
     if (i < 0) return;
     const [p] = liste.splice(i, 1);
+    e.guide = true;   // l'élève a enlevé : on peut lui dire quoi poser ensuite
     const r = e.reserve.find((x) => x.v === p.v && x.m === p.m);
     if (r) r.n += 1;
     else e.reserve.push({ v: p.v, c: p.c, m: p.m, n: 1 });
@@ -5240,11 +5264,11 @@
     const cle = lecture(message);
     messageEtude(message);
     // On ne répète à voix haute que quand la situation change (trop léger → trop lourd…).
-    const etat = cle.slice(0, 3);
+    const etat = message.cle || cle.slice(0, 3);
     if (etat !== e.etatLecon) {
       parler(compte ? [...compte, '。 ', ...message] : message);
       // « …さわって おろそう » : on montre le geste une fois.
-      if (cle.includes('おろそう')) montrerRetrait();
+      if (cle.includes('おろそう')) montrerRetrait(message.retirer);
     }
     else if (compte) parler(compte);
     e.etatLecon = etat;

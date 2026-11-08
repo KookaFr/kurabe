@@ -12,7 +12,7 @@ Le premier onglet : compter et lire les nombres (programme « 数の学習 »). 
 
 1. いくつ？: compter des objets (jusqu'à 5, puis 10), d'abord en rangées de 5, puis en désordre. La question utilise le **compteur** de la chose : « いぬは なんびき？ », « えんぴつは なんぼん？ », « りんごは なんこ？ », « くるまは なんだい？ » (en japonais, « いくつ » ne convient pas à tout : on ne compte pas des chiens ou des voitures avec いくつ). Les réponses montrent le nombre avec son compteur et sa vraie lecture (3びき さんびき, 1ぽん いっぽん) ; la preuve numérote les objets dans l'ordre et la voix compte « いち、に、さん… »
 2. よみかた: un chiffre → choisir sa lecture en hiragana, puis l'inverse (「にじゅうさん」 → 23) ; 1 à 10, puis 11 à 20, puis jusqu'à 99 (pièges : 13 / 31) ; les autres lectures sont rappelées (4 し, 7 しち, 9 く). L'aide **décompose** le nombre : 16 ＝ 10 と 6, 「じゅう」 et 「ろく」 (ou 「じゅうろく」 ＝ 「じゅう」 ＋ 「ろく」 ＝ 10 et 6), avec les cadres et une légende sous chaque partie
-3. 10の まとまり: des jetons rangés dans des cadres de 10 (2 rangées de 5) ; compter les dizaines puis le reste. L'aide apprend à compter par 10 : sous chaque cadre plein s'écrit 10, 20, 30… et la voix dit « じゅう、にじゅう、さんじゅう… », puis « ばら » pour le reste
+3. 10の まとまり: des jetons rangés dans des cadres de 10 (2 rangées de 5) ; compter les dizaines puis le reste. Avant la 1re question, un **exemple guidé** (« れい ») relie la consigne au dessin : un cadre plein, c'est 10 (les ● se numérotent 1 à 10 pendant que la voix compte) ; on compte les cadres 10, 20 ; puis les « ばら » 21, 22, 23 ; ぜんぶで 23. つぎへ avance, とばす saute l'exemple (réglable dans l'espace parents). L'aide apprend à compter par 10 : sous chaque cadre plein s'écrit 10, 20, 30… et la voix dit « じゅう、にじゅう、さんじゅう… », puis « ばら » pour le reste
 4. どっちが 大きい？: comparer deux nombres (1 à 10, puis jusqu'à 100 avec 12 / 21, 39 / 41) ; l'aide et la preuve montrent les dizaines et les ばら de chaque nombre
 5. かぞえかた (les compteurs, 助数詞) : d'abord « いぬは どう かぞえる？ » — choisir entre 2ひき, 2ほん, 2こ… (いきもの → ひき, ほそながい もの → ほん, ちいさい もの → こ, うすい もの → まい, のりもの → だい, ひと → にん, ほん・ノート → さつ) ; ensuite la bonne lecture quand le son change : « えんぴつは なんぼん？ » → いっぽん / いちほん / いちぽん, さんぼん, ろっぽん, はっぽん, じゅっぽん ; いっぴき, さんびき ; いっこ, はっこ ; ひとり, ふたり, よにん. Les fausses lectures proposées sont les confusions courantes (さんほん, はちほん). L'aide rappelle la règle de chaque compteur proposé, ou fait compter ensemble (いっぽん、にほん…、つぎは？). Dans l'espace parents, on choisit les compteurs travaillés (こ, ひき, ほん au départ ; まい, だい, にん, さつ en plus) ; « いくつ？ » n'utilise alors que des choses comptées avec eux.
 
@@ -22,7 +22,7 @@ Les dizaines sont partout des **cadres de 10 pleins** (« 10の まとまり »)
 
 べんきょう (leçons guidées ; la voix dit le nombre à chaque jeton posé ou enlevé) :
 
-6. 1から 10まで: le cadre de 10 ; poser les jetons un par un jusqu'à 10 ; 5 ご, la rangée du haut ; 4 よん / し, 7 なな / しち, 9 きゅう / く ; tout enlever → 0 ぜろ ; 「いくつ？」 ; poser 8 jetons
+6. 1から 10まで: le cadre de 10 ; poser les jetons un par un jusqu'à 10 ; 5 ご, la rangée du haut ; 4 よん / し, 7 なな / しち, 9 きゅう / く ; tout enlever → 0 ぜろ ; 「いくつ？」 (après une erreur, la rangée du haut descend sous le cadre, en gros, et se compte 1 à 5 : « 5の まとまり ＋ ？ » ; une fois trouvé, 6, 7) ; poser 8 jetons
 7. 10より 大きい かず: le cadre plein, c'est « 10の まとまり » ; 10 et 3 → 13 ; 17 ; compter de 10 en 10 jusqu'à 100 (10, 20, 30… sous les cadres) ; fabriquer 34 avec des 10の まとまり et des jetons ; lire 52
 8. 100より 大きい かず: 10 « 10の まとまり » → une plaque de 100 ; compter de 100 en 100 jusqu'à 900 (さんびゃく, ろっぴゃく, はっぴゃく) ; fabriquer 235 ; lire 408 (le 0 des dizaines) ; 10 plaques → 1000 せん
 

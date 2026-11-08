@@ -1647,6 +1647,24 @@ mark { background: none; color: var(--o5); }
 .cadre-groupe { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .cadre-groupe b { font-size: max(14px, calc(var(--c, 18px) * .6)); font-variant-numeric: tabular-nums; }
 .zone-dizaines.serre { gap: 4px; }
+/* Exemple guidé (れい) : les numéros dans les ●, les étiquettes 10, 20 au rythme de la voix. */
+.cadre10 i.plein:has(b) { display: grid; place-items: center; }
+.cadre10 i b { font-size: calc(var(--c, 18px) * .5); font-weight: 800; line-height: 1; color: #2b1702; animation: apparaitre .3s ease both; }
+.zone-exemple .cadre-groupe > b { animation: apparaitre .35s ease both; }
+.exemple { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.total-exemple { font-size: clamp(2.2rem, 8vw, 3.4rem); }
+.total-exemple .nb-yomi { font-size: .5em; }
+
+/* 「5の まとまり」 : la rangée du haut descend sous le cadre, en gros, comptée 1 à 5 ; puis ＋ ？ */
+.aide-cinq { display: flex; align-items: center; justify-content: center; gap: calc(var(--c, 18px) * .5); animation: descendre .6s ease both; }
+.aide-cinq > span { position: relative; display: flex; align-items: center; gap: calc(var(--c, 18px) * .25); padding: 5px 8px 1.5em; border-radius: 14px; }
+.aide-cinq .groupe-cinq { border: 3px solid var(--o5); }
+.aide-cinq i { display: grid; place-items: center; width: calc(var(--c, 18px) * 1.35); height: calc(var(--c, 18px) * 1.35); border-radius: 50%; border: 2px solid color-mix(in srgb, var(--o5) 70%, var(--encre)); background: var(--o5); }
+.aide-cinq i b { font-size: calc(var(--c, 18px) * .72); font-weight: 800; line-height: 1; color: #2b1702; animation: apparaitre .3s ease both; }
+.aide-cinq small { position: absolute; left: 0; right: 0; bottom: 2px; text-align: center; font-size: .95rem; font-weight: 700; color: var(--encre-douce); white-space: nowrap; }
+.aide-cinq .signe { font-size: calc(var(--c, 18px) * 1.2); padding-bottom: 1em; }
+.compte-lecon:has(.aide-cinq) .cadre10 i.plein:nth-child(-n+5) { box-shadow: 0 0 0 3px var(--o5); }
+@keyframes descendre { from { opacity: 0; transform: translateY(calc(var(--c, 18px) * -3)) scale(.6); } }
 .zone-dizaines.serre .cadre-groupe b { font-size: 11px; line-height: 1.1; }
 .zone-dizaines .cadre10 { grid-template-columns: repeat(5, var(--c)); grid-auto-rows: var(--c); }
 
@@ -1798,6 +1816,9 @@ mark { background: none; color: var(--o5); }
   /* かず : réponses l'une sous l'autre ; la colonne de gauche s'élargit, le nombre prend moins de place. */
   #ecran-question.q-kazu { grid-template-columns: minmax(250px, 46%) 1fr; }
   #ecran-question.q-kazu { row-gap: 5px; }
+  /* Leçons : les nombres à choisir sur une ligne (empilés, ils recouvraient l'explication). */
+  .choix-lecon { flex-wrap: nowrap; gap: 6px; }
+  .btn-choix-lecon { flex: 1 1 0; min-width: 0; min-height: 46px; padding: 0 .2em; font-size: 1.2rem; }
   #ecran-question > .choix-mots.choix-liste { flex-direction: column; flex-wrap: nowrap; gap: 5px; }
   .choix-liste .btn { flex: none; width: 100%; min-height: 37px; padding-block: 0; font-size: 1.22rem; }
   /* L'explication à côté du bouton (わからない, つぎへ) : la colonne tient dans la hauteur. */

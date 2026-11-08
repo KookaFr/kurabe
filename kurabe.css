@@ -1623,8 +1623,19 @@ body.mode-lecture button:not(.btn-lire):not([hidden]) {
 .cadre10 i.plein { border-color: color-mix(in srgb, var(--o5) 70%, var(--encre)); background: var(--o5); }
 /* « ● » dans les consignes et les explications : l'orange des jetons, pas un rond noir (ou blanc en mode sombre). */
 mark { background: none; color: var(--o5); }
-/* « 10の まとまり » : un cadre de 10 plein, à peine plus marqué. */
-.cadre10.dix { border-color: color-mix(in srgb, var(--o5) 55%, var(--encre)); }
+/* « 10の まとまり » : un cadre de 10 plein, en bleu clair (みずいろ) ; les ばら restent orange, les 100 violets. */
+.cadre10.dix { border-color: color-mix(in srgb, var(--o2) 60%, var(--encre)); }
+.cadre10.dix i.plein { background: color-mix(in srgb, var(--o2) 78%, #fff); border-color: color-mix(in srgb, var(--o2) 75%, var(--encre)); }
+/* Chaque chiffre souligné de la couleur de son groupe : 100 violet, 10 bleu clair, 1 orange, 1000 vert. */
+.place { display: inline-block; margin: 0 .025em; padding-bottom: .03em; border-bottom: .11em solid transparent; line-height: 1.05; }
+.place-c { border-color: var(--o4); }
+.place-d { border-color: color-mix(in srgb, var(--o2) 78%, #fff); }
+.place-u { border-color: var(--o5); }
+.place-m { border-color: var(--o3); }
+/* La légende : le nombre de chaque groupe dans sa couleur (100 violet, 10 bleu, ばら orange). */
+.legende-c b { color: var(--o4); }
+.legende-d b { color: color-mix(in srgb, var(--o2) 85%, var(--encre)); }
+.legende-u b { color: var(--o5); }
 /* Légende sous chaque groupe : « 10の まとまり 4つ / 40 よんじゅう », « ばら 4つ / 4 よん ». */
 .blocs-groupe { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .blocs.avec-legende { flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 12px 24px; }

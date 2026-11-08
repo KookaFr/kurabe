@@ -893,7 +893,7 @@
           + `<text x="115" y="44" style="${texte};font-size:26px">なな</text>`;
       case 'k-dizaines':
         return [0, 1, 2].map((k) => `<rect x="${12 + k * 60}" y="16" width="52" height="22" rx="3" style="fill:var(--o2)"/>`).join('')
-          + '<circle cx="200" cy="27" r="6" style="fill:var(--o3)"/><circle cx="216" cy="27" r="6" style="fill:var(--o3)"/>'
+          + '<circle cx="200" cy="27" r="6" style="fill:var(--o5)"/><circle cx="216" cy="27" r="6" style="fill:var(--o5)"/>'
           + `<text x="80" y="60" style="${texte};font-size:18px">10 10 10 ＋ 2</text>`;
       case 'k-compteur':
         return [0, 1, 2].map((k) => `<text x="${8 + k * 30}" y="44" style="font-size:24px">🐟</text>`).join('')
@@ -905,7 +905,7 @@
           + `<text x="170" y="46" style="${texte};font-size:30px">7</text>`;
       case 'k-lecon2':
         return [0, 1, 2].map((k) => `<rect x="${6 + k * 38}" y="14" width="34" height="26" rx="3" style="fill:none;stroke:var(--encre-douce);stroke-width:1.5"/>`
-          + Array.from({ length: 10 }, (_, j) => `<circle cx="${11 + k * 38 + (j % 5) * 6}" cy="${21 + Math.floor(j / 5) * 12}" r="2.6" style="fill:var(--o5)"/>`).join('')).join('')
+          + Array.from({ length: 10 }, (_, j) => `<circle cx="${11 + k * 38 + (j % 5) * 6}" cy="${21 + Math.floor(j / 5) * 12}" r="2.6" style="fill:var(--o2)"/>`).join('')).join('')
           + '<circle cx="128" cy="34" r="5" style="fill:var(--o5)"/><circle cx="142" cy="34" r="5" style="fill:var(--o5)"/>'
           + `<text x="162" y="44" style="${texte};font-size:28px">32</text>`;
       case 'k-lecon3':
@@ -2342,7 +2342,14 @@
   }
 
   // Un nombre en chiffres, avec sa lecture en hiragana dessous.
-  const nombreYomi = (n, classe = '') => `<span class="nb ${classe}"><span class="nb-chiffre">${n}</span><span class="nb-yomi">${yomiNombre(n)}</span></span>`;
+  // Chaque chiffre souligné de la couleur de son groupe : centaines en violet (100の いた), dizaines en
+  // bleu clair (10の まとまり), unités en orange (●), milliers en vert. Un indice pour lire et écrire les nombres.
+  const PLACES = ['u', 'd', 'c', 'm'];
+  const chiffresColores = (n) => {
+    const t = String(n);
+    return [...t].map((ch, i) => `<span class="place place-${PLACES[t.length - 1 - i] || 'm'}">${ch}</span>`).join('');
+  };
+  const nombreYomi = (n, places = false) => `<span class="nb"><span class="nb-chiffre">${places ? chiffresColores(n) : n}</span><span class="nb-yomi">${yomiNombre(n)}</span></span>`;
 
   /* ----- Les compteurs (助数詞) : en japonais, on ne compte pas tout avec 「いくつ」.
      Une chose se compte avec son compteur, et la question change avec lui (いぬは なんびき？).
@@ -2659,22 +2666,22 @@
   // legende : sous chaque groupe, « 10の まとまり 4つ / 40 よんじゅう », « ばら 4つ / 4 よん » (yomi : avec la lecture).
   function htmlBlocs(n, { cadreVide = false, etiquettes = false, parties = null, compte = false, legende = false, yomi = true } = {}) {
     const { c, d, u } = parties || { c: Math.floor(n / 100), d: Math.floor((n % 100) / 10), u: n % 10 };
-    const legendeDe = (nom, combien, valeur) => (legende
-      ? `<span class="legende-blocs"><small>${nom} ${combien}つ</small><span class="legende-valeur"><b>${valeur}</b>${yomi ? `<span class="nb-yomi">${yomiNombre(valeur)}</span>` : ''}</span></span>`
+    const legendeDe = (nom, combien, valeur, place) => (legende
+      ? `<span class="legende-blocs"><small>${nom} ${combien}つ</small><span class="legende-valeur legende-${place}"><b>${valeur}</b>${yomi ? `<span class="nb-yomi">${yomiNombre(valeur)}</span>` : ''}</span></span>`
       : '');
     let h = `<span class="blocs${legende ? ' avec-legende' : ''}">`;
     if (c) {
-      h += `<span class="blocs-groupe"><span class="blocs-rang">${'<span class="plaque100"></span>'.repeat(c)}${etiquettes ? `<b class="ba">100 × ${c}</b>` : ''}</span>${legendeDe('100の いた', c, c * 100)}</span>`;
+      h += `<span class="blocs-groupe"><span class="blocs-rang">${'<span class="plaque100"></span>'.repeat(c)}${etiquettes ? `<b class="ba">100 × ${c}</b>` : ''}</span>${legendeDe('100の いた', c, c * 100, 'c')}</span>`;
     }
     if (d) {
       const dizaines = Array.from({ length: d }, (_, k) => (compte
         ? `<span class="cadre-groupe">${htmlCadre(10, 'dix')}<b>${(k + 1) * 10}</b></span>`
         : htmlCadre(10, 'dix'))).join('');
-      h += `<span class="blocs-groupe"><span class="blocs-rang">${dizaines}${etiquettes ? `<b class="ba">10 × ${d}</b>` : ''}</span>${legendeDe('10の まとまり', d, d * 10)}</span>`;
+      h += `<span class="blocs-groupe"><span class="blocs-rang">${dizaines}${etiquettes ? `<b class="ba">10 × ${d}</b>` : ''}</span>${legendeDe('10の まとまり', d, d * 10, 'd')}</span>`;
     }
     if (u || cadreVide) {
       const cadres = Math.max(1, Math.ceil(u / 10));
-      h += `<span class="blocs-groupe"><span class="blocs-rang">${Array.from({ length: cadres }, (_, k) => htmlCadre(Math.min(10, u - k * 10))).join('')}${etiquettes && u ? `<b class="ba">1 × ${u}</b>` : ''}</span>${u ? legendeDe('ばら', u, u) : ''}</span>`;
+      h += `<span class="blocs-groupe"><span class="blocs-rang">${Array.from({ length: cadres }, (_, k) => htmlCadre(Math.min(10, u - k * 10))).join('')}${etiquettes && u ? `<b class="ba">1 × ${u}</b>` : ''}</span>${u ? legendeDe('ばら', u, u, 'u') : ''}</span>`;
     }
     return `${h}</span>`;
   }
@@ -2755,9 +2762,10 @@
     } else if (q.type === 'lire') {
       const carte = document.createElement('div');
       carte.className = 'carte-nombre';
+      const chiffres = q.preuve || aide ? chiffresColores(q.valeur) : q.valeur;
       const tete = q.sens === 'chiffre'
-        ? `<span class="nb-chiffre">${q.valeur}</span>${q.preuve ? `<span class="nb-yomi">${yomiNombre(q.valeur)}</span>` : ''}`
-        : `<span class="nb-yomi grand">${yomiNombre(q.valeur)}</span>${q.preuve ? `<span class="nb-chiffre">${q.valeur}</span>` : ''}`;
+        ? `<span class="nb-chiffre">${chiffres}</span>${q.preuve ? `<span class="nb-yomi">${yomiNombre(q.valeur)}</span>` : ''}`
+        : `<span class="nb-yomi grand">${yomiNombre(q.valeur)}</span>${q.preuve ? `<span class="nb-chiffre">${chiffres}</span>` : ''}`;
       carte.innerHTML = `<span class="carte-tete">${tete}</span>`;
       // Aide et preuve : le nombre décomposé (10の まとまり / ばら), avec la lecture de chaque partie.
       if (q.preuve || aide) {
@@ -2829,7 +2837,7 @@
         const b = document.createElement('button');
         b.type = 'button';
         b.className = 'carte-nombre choix-comparer';
-        b.innerHTML = nombreYomi(v) + (q.preuve || aide ? htmlBlocs(v, { legende: v >= 10, yomi: false }) : '');
+        b.innerHTML = nombreYomi(v, q.preuve || aide) + (q.preuve || aide ? htmlBlocs(v, { legende: v >= 10, yomi: false }) : '');
         cible(b, k, `${yomiNombre(v)}`);
         rangee.append(b);
       });
@@ -2858,7 +2866,7 @@
           label = v;
         } else {
           b.innerHTML = q.type === 'lire' && q.sens === 'chiffre' ? `<span class="nb-yomi">${yomiNombre(v)}</span>`
-            : q.type === 'lire' ? `<span class="nb-chiffre">${v}</span>` : nombreYomi(v);
+            : q.type === 'lire' ? `<span class="nb-chiffre">${q.aide || q.preuve ? chiffresColores(v) : v}</span>` : nombreYomi(v, q.type === 'dizaines' && (q.aide > 0 || q.preuve));
         }
         cible(b, v, label);
         choix.append(b);
@@ -2915,7 +2923,7 @@
     if (et.total) {
       const total = document.createElement('div');
       total.className = 'total-exemple';
-      total.innerHTML = nombreYomi(et.total);
+      total.innerHTML = nombreYomi(et.total, true);
       bloc.append(total);
     }
   }
@@ -2991,7 +2999,7 @@
     const dix = (n) => P('dix', 10, n);
     return [
       {
-        dire: [ecrit('10は '), '「じゅう」。 10の わくが いっぱいに なったら、 それが 「10の まとまり」。 10、 20、 30と、 10ずつ かぞえられるよ。'],
+        dire: [ecrit('10は '), '「じゅう」。 10の わくが いっぱいに なったら、 それが 「10の まとまり」。 10の まとまりは みずいろで かくよ。 10、 20、 30と、 10ずつ かぞえられるよ。'],
         scene: 'compte', contenu: [dix(1)],
       },
       {
@@ -3025,7 +3033,7 @@
         bravo: ['10が 5つで 50、 ●が 2つで 2。 ', ecrit('52、 '), '「ごじゅうに」。'],
       },
       {
-        dire: ['まとめ： ひだりの ', SUJI, 'は 10の まとまりの かず、 みぎの ', SUJI, 'は ●の かず。 34は 10が 3つと ●が 4つ。'],
+        dire: ['まとめ： ひだりの ', SUJI, '（みずいろの せん）は 10の まとまりの かず、 みぎの ', SUJI, '（オレンジの せん）は ●の かず。 34は 10が 3つと ●が 4つ。'],
         scene: 'compte', contenu: [dix(3), un(4)], etiquettes: true,
       },
     ];
@@ -3065,7 +3073,7 @@
         bravo: [ecrit('1000！ '), '「せん」。 100が 10こで 1000。'],
       },
       {
-        dire: ['まとめ： ', SUJI, 'は ひだりから 100の かず、 10の かず、 ●の かず。 ', ecrit('235は '), '「にひゃく さんじゅう ご」。'],
+        dire: ['まとめ： ', SUJI, 'は ひだりから 100の かず（むらさき）、 10の かず（みずいろ）、 ●の かず（オレンジ）。 ', ecrit('235は '), '「にひゃく さんじゅう ご」。'],
         scene: 'compte', contenu: [cent(2), dix(3), un(5)], etiquettes: true,
       },
     ];
@@ -3087,7 +3095,7 @@
     const cache = et.cache && !e.resolu;
     el.querySelector('.compte-affiche').innerHTML = cache
       ? '<span class="nb"><span class="nb-chiffre">？</span></span>'
-      : nombreYomi(n) + (et.autres && AUTRES_YOMI[n] ? `<span class="nb-autre">（${AUTRES_YOMI[n]}）</span>` : '');
+      : nombreYomi(n, true) + (et.autres && AUTRES_YOMI[n] ? `<span class="nb-autre">（${AUTRES_YOMI[n]}）</span>` : '');
     const plateau = el.querySelector('.compte-plateau');
     const nb = (v) => e.plateau.filter((x) => x.v === v).length;
     plateau.innerHTML = htmlBlocs(n, { cadreVide: et.cadre, etiquettes: et.etiquettes, compte: true, parties: { c: nb('cent'), d: nb('dix'), u: nb('pion') } });
@@ -4746,7 +4754,7 @@
         const b = document.createElement('button');
         b.type = 'button';
         b.className = 'btn btn-choix-lecon';
-        b.innerHTML = et.choix.unite === '' ? nombreYomi(v) : nombreUnite(v, ({ mL: 'ml', cm: 'cm', g: 'g' })[et.choix.unite || 'g']);
+        b.innerHTML = et.choix.unite === '' ? nombreYomi(v, true) : nombreUnite(v, ({ mL: 'ml', cm: 'cm', g: 'g' })[et.choix.unite || 'g']);
         if (e.essais.has(v)) b.classList.add('essaye');
         if (e.resolu && v === et.choix.bonne) b.classList.add('juste');
         activable(b, () => choisirLecon(v));

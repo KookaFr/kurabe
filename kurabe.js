@@ -4664,6 +4664,44 @@
     messageEtude([]);
     rendreLecon();
     parler(et.dire);
+    // Étape où il faut enlever (« ぜんぶ おろそう ») : on montre le geste au début.
+    if (et.retirer && !(et.reserve || []).length && !e.resolu) setTimeout(() => { if (etude && etude.etape === et) montrerRetrait(); }, 1400);
+  }
+
+  // Montrer comment enlever : un doigt touche la dernière pièce posée, elle descend vers la table…
+  // puis revient à sa place (ce n'est qu'un exemple ; c'est à l'élève de le faire).
+  function montrerRetrait() {
+    const e = etude;
+    const et = e.etape;
+    const liste = et.vers === 'plateau' || et.vers === undefined ? e.plateau : e.cotes[et.vers];
+    const dernier = liste[liste.length - 1];
+    if (!dernier || e.resolu) return;
+    const plan = $('etude-plan');
+    let elements;
+    if (sceneDe(et) === 'compte') {
+      const sel = { cent: '.plaque100', dix: '.cadre10.dix', pion: '.cadre10:not(.dix) i.plein' }[dernier.v];
+      elements = sel ? plan.querySelectorAll(`.compte-plateau ${sel}`) : [];
+    } else {
+      elements = plan.querySelectorAll('.piece-bouton');
+    }
+    const cible = elements[elements.length - 1];
+    if (!cible) return;
+    cible.classList.remove('demo-retrait');
+    void cible.offsetWidth;
+    cible.classList.add('demo-retrait');
+    const r = cible.getBoundingClientRect();
+    document.querySelectorAll('.main-demo').forEach((x) => x.remove());
+    const main = document.createElement('span');
+    main.className = 'main-demo';
+    main.setAttribute('aria-hidden', 'true');
+    main.textContent = '👆';
+    main.style.left = `${r.left + r.width / 2}px`;
+    main.style.top = `${r.top + r.height / 2}px`;
+    document.body.append(main);
+    setTimeout(() => {
+      main.remove();
+      cible.classList.remove('demo-retrait');
+    }, 2700);
   }
 
   function rendreLecon() {
@@ -5193,6 +5231,9 @@
       }
     }
     if (!message) {
+      // Plus rien à dire (par ex. la pièce en trop a été enlevée) : on efface l'ancien conseil.
+      messageEtude([]);
+      e.etatLecon = null;
       if (compte) parler(compte);
       return;
     }
@@ -5200,7 +5241,11 @@
     messageEtude(message);
     // On ne répète à voix haute que quand la situation change (trop léger → trop lourd…).
     const etat = cle.slice(0, 3);
-    if (etat !== e.etatLecon) parler(compte ? [...compte, '。 ', ...message] : message);
+    if (etat !== e.etatLecon) {
+      parler(compte ? [...compte, '。 ', ...message] : message);
+      // « …さわって おろそう » : on montre le geste une fois.
+      if (cle.includes('おろそう')) montrerRetrait();
+    }
     else if (compte) parler(compte);
     e.etatLecon = etat;
   }

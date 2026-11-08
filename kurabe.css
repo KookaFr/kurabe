@@ -1669,6 +1669,22 @@ mark { background: none; color: var(--o5); }
 .aide-cinq small { position: absolute; left: 0; right: 0; bottom: 2px; text-align: center; font-size: .95rem; font-weight: 700; color: var(--encre-douce); white-space: nowrap; }
 .aide-cinq .signe { font-size: calc(var(--c, 18px) * 1.2); padding-bottom: 1em; }
 .compte-lecon:has(.aide-cinq) .cadre10 i.plein:nth-child(-n+5) { box-shadow: 0 0 0 3px var(--o5); }
+/* Montrer comment enlever : le doigt touche, la pièce descend vers la table, puis revient. */
+.main-demo { position: fixed; z-index: 60; font-size: 46px; line-height: 1; pointer-events: none; transform: translate(-30%, -8%); animation: main-demo 2.6s ease both; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .35)); }
+@keyframes main-demo {
+  0% { opacity: 0; transform: translate(10%, 60%); }
+  22% { opacity: 1; transform: translate(-30%, -8%); }
+  32% { transform: translate(-30%, -8%) scale(.82); }
+  42% { transform: translate(-30%, -8%) scale(1); }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-30%, -8%); }
+}
+.demo-retrait { animation: demo-retrait 2.6s ease both; }
+@keyframes demo-retrait {
+  0%, 34% { transform: none; opacity: 1; }
+  52%, 74% { transform: translateY(46px) scale(.85); opacity: .25; }
+  100% { transform: none; opacity: 1; }
+}
 @keyframes descendre { from { opacity: 0; transform: translateY(calc(var(--c, 18px) * -3)) scale(.6); } }
 .zone-dizaines.serre .cadre-groupe b { font-size: 11px; line-height: 1.1; }
 .zone-dizaines .cadre10 { grid-template-columns: repeat(5, var(--c)); grid-auto-rows: var(--c); }

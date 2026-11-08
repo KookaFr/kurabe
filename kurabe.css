@@ -2,6 +2,10 @@
    Concept : un établi sur papier quadrillé. Une barre en haut, la consigne en grand,
    puis les objets alignés sur une ligne de départ jaune (comme le zéro d'un mètre ruban). */
 
+/* Police UD (universal design) embarquée : lisible, et disponible hors ligne sans appel à un serveur tiers. */
+@font-face { font-family: "BIZ UDPGothic"; font-style: normal; font-weight: 400; font-display: swap; src: url("polices/BIZUDPGothic-Regular.woff2") format("woff2"); }
+@font-face { font-family: "BIZ UDPGothic"; font-style: normal; font-weight: 700; font-display: swap; src: url("polices/BIZUDPGothic-Bold.woff2") format("woff2"); }
+
 :root {
   --papier: #f6f7f2;
   --surface: #ffffff;
@@ -254,6 +258,7 @@ rt { font-size: .5em; letter-spacing: 0; }
   flex: 1;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  grid-auto-rows: max-content;   /* en paysage, sans ça les rangées se partageaient la hauteur : cartes de 26 px */
   gap: 14px;
   align-content: start;
   overflow-y: auto;
@@ -843,6 +848,10 @@ button.ligne { cursor: pointer; }
   font-weight: 700;
   line-height: 1.5;
 }
+/* Dans les leçons, l'égalité et le message gardent leur place même vides : la scène n'est pas
+   reconstruite (et la démonstration coupée) quand ils apparaissent. */
+#ecran-etude .equation { min-height: 1.4em; }
+#ecran-etude .retour { min-height: 2.9em; }
 
 .retour.ok { color: var(--bon); }
 
@@ -1762,7 +1771,7 @@ pu { color: var(--o5); }
   .retour { flex-basis: 100%; font-size: 1.05rem; }
   .consigne { font-size: 1.5rem; }
   .phrase { font-size: 1.3rem; }
-  .choix-mots { flex-wrap: nowrap; gap: 8px; }
+  .choix-mots { flex-wrap: wrap; gap: 8px; }
   #ecran-etude { gap: 8px; }
   /* Trois boutons ronds dans les en-têtes : des points de progression plus petits, un titre plus court. */
   .haut { gap: 8px; }
@@ -1775,7 +1784,8 @@ pu { color: var(--o5); }
   /* Leçons : consigne plus petite, pour laisser la place à la balance. */
   .mode-lecon .consigne-etude { font-size: 1.15rem; line-height: 1.45; }
   .mode-lecon .equation { font-size: 1.2rem; white-space: normal; }
-  .btn-choix-lecon { flex: 1; min-width: 0; min-height: 56px; font-size: 1.25rem; }
+  /* « 300 g » ne se coupe jamais : un bouton trop large passe à la ligne suivante. */
+  .btn-choix-lecon { flex: 1 1 auto; min-width: 0; min-height: 56px; padding: 0 .5em; font-size: 1.25rem; white-space: nowrap; }
   .choix-lecon { gap: 6px; }
   /* Téléphone : la réserve sur une seule ligne (のこり au-dessus, les pièces serrées). */
   .reserve { gap: 4px; flex-wrap: nowrap; padding-inline: 2px; }
@@ -1805,7 +1815,7 @@ pu { color: var(--o5); }
   /* Avec ±10 et ±100, la place manque : le nombre reste lisible dans la bulle du ruban. */
   .avec-grand .valeur-etude { display: none; }
   .titre-etude { font-size: 1rem; line-height: 1.2; }
-  .choix-mots .btn { flex: 1; min-width: 0; min-height: 56px; padding: 0 .3em; font-size: 1.3rem; white-space: nowrap; }
+  .choix-mots .btn { flex: 1 1 auto; min-width: 0; min-height: 56px; padding: 0 .4em; font-size: 1.3rem; white-space: nowrap; }
   .bas .btn-suivant, .bas .btn-aide { flex: 1; min-height: 60px; }
   /* かず : une réponse par ligne, toute la largeur, le chiffre et sa lecture côte à côte. */
   .choix-mots.choix-liste { flex-direction: column; flex-wrap: nowrap; gap: 6px; }
@@ -1854,7 +1864,8 @@ pu { color: var(--o5); }
   .zone-modele { padding: 0 0 4px; }
   /* Les choix sur une seule ligne : sur deux, ils recouvraient l'explication. */
   #ecran-question > .choix-mots { flex-wrap: nowrap; }
-  .choix-mots .btn { flex: 1 1 0; min-width: 0; min-height: 52px; padding: 0 .25em; font-size: 1.2rem; white-space: normal; overflow-wrap: anywhere; }
+  /* Jamais « 30 / 0 g » : le nombre et son unité restent sur une ligne, la police s'adapte à la colonne. */
+  .choix-mots .btn { flex: 1 1 0; min-width: 0; min-height: 52px; padding: 0 .15em; font-size: clamp(.9rem, 2.1vw, 1.2rem); white-space: nowrap; overflow-wrap: normal; }
   .retour { font-size: 1.05rem; }
   .btn-suivant { min-width: 6em; min-height: 52px; font-size: 1.15rem; }
   .btn-aide { min-height: 52px; font-size: 1.05rem; }
@@ -1893,7 +1904,7 @@ pu { color: var(--o5); }
   #ecran-question.q-kazu { row-gap: 5px; }
   /* Leçons : les nombres à choisir sur une ligne (empilés, ils recouvraient l'explication). */
   .choix-lecon { flex-wrap: nowrap; gap: 6px; }
-  .btn-choix-lecon { flex: 1 1 0; min-width: 0; min-height: 46px; padding: 0 .2em; font-size: 1.2rem; }
+  .btn-choix-lecon { flex: 1 1 0; min-width: 0; min-height: 48px; padding: 0 .15em; font-size: clamp(.9rem, 2.1vw, 1.2rem); white-space: nowrap; }
   #ecran-question > .choix-mots.choix-liste { flex-direction: column; flex-wrap: nowrap; gap: 5px; }
   .choix-liste .btn { flex: none; width: 100%; min-height: 37px; padding-block: 0; font-size: 1.22rem; }
   /* L'explication à côté du bouton (わからない, つぎへ) : la colonne tient dans la hauteur. */
@@ -1939,3 +1950,24 @@ pu { color: var(--o5); }
 .resultat-verre.essaye { opacity: .4; }
 .resultat-verre.juste { border-color: var(--bon); background: var(--bon-fond); }
 .equation .ensemble { white-space: nowrap; }   /* « 155 mL » ne se coupe pas */
+
+/* ----- Nouvelle version prête ----- */
+.maj {
+  position: fixed;
+  left: max(12px, env(safe-area-inset-left, 0px));
+  right: max(12px, env(safe-area-inset-right, 0px));
+  bottom: max(12px, env(safe-area-inset-bottom, 0px));
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 14px;
+  padding: 12px 16px;
+  border: 3px solid var(--bord);
+  border-radius: var(--rayon);
+  background: var(--surface);
+  color: var(--encre);
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+}

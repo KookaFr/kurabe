@@ -95,6 +95,8 @@
       if (stocke.activites && (stocke.version || 1) < 9) {
         stocke.activites = [...new Set([...stocke.activites, 43, 44])];
       }
+      // Une liste d'activités vide (réglage abîmé) donnerait un accueil sans rien : on reprend tout.
+      if (Array.isArray(stocke.activites) && stocke.activites.length === 0) delete stocke.activites;
       return { ...DEFAUT, ...stocke, version: 9 };
     } catch {
       return { ...DEFAUT };
@@ -159,9 +161,10 @@
     return phrases.join(' ');
   }
 
-  // Ce que dit la voix : « ● » se dit « まる » (et non « くろまる »).
+  // Ce que dit la voix : les unités et les signes en mots (cm → センチ, ＝ → は), « ● » → « まる »,
+  // et les pastilles de couleur (◆◇◎) ne se disent pas. Même règle que pour le texte touché (versParole).
   function lecture(segments) {
-    return segments.map((s) => (typeof s === 'object' ? (s.s ?? s.y) : String(s))).join('').replace(/[◆◇◎]/g, '').replace(/●/g, 'まる');
+    return versParole(segments.map((s) => (typeof s === 'object' ? (s.s ?? s.y) : String(s))).join('').replace(/[◆◇◎]/g, ''));
   }
 
   const NAGA = K('長', 'なが');
@@ -394,7 +397,7 @@
 
   let derniereActivation = -Infinity;
 
-  function activable(el, action, { duree = null, garde = true } = {}) {
+  function activable(el, action, { duree = null, garde = true, lire = true } = {}) {
     let suivi = null;
     let dernierPointeur = -Infinity;
 
@@ -410,7 +413,7 @@
       const delai = garde ? Number(reglages.antiRebond) || 0 : 0;
       if (delai && maintenant - derniereActivation < delai) return;
       derniereActivation = maintenant;
-      if (modeLecture && lectureActive() && !el.classList.contains('btn-lire')) {
+      if (lire && modeLecture && lectureActive() && !el.classList.contains('btn-lire')) {
         lireElement(el, el.getAttribute('aria-label') ? versParole(el.getAttribute('aria-label')) : '');
         return;
       }
@@ -853,9 +856,13 @@
   const ECRANS = ['accueil', 'question', 'etude', 'fin', 'parents', 'photo'];
   let ecranActuel = 'accueil';
 
+  let majEnAttente = null;   // la nouvelle version attend ; on la propose seulement à l'accueil (jamais sur つぎへ)
   function montrer(nom) {
+    if (synthese) { try { synthese.cancel(); } catch { /* rien */ } }
+    if (typeof arreterVersement === 'function' && versementEnCours) arreterVersement(false);
     ECRANS.forEach((e) => { $(`ecran-${e}`).hidden = e !== nom; });
     ecranActuel = nom;
+    $('maj').hidden = !(nom === 'accueil' && majEnAttente);
     window.scrollTo(0, 0);
   }
 
@@ -1161,8 +1168,10 @@
     return [...debut, ...regleNombre(q.demande), reference(q, q.bonne), 'の ほうが ', segCm(ecart), ' ', plus, 'いね。'];
   }
 
+  let debutAffichage = 0;   // le ResizeObserver ignore le changement de taille qui suit l'affichage d'une question
   function afficherQuestion() {
     const q = courante();
+    debutAffichage = performance.now();
     $('retour').textContent = '';
     $('retour').classList.remove('ok');
     $('btn-suivant').hidden = true;
@@ -1969,8 +1978,11 @@
 
   // Cadran d'une はかり de cuisine : 0 en haut, l'aiguille tourne dans le sens des aiguilles d'une montre.
   // « etiquette » : un nombre tous les … g ; « trait » : un trait tous les … g ; sans nombres pour débuter.
+  // Un nombre tous les 100, 200 ou 500 g selon la はかり (jamais 125 / 250 / 375), dix traits par nombre.
+  const pasCadran = (max) => [100, 200, 500, 1000].find((p) => max / p <= 10) || 1000;
+
   // Le secteur coloré montre de combien l'aiguille a tourné (preuve de « はりで くらべる »).
-  function svgCadran(max, { etiquette = max / 4, trait = max / 20, nombres = true } = {}) {
+  function svgCadran(max, { etiquette = pasCadran(max), trait = pasCadran(max) / 10, nombres = true } = {}) {
     const arc = 300;
     const n = Math.round(max / trait);
     const parGrand = Math.round(etiquette / trait);
@@ -2794,7 +2806,9 @@
       b = a + entier(3, 6);
     } else if (Math.random() < 0.5) {
       a = entier(12, 49);
-      b = inverse(a) || a + 10;
+      // 22, 33, 44 sont leur propre inverse : pas de question avec deux nombres égaux.
+      const inv = inverse(a);
+      b = inv && inv !== a ? inv : a + 10;
     } else {
       const d = entier(2, 8);
       a = d * 10 + entier(5, 9);
@@ -2811,12 +2825,14 @@
   // Deux lectures fausses mais plausibles : さんほん, さんぽん pour さんぼん ; いちほん pour いっぽん…
   function fautesLecture(n, c) {
     const juste = compteur(n, c).y;
-    const nombres = [YOMI_UN[n] || 'じゅう', { 1: 'いっ', 6: 'ろっ', 8: 'はっ', 10: 'じゅっ' }[n]].filter(Boolean);
+    // Le petit っ (いっ, ろっ…) n'est une confusion plausible que pour les compteurs où il existe (こ, ひき, ほん, さつ).
+    const avecSokuon = COMPTEURS[c].change.some((k) => [1, 6, 8, 10].includes(k));
+    const nombres = [YOMI_UN[n] || 'じゅう', avecSokuon ? { 1: 'いっ', 6: 'ろっ', 8: 'はっ', 10: 'じゅっ' }[n] : null].filter(Boolean);
     let fautes = c === 'にん'
-      ? { 1: ['いちにん', 'ひとにん'], 2: ['ににん', 'ふたにん'], 4: ['よんにん', 'しにん'] }[n] || [`${YOMI_UN[n] || 'じゅう'}り`, `${YOMI_UN[n] || 'じゅう'}ひと`]
+      ? { 1: ['いちにん', 'ひとにん'], 2: ['ににん', 'ふたにん'], 4: ['よんにん', 'よんり'] }[n] || []
       : nombres.flatMap((x) => [...COMPTEURS[c].variantes, { 'こ': 'ご', 'さつ': 'ざつ', 'まい': 'ばい', 'だい': 'たい' }[c] || c].map((v) => x + v));
-    // Pas de vrais mots qui embrouillent (いちご, じゅうご, ごご).
-    fautes = melanger([...new Set(fautes)].filter((x) => x !== juste && !['いちご', 'じゅうご', 'ごご'].includes(x)));
+    // Pas de vrais mots qui embrouillent ou choquent (いちご, じゅうご, ごご, いったい 一体, しにん 死人).
+    fautes = melanger([...new Set(fautes)].filter((x) => x !== juste && !['いちご', 'じゅうご', 'ごご', 'いったい', 'しにん'].includes(x)));
     // Pas assez d'erreurs de son : le nombre d'à côté (よんさつ pour さんさつ).
     for (const k of [n - 1, n + 1, n + 2]) if (fautes.length < 2 && k >= 1 && k <= 10) fautes.push(compteur(k, c).y);
     return fautes.slice(0, 2);
@@ -3975,8 +3991,8 @@
   activable($('btn-sais-pas'), nePasSavoir);
   activable($('btn-ecouter'), parlerConsigne, { garde: false });
   activable($('btn-quitter'), () => { $('confirmation-quitter').hidden = false; });
-  $('quitter-oui').addEventListener('click', () => { rendreAccueil(); montrer('accueil'); });
-  $('quitter-non').addEventListener('click', () => { $('confirmation-quitter').hidden = true; });
+  activable($('quitter-oui'), () => { rendreAccueil(); montrer('accueil'); });
+  activable($('quitter-non'), () => { $('confirmation-quitter').hidden = true; });
   activable($('btn-recommencer'), () => (finDe === 'etude' ? demarrerEtude(etude.mode) : demarrer(session.niveau)));
   activable($('btn-menu'), () => { rendreAccueil(); montrer('accueil'); });
 
@@ -4880,7 +4896,7 @@
     return [
       {
         dire: ['これは 1ごうの カップ。 おこめを はかる ときに、 いまも つかうよ。 すいはんきの ', ME, 'もりも 「ごう」だね。'],
-        scene: 'verre', contenu: [], reserve: [P('gou', 180, 1)],
+        scene: 'verre', contenu: [], reserve: [P('gou', 180, 1)], vers: 'plateau',
       },
       {
         dire: ['1ごうの カップで、 みずを 1かい いれよう。'],
@@ -4894,8 +4910,8 @@
       },
       {
         dire: ['3ごうは ', segU('なん', 'ml'), '？ 180が 3つ だよ。'],
-        scene: 'verre', contenu: [], reserve: [P('gou', 180, 3)],
-        choix: { options: [540, 300, 180], bonne: 540, unite: 'mL', indice: ['おしい！ 1ごうは 180 mL。 それが 3つ だよ。'] },
+        scene: 'verre', contenu: [], reserve: [P('gou', 180, 3)], vers: 'plateau',
+        choix: { options: [540, 300, 180], bonne: 540, unite: 'mL', indice: ['おしい！ 1ごうは ', segU(180, 'ml'), '。 それが 3つ だよ。'] },
         bravo: ['180が 3つで ', segU(540, 'ml'), '。'],
       },
       {
@@ -4974,7 +4990,7 @@
       etapeLecture(seconde),
       {
         dire: ['はかりが ', segU(cible, 'g'), 'を さす ように、 おもりを のせよう。'],
-        hakari: [], reserve: [P('g100', 100, 5), P('g10', 10, 9)], vers: 'plateau', retirer: true, cache: true,
+        hakari: [], reserve: [P('g100', 100, 4), P('g10', 10, 9)], vers: 'plateau', retirer: true, cache: true,
         fini: (e) => totalPlateau(e) === cible,
         pendant: guidePoids(cible, (e) => e.plateau, true),
         bravo: ['できた！ ', ...lectureHakari(cible)],
@@ -6105,7 +6121,8 @@
     if (e.resolu || !r || r.n <= 0) return;
     r.n -= 1;
     const piece = { v: r.v, c: r.c, m: r.m, id: ++compteurPieces };
-    if (et.vers === 'plateau') e.plateau.push(piece);
+    // Sans « vers », la pièce va sur le plateau (comme dans compteLecon).
+    if (et.vers === 'plateau' || !et.vers) e.plateau.push(piece);
     else e.cotes[et.vers].push(piece);
     note(520 + Math.min(r.m, 100) * 2, { duree: 0.09, volume: 0.1, type: 'triangle' });
     if (reglages.sons && navigator.vibrate) navigator.vibrate(8);
@@ -6191,7 +6208,7 @@
     const cle = lecture(message);
     messageEtude(message);
     // « こんどは 10g の おもりを のせよう » : le bon bouton de la réserve clignote.
-    e.aPoser = message.poser || null;
+    e.aPoser = message.poser ?? null;
     document.querySelectorAll('.reserve-piece').forEach((b) => b.classList.toggle('a-regarder', b.dataset.v === e.aPoser));
     // On ne répète à voix haute que quand la situation change (trop léger → trop lourd…).
     const etat = message.cle || cle.slice(0, 3);
@@ -6315,11 +6332,21 @@
   });
 
   let minuteurEtude = 0;
+  let taillePlan = '';
   if ('ResizeObserver' in window) {
     new ResizeObserver(() => {
+      const plan = $('etude-plan');
+      const taille = `${plan.clientWidth}x${plan.clientHeight}`;
+      if (taille === taillePlan) return;
+      const largeurChange = taille.split('x')[0] !== taillePlan.split('x')[0];
+      taillePlan = taille;
       if (ecranActuel !== 'etude' || !etude) return;
       // Pendant un versement, on ne reconstruit pas la scène (le doigt appuie sur la コップ) : après.
       if (versementEnCours) { rendreApresVersement = true; return; }
+      // Pendant la démonstration du doigt 👆, et quand seule la hauteur bouge un peu (l'égalité ou le message
+      // apparaît), on garde la scène : la reconstruire coupait la démonstration et faisait sauter la balance.
+      if (document.querySelector('.main-demo')) return;
+      if (!largeurChange && plan.clientHeight >= plan.scrollHeight - 2 && plan.clientHeight > 160) return;
       clearTimeout(minuteurEtude);
       minuteurEtude = setTimeout(rendreEtude, 60);
     }).observe($('etude-plan'));
@@ -6335,6 +6362,9 @@
       if (taille === tailleEtabli) return;
       tailleEtabli = taille;
       if (ecranActuel !== 'question' || !session) return;
+      // Juste après afficherQuestion, l'établi change de hauteur (l'explication s'efface) : le rendu vient d'être
+      // fait à la bonne taille, et le refaire remplacerait la balance ou l'aiguille en pleine animation.
+      if (performance.now() - debutAffichage < 700) return;
       clearTimeout(minuteurRedim);
       minuteurRedim = setTimeout(rendreQuestion, 60);
     }).observe($('etabli'));
@@ -6810,7 +6840,7 @@
     zone.scrollTop = defilement;
   }
 
-  activable($('btn-parents'), () => { rendreParents(); montrer('parents'); }, { duree: 2000, garde: false });
+  activable($('btn-parents'), () => { rendreParents(); montrer('parents'); }, { duree: 2000, garde: false, lire: false });
   $('btn-fermer-parents').addEventListener('click', () => { rendreAccueil(); montrer('accueil'); });
 
   /* ======================================================================
@@ -7127,6 +7157,37 @@
   $('etape-infos').addEventListener('submit', (ev) => ev.preventDefault());
 
   /* ======================================================================
+     Mise à jour : la nouvelle version attend que l'on dise « あたらしく する »
+     ====================================================================== */
+
+  function enregistrerServiceWorker() {
+    let rechargement = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (rechargement) return;
+      rechargement = true;
+      location.reload();
+    });
+    navigator.serviceWorker.register('sw.js').then((reg) => {
+      const proposer = (sw) => {
+        if (!navigator.serviceWorker.controller) return;   // première installation : rien à proposer
+        majEnAttente = sw;
+        const barre = $('maj');
+        barre.hidden = ecranActuel !== 'accueil';
+        $('maj-oui').onclick = () => { barre.hidden = true; sw.postMessage({ type: 'activer' }); };
+        $('maj-non').onclick = () => { barre.hidden = true; majEnAttente = null; };
+      };
+      if (reg.waiting) proposer(reg.waiting);
+      reg.addEventListener('updatefound', () => {
+        const sw = reg.installing;
+        if (!sw) return;
+        sw.addEventListener('statechange', () => { if (sw.state === 'installed' && reg.waiting) proposer(reg.waiting); });
+      });
+      // Au retour dans l'app après un moment, on regarde s'il y a du nouveau.
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) reg.update().catch(() => {}); });
+    }).catch(() => {});
+  }
+
+  /* ======================================================================
      Démarrage
      ====================================================================== */
 
@@ -7141,8 +7202,7 @@
     await Base.ouvrir();
     photos = await Base.tous();
 
-    const horsLigne = !window.KURABE_ARTIFACT && 'serviceWorker' in navigator
-      && (location.protocol === 'https:' || location.hostname === 'localhost');
-    if (horsLigne) navigator.serviceWorker.register('sw.js').catch(() => {});
+    const horsLigne = 'serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost');
+    if (horsLigne) enregistrerServiceWorker();
   })();
 })();

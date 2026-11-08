@@ -1,7 +1,7 @@
 {
   "name": "くらべよう",
   "short_name": "くらべよう",
-  "description": "ながさを くらべる れんしゅう（Comparer des longueurs）",
+  "description": "かず・ながさ・おもさ・かさを まなぶ れんしゅう（Compter et comparer des longueurs, des masses et des liquides）",
   "lang": "ja",
   "start_url": "./index.html",
   "scope": "./",
@@ -13,6 +13,6 @@
     { "src": "icone.svg", "sizes": "any", "type": "image/svg+xml" },
     { "src": "icone-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "icone-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "icone-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }

@@ -4,18 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>くらべよう</title>
-  <meta name="claude:viewport-fit-sides" content="cover">
-  <meta name="description" content="ながさ・おもさ・かさを くらべる れんしゅう。Comparer des longueurs, des masses et des liquides, pour les élèves avec un retard intellectuel.">
-  <meta name="theme-color" content="#f6f7f2">
+  <meta name="description" content="かず・ながさ・おもさ・かさを まなぶ れんしゅう。Compter et comparer des longueurs, des masses et des liquides, pour les élèves avec un retard intellectuel.">
+  <meta name="theme-color" content="#f6f7f2" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#14181a" media="(prefers-color-scheme: dark)">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="くらべよう">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icone.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icone-180.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap">
+  <!-- La police est dans le dépôt (licence SIL OFL, polices/LICENCE-OFL.txt) : aucune connexion vers un tiers. -->
+  <link rel="preload" href="polices/BIZUDPGothic-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="polices/BIZUDPGothic-Bold.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="kurabe.css">
 </head>
 <body>
@@ -27,7 +27,7 @@
         <h1 class="titre">くらべよう<small id="sous-titre"></small></h1>
         <button type="button" class="btn btn-parents" id="btn-parents">おうちの人<span>ながおし</span></button>
       </header>
-      <nav class="themes" id="themes" aria-label="ながさ・おもさ・かさ"></nav>
+      <nav class="themes" id="themes" aria-label="かず・ながさ・おもさ・かさ"></nav>
       <div class="activites" id="activites"></div>
     </section>
 
@@ -160,6 +160,13 @@
         <button type="button" class="btn btn-principal" id="btn-photo-suivant"></button>
       </div>
     </section>
+
+    <!-- Une nouvelle version est prête (service worker en attente) -->
+    <div class="maj" id="maj" hidden role="status">
+      <span id="maj-texte">あたらしい くらべように なったよ。</span>
+      <button type="button" class="btn btn-petit btn-principal" id="maj-oui">あたらしく する</button>
+      <button type="button" class="btn btn-petit" id="maj-non" aria-label="あとで">あとで</button>
+    </div>
 
     <input type="file" id="fichier-photo" class="cache-visuel" accept="image/*" tabindex="-1" aria-hidden="true">
     <input type="file" id="fichier-camera" class="cache-visuel" accept="image/*" capture="environment" tabindex="-1" aria-hidden="true">

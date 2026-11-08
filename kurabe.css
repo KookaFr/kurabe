@@ -1633,6 +1633,11 @@ mark { background: none; color: var(--o5); }
 .place-u { border-color: var(--o5); }
 .place-m { border-color: var(--o3); }
 /* La légende : le nombre de chaque groupe dans sa couleur (100 violet, 10 bleu, ばら orange). */
+/* Pastilles muettes devant un groupe dans les textes : 100 violet, 10 bleu clair, ばら orange. */
+pc, pd, pu { font-style: normal; }
+pc { color: var(--o4); }
+pd { color: color-mix(in srgb, var(--o2) 78%, #fff); }
+pu { color: var(--o5); }
 .legende-c b { color: var(--o4); }
 .legende-d b { color: color-mix(in srgb, var(--o2) 85%, var(--encre)); }
 .legende-u b { color: var(--o5); }
@@ -1647,14 +1652,17 @@ mark { background: none; color: var(--o5); }
 .legende-valeur b { font-weight: 800; font-variant-numeric: tabular-nums; }
 .legende-valeur .nb-yomi { font-size: .8em; }
 .plaque100 {
+  /* 100 ronds violets (10 × 10), séparés au milieu en 5 | 5 comme les cadres de 10. */
   display: inline-block;
   width: calc(var(--c, 18px) * 6.2);
   height: calc(var(--c, 18px) * 6.2);
+  border: 2px solid color-mix(in srgb, var(--o4) 60%, var(--encre));
   border-radius: 6px;
   background:
-    linear-gradient(90deg, color-mix(in srgb, #fff 40%, transparent) 1px, transparent 1px) 0 0 / 10% 10%,
-    linear-gradient(color-mix(in srgb, #fff 40%, transparent) 1px, transparent 1px) 0 0 / 10% 10%,
-    var(--o4);
+    linear-gradient(90deg, transparent calc(50% - 1px), color-mix(in srgb, var(--o4) 55%, transparent) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)),
+    linear-gradient(transparent calc(50% - 1px), color-mix(in srgb, var(--o4) 55%, transparent) calc(50% - 1px) calc(50% + 1px), transparent calc(50% + 1px)),
+    radial-gradient(circle closest-side, var(--o4) 0 78%, transparent 84%) 0 0 / 10% 10%,
+    var(--surface);
 }
 .zone-dizaines { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; max-width: 100%; }
 .cadre-groupe { display: flex; flex-direction: column; align-items: center; gap: 2px; }

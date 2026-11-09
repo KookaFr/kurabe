@@ -129,6 +129,10 @@ Une carte illustrée, lue à voix haute, en 4 étapes : une はかり (ou une �
 
 À la fin d'une série, un bouton propose l'activité liée : après 「はかりを よもう」, la leçon 「はかりの よみかた」 ; après la leçon, les questions ; de même pour g と kg, mL, cm, les nombres et les compteurs.
 
+## はかり : à aiguille ou numérique
+
+Dans l'espace parents, on choisit la balance de cuisine : **à aiguille** (au départ) ou **numérique** (un écran à chiffres, comme les balances actuelles ; les chiffres défilent jusqu'au poids). Le réglage vaut pour 「見た目と ちがう」, 「いちばん おもいのは？」, l'aide de 「g で くらべる」 et 「kg と g」, et les leçons 「g と kg」 et 「はかって みよう」, dont les phrases parlent alors des chiffres (「はかりの すうじが 300 g に なる ように…」). 「はりで くらべる」, 「はかりを よもう」 et 「はかりの よみかた」 gardent toujours l'aiguille : on y apprend à la lire.
+
 ## Zoom
 
 On peut agrandir l'écran à deux doigts pour lire, sauf quand les doigts sont dans une scène qu'on manipule (verser, balance, réserve de poids, ruban, はかり) : là, un deuxième doigt est presque toujours un accident.

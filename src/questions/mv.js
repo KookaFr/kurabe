@@ -6,7 +6,7 @@
 
 import {
   angleBalance, creerBalance, creerChose, creerContenant, creerHakari, creerVerre, creerVerreGradue, dessinerEcart,
-  etiquetteMesure, nomMV, poserBalance, tournerAiguille,
+  balanceNumerique, etiquetteMesure, nomMV, poserBalance, tournerAiguille,
 } from '../dessins.js';
 import { animationsReduites } from '../ecrans.js';
 import { MAX_HAKARI } from '../lecons/moteur.js';
@@ -332,6 +332,9 @@ export function rappelMV(q) {
   if (q.type === 'balance') {
     return q.demande === 'plus' ? [SAGA, 'がった ほう ＝ ', OMO, 'い'] : [AGA, 'がった ほう ＝ ', KARU, 'い'];
   }
+  if (q.type === 'devine' && balanceNumerique()) {
+    return q.demande === 'plus' ? [SUJI, 'が ', OOKI, 'きい ほう ＝ ', OMO, 'い'] : [SUJI, 'が ', CHIISA, 'さい ほう ＝ ', KARU, 'い'];
+  }
   if ((q.type === 'hakari' && q.simple) || q.type === 'devine') {
     return q.demande === 'plus' ? ['はりが たくさん まわった ほう ＝ ', OMO, 'い'] : ['はりが すこし まわった ほう ＝ ', KARU, 'い'];
   }
@@ -360,9 +363,13 @@ export function explicationMV(q) {
   const cette = (k) => (q.theme === 'omosa' && !Object.values(POSITIONS_MV).flat().includes(referenceMV(q, k)) ? 'この ' : '');
   t.forEach((o, k) => mesures.push(cette(k), referenceMV(q, k), 'は ', segU(o.val, u), k < t.length - 1 ? '、 ' : '。 '));
   if (t.length === 3) {
-    const aiguille = q.demande === 'plus'
-      ? ['はりが ', ICHIBAN, ' すすんだ ものが ', ICHIBAN, ' ', OMO, 'い。 ']
-      : ['はりの うごきが ', ICHIBAN, ' ちいさい ものが、 ', ICHIBAN, ' ', KARU, 'い。 '];
+    const aiguille = balanceNumerique()
+      ? (q.demande === 'plus'
+        ? ['はかりの ', SUJI, 'が ', ICHIBAN, ' ', OOKI, 'きい ものが ', ICHIBAN, ' ', OMO, 'い。 ']
+        : ['はかりの ', SUJI, 'が ', ICHIBAN, ' ', CHIISA, 'さい ものが ', ICHIBAN, ' ', KARU, 'い。 '])
+      : (q.demande === 'plus'
+        ? ['はりが ', ICHIBAN, ' すすんだ ものが ', ICHIBAN, ' ', OMO, 'い。 ']
+        : ['はりの うごきが ', ICHIBAN, ' ちいさい ものが、 ', ICHIBAN, ' ', KARU, 'い。 ']);
     const debut = q.type === 'hakari' ? aiguille : regleVerres(q.demande);
     return [...debut, ...mesures, ...regleMV(q.theme, q.demande, true), referenceMV(q, q.bonne), 'だね。'];
   }
@@ -370,6 +377,11 @@ export function explicationMV(q) {
   const leger = 1 - lourd;
   if (q.type === 'hakari' || q.type === 'devine') {
     const piege = q.type === 'devine' && q.piege ? [referenceMV(q, leger), 'は ', OOKI, 'きい けど ', KARU, 'いね。 '] : [];
+    if (q.type === 'devine' && balanceNumerique()) {
+      return q.demande === 'plus'
+        ? ['はかりの ', SUJI, 'が ', OOKI, 'きい ほうが ', OMO, 'い。 ', ...mesures, ...piege, 'だから ', referenceMV(q, q.bonne), 'の ほうが ', OMO, 'い。']
+        : ['はかりの ', SUJI, 'が ', CHIISA, 'さい ほうが ', KARU, 'い。 ', ...mesures, ...piege, 'だから ', referenceMV(q, q.bonne), 'の ほうが ', KARU, 'い。'];
+    }
     return q.demande === 'plus'
       ? ['はりが たくさん まわった ほうが ', OMO, 'い。 ', referenceMV(q, lourd), 'の はりの ほうが たくさん まわったね。 ', ...piege, 'だから ', referenceMV(q, q.bonne), 'の ほうが ', OMO, 'い。']
       : ['はりが すこししか まわらない ほうが ', KARU, 'い。 ', referenceMV(q, leger), 'の はりは すこししか まわって いないね。 ', ...piege, 'だから ', referenceMV(q, q.bonne), 'の ほうが ', KARU, 'い。'];
@@ -395,13 +407,13 @@ export function explicationMV(q) {
 export function messageErreurMV(q) {
   if (q.theme === 'kazu') return messageErreurKazu(q);
   if (q.type === 'devine') {
-    const regle = q.demande === 'plus'
-      ? ['はりが たくさん まわった ほうが ', OMO, 'い。']
-      : ['はりが すこししか まわらない ほうが ', KARU, 'い。'];
+    const regle = balanceNumerique()
+      ? (q.demande === 'plus' ? [SUJI, 'が ', OOKI, 'きい ほうが ', OMO, 'い。'] : [SUJI, 'が ', CHIISA, 'さい ほうが ', KARU, 'い。'])
+      : (q.demande === 'plus' ? ['はりが たくさん まわった ほうが ', OMO, 'い。'] : ['はりが すこししか まわらない ほうが ', KARU, 'い。']);
     return q.essais.size <= 1 ? ['そう おもうよね。 はかりで たしかめよう。 ', ...regle] : ['おしい！ ', ...regle];
   }
   if (q.type === 'balance') return ['おしい！ ', ...regleBalance(q.demande)];
-  if (q.type === 'hakari') return ['おしい！ はりを よく ', MI, 'てね。'];
+  if (q.type === 'hakari') return balanceNumerique({ aiguille: q.simple }) ? ['おしい！ はかりの ', SUJI, 'を よく ', MI, 'てね。'] : ['おしい！ はりを よく ', MI, 'てね。'];
   if (q.type === 'lecture') return indiceLecture(q.bonne, [...q.essais].pop());
   if (q.type === 'transvaser' && q.versePourErreur) {
     q.versePourErreur = false;
@@ -478,7 +490,7 @@ function rendreLectureQ(q, scene, W, H) {
   const plateau = document.createElement('span');
   plateau.className = 'hakari-plateau';
   plateau.style.width = `${D * 1.05}px`;
-  const corps = creerHakari(D, q.max, { etiquette: 100, trait: 10 });
+  const corps = creerHakari(D, q.max, { etiquette: 100, trait: 10, aiguille: true });   // on apprend à lire l'aiguille
   const svg = corps.querySelector('svg');
   if (q.preuve) svg.classList.add('avec-secteur');
   col.append(charge, plateau, corps);
@@ -550,7 +562,8 @@ function rendreHakariQ(q, scene, W, H) {
     plateau.className = 'hakari-plateau';
     plateau.style.width = `${D * 1.02}px`;
     // Pour débuter : pas de nombres, on compare seulement de combien l'aiguille a tourné.
-    const corps = creerHakari(D, q.max, { nombres: !q.simple });
+    // はりで くらべる : l'aiguille, toujours (c'est ce qu'on compare) ; 見た目と ちがう suit le réglage.
+    const corps = creerHakari(D, q.max, { nombres: !q.simple, aiguille: q.type === 'hakari' && q.simple });
     if (q.simple && q.preuve) corps.querySelector('svg').classList.add('avec-secteur');
     cadrans.push(corps.querySelector('svg'));
     col.append(charge, plateau, corps, nomMV(o));

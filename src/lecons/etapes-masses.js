@@ -9,6 +9,7 @@ import { aleatoire, choisir, entier } from '../outils.js';
 import { choixLecture, CHOSES, lectureHakari } from '../questions/mv.js';
 import { reglages } from '../reglages.js';
 import { AGA, KARU, MEMORI, MI, nomDe, OMO, ONAJI, OOKI, SAGA, segU, SUJI, V } from '../texte.js';
+import { balanceNumerique } from '../dessins.js';
 
 // てんびん (むかしの はかり) : à partir des poids identiques, les masses sont en g (おもり 1こ ＝ 100 g).
 export function etapesBalance() {
@@ -76,15 +77,17 @@ export function etapesBalance() {
 // g と kg, sur la balance de cuisine : 1 g bouge à peine l'aiguille ; 10, 100, 1000 g.
 export function etapesUnites() {
   const total = (e) => somme(e.plateau);
+  // はかり numérique (réglage des parents) : on parle des chiffres de l'écran, pas de l'aiguille.
+  const num = balanceNumerique();
   return [
     {
-      dire: ['1えんだま 1こは ちょうど ', enG(1), '。 ', V('g（グラム）', 'グラム'), 'は ', OMO, 'さの たんい だよ。 ', enG(1), 'は とても ', KARU, 'いので、 はりは ほとんど うごかないね。'],
+      dire: ['1えんだま 1こは ちょうど ', enG(1), '。 ', V('g（グラム）', 'グラム'), 'は ', OMO, 'さの たんい だよ。 ', enG(1), 'は とても ', KARU, 'い', num ? 'ね。 はかりの すうじは 1。' : 'ので、 はりは ほとんど うごかないね。'],
       hakari: [P('yen1', 1)],
     },
     {
       dire: ['1えんだまを のせて、 ぜんぶで 10こに しよう。'],
       hakari: [P('yen1', 1)], reserve: [P('yen1', 1, 9)], vers: 'plateau', retirer: true, fini: (e) => total(e) === 10,
-      bravo: [enG(1), 'が 10こで ', enG(10), '。 はりが ちいさい ', MEMORI, ' 1つ ぶん うごいた。'],
+      bravo: num ? [enG(1), 'が 10こで ', enG(10), '。 はかりの ', SUJI, 'も 10に なったね。'] : [enG(1), 'が 10こで ', enG(10), '。 はりが ちいさい ', MEMORI, ' 1つ ぶん うごいた。'],
     },
     {
       dire: ['こんどは ', enG(10), 'の おもりを 10こ のせよう。'],
@@ -94,7 +97,7 @@ export function etapesUnites() {
     {
       dire: [enG(100), 'の おもりを 5こ のせよう。'],
       hakari: [], reserve: [P('g100', 100, 5)], vers: 'plateau', retirer: true, fini: (e) => total(e) === 500,
-      bravo: [enG(100), 'が 5こで ', enG(500), '。 この はかりの いちばん ', OOKI, 'きい ', MEMORI, '。'],
+      bravo: num ? [enG(100), 'が 5こで ', enG(500), '。'] : [enG(100), 'が 5こで ', enG(500), '。 この はかりの いちばん ', OOKI, 'きい ', MEMORI, '。'],
     },
     {
       dire: [OOKI, 'きい はかりに かえたよ（', segU(2, 'kg'), ' まで）。 ', enG(100), 'の おもりを 10こ のせよう。'],
@@ -102,9 +105,9 @@ export function etapesUnites() {
       bravo: [enG(100), 'が 10こで ', enG(1000), '。 ', enG(1000), 'を ', segU(1, 'kg'), 'と いうよ。'],
     },
     {
-      dire: ['おこめの ふくろを のせたよ。 はりは ', segU('なん', 'g'), 'を さして いる？'],
+      dire: num ? ['おこめの ふくろを のせたよ。 はかりの ', SUJI, 'は ', segU('なん', 'g'), '？'] : ['おこめの ふくろを のせたよ。 はりは ', segU('なん', 'g'), 'を さして いる？'],
       hakari: [P('okome', 1000)], max: 2000, choix: { options: [1000, 100, 10], bonne: 1000 },
-      bravo: ['はりは 1000を さして いる。 おこめは ', enG(1000), '、 つまり ', enKg(1), '。'], cache: true,
+      bravo: [num ? '1000。 ' : 'はりは 1000を さして いる。 ', 'おこめは ', enG(1000), '、 つまり ', enKg(1), '。'], cache: true,
     },
     {
       dire: ['まとめ。 ', enKg(1), ' ＝ ', enG(1000), '。 ', V('g も kg も', 'グラムも キログラムも'), ' ', OMO, 'さの たんい。 ', ONAJI, 'じ たんいなら、 ', SUJI, 'が ', OOKI, 'きい ほうが ', OMO, 'い。'],
@@ -157,14 +160,15 @@ export function etapesTsuriawase() {
 
 export function etapesPratique() {
   const n = Number(reglages.nbQuestions) || 6;
+  const num = balanceNumerique();
   return Array.from({ length: n }, (_, k) => {
     const cible = k === 0 || k === n - 1 ? entier(1, 4) * 100 : entier(5, 48) * 10;
     return {
-      dire: ['はかりが ', enG(cible), 'を さす ように、 おもりを のせよう。'],
+      dire: num ? ['はかりの ', SUJI, 'が ', enG(cible), 'に なる ように、 おもりを のせよう。'] : ['はかりが ', enG(cible), 'を さす ように、 おもりを のせよう。'],
       hakari: [], reserve: [P('g100', 100, 4), P('g10', 10, 9)], vers: 'plateau', retirer: true, cache: true,
       fini: (e) => somme(e.plateau) === cible,
       pendant: guidePoids(cible, (e) => e.plateau, true),
-      bravo: ['できた！ ', ...lectureHakari(cible)],
+      bravo: num ? ['できた！ ', enG(cible), '。'] : ['できた！ ', ...lectureHakari(cible)],
     };
   });
 }

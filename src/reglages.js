@@ -19,6 +19,7 @@ const DEFAUT = {
   sons: true,
   dureeAppui: 0,          // ms : le doigt doit rester posé ce temps
   antiRebond: 300,        // ms : touchers suivants ignorés (évite les doubles touches)
+  balance: 'aiguille',    // はかり : 'aiguille' (analogique) ou 'numerique' (écran à chiffres) ; lire l'aiguille reste à aiguille
   verserParTouche: false, // はんぶんこ, まぜて : verser par petites touches (20 mL) au lieu d'appuyer longtemps
   animations: 'auto',     // 'auto' (suit le système) ou 'reduites'
   aide: true,             // boutons « わからない », « そろえる », « うつす »
@@ -71,7 +72,8 @@ function lireReglages() {
     }
     // Une liste d'activités vide (réglage abîmé) donnerait un accueil sans rien : on reprend tout.
     if (Array.isArray(stocke.activites) && stocke.activites.length === 0) delete stocke.activites;
-    return { ...DEFAUT, ...stocke, version: 9 };
+    // La version à jour (sinon les activités ajoutées reviendraient à chaque lancement, même masquées).
+    return { ...DEFAUT, ...stocke, version: DEFAUT.version };
   } catch {
     return { ...DEFAUT };
   }

@@ -250,14 +250,82 @@ function svgCadran(max, { etiquette = pasCadran(max), trait = pasCadran(max) / 1
 }
 
 export function tournerAiguille(svg, val, max) {
+  if (svg.classList.contains('ecran-hakari')) {
+    afficherPoids(svg, Math.min(val, 9999));
+    return;
+  }
   const angle = (Math.min(val, max) / max) * 300;
   svg.querySelector('.aiguille-hakari').style.transform = `rotate(${angle}deg)`;
   svg.querySelector('.secteur').style.strokeDasharray = `${angle} 360`;
 }
 
+/* ----- はかり numérique : un écran à cristaux liquides, chiffres à 7 segments -----
+   Réglage des parents (« balance : à aiguille / numérique »). Les activités où l'on apprend à LIRE
+   l'aiguille la gardent toujours (options.aiguille) : はりで くらべる, はかりを よもう, はかりの よみかた. */
+export const balanceNumerique = (options = {}) => reglages.balance === 'numerique' && !options.aiguille;
+
+// Les 7 segments (a en haut, puis b, c à droite, d en bas, e, f à gauche, g au milieu) d'un chiffre 14 × 24.
+const SEGMENTS = {
+  a: [2.2, 0, 9.6, 2.6], b: [11.4, 1.6, 2.6, 9.6], c: [11.4, 12.8, 2.6, 9.6], d: [2.2, 21.4, 9.6, 2.6],
+  e: [0, 12.8, 2.6, 9.6], f: [0, 1.6, 2.6, 9.6], g: [2.2, 10.7, 9.6, 2.6],
+};
+const CHIFFRES = ['abcdef', 'bc', 'abdeg', 'abcdg', 'bcfg', 'acdfg', 'acdefg', 'abc', 'abcdefg', 'abcdfg'];
+function svgEcran() {
+  // Quatre chiffres (jusqu'à 9999 g), alignés à droite, puis « g ». Les segments éteints restent visibles, très pâles.
+  let chiffres = '';
+  for (let k = 0; k < 4; k++) {
+    chiffres += `<g class="chiffre" transform="translate(${-41 + k * 17} -12) skewX(-6)">`
+      + Object.entries(SEGMENTS).map(([nom, [x, y, w, h]]) => `<rect class="seg" data-s="${nom}" x="${x}" y="${y}" width="${w}" height="${h}" rx="1.2"/>`).join('')
+      + '</g>';
+  }
+  return '<svg class="ecran-hakari" viewBox="-50 -50 100 100" aria-hidden="true">'
+    + '<rect class="facade" x="-48" y="-40" width="96" height="80" rx="10"/>'
+    + '<rect class="lcd" x="-45" y="-22" width="90" height="40" rx="4"/>'
+    + `${chiffres}<text class="unite-lcd" x="33" y="11">g</text>`
+    + '<circle class="touche" cx="-14" cy="29" r="4.5"/><circle class="touche" cx="14" cy="29" r="4.5"/></svg>';
+}
+function dessinerPoids(svg, v) {
+  const texte = String(Math.max(0, Math.min(9999, Math.round(v)))).padStart(4, ' ');
+  svg.querySelectorAll('.chiffre').forEach((g, k) => {
+    const allumes = texte[k] === ' ' ? '' : CHIFFRES[Number(texte[k])];
+    g.querySelectorAll('.seg').forEach((seg) => seg.classList.toggle('on', allumes.includes(seg.dataset.s)));
+  });
+}
+// Comme une vraie balance : les chiffres défilent jusqu'au poids (tout de suite si les animations sont réduites).
+function afficherPoids(svg, val) {
+  const depart = svg.poids || 0;
+  svg.poids = val;
+  cancelAnimationFrame(svg.anim || 0);
+  if (animationsReduites() || depart === val || !svg.isConnected) {
+    dessinerPoids(svg, val);
+    return;
+  }
+  const t0 = performance.now();
+  const duree = 700;
+  const pas = (t) => {
+    // (L'horodatage de requestAnimationFrame peut précéder t0 : sans max(0, …), le poids passait en négatif.)
+    const x = Math.min(1, Math.max(0, (t - t0) / duree));
+    const lisse = 1 - (1 - x) ** 3;
+    dessinerPoids(svg, depart + (val - depart) * lisse);
+    if (x < 1) svg.anim = requestAnimationFrame(pas);
+  };
+  svg.anim = requestAnimationFrame(pas);
+}
+
 // Un petit cadran (téléphone) ne peut pas porter 11 nombres : au plus 6 (0, 200, 400… 1000).
 const pasPetitCadran = (max) => [100, 200, 500, 1000].find((p) => max / p <= 5) || 1000;
 export function creerHakari(D, max, options = {}) {
+  if (balanceNumerique(options)) {
+    // Même encombrement que la はかり à aiguille : les mises en page ne changent pas.
+    const corps = document.createElement('span');
+    corps.className = 'hakari-corps hakari-numerique';
+    corps.style.width = `${D * 1.12}px`;
+    corps.style.height = `${D * 1.08}px`;
+    corps.innerHTML = svgEcran();
+    corps.querySelector('svg').style.width = `${D}px`;
+    dessinerPoids(corps.querySelector('svg'), 0);
+    return corps;
+  }
   if (options.etiquette === undefined && D < 240) {
     const etiquette = pasPetitCadran(max);
     options = { ...options, etiquette, trait: etiquette / 10 };

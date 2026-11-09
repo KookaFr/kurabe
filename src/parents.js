@@ -34,6 +34,10 @@ const TEXTES = {
     theme_kazu: 'Nombres (かず)',
     compteurs: 'Compteurs travaillés (かぞえかた ; « いくつ？ » ne compte que des choses qui utilisent ces compteurs)',
     exemple: 'Exemple guidé avant la 1re question (« れい » : 10の まとまり)',
+    balance: 'Balance de cuisine (はかり)',
+    balanceAiguille: 'À aiguille',
+    balanceNumerique: 'Numérique (chiffres)',
+    balanceAide: 'Numérique : un écran à chiffres, comme les balances de cuisine actuelles, dans 「見た目と ちがう」, 「いちばん おもいのは？」, l’aide de 「g で くらべる」 et 「kg と g」, et les leçons 「g と kg」 et 「はかって みよう」. 「はりで くらべる」, 「はかりを よもう」 et 「はかりの よみかた」 gardent toujours l’aiguille : on y apprend à la lire.',
     theme_nagasa: 'Longueurs (ながさ)',
     theme_omosa: 'Masses (おもさ)',
     theme_kasa: 'Liquides (かさ)',
@@ -127,6 +131,10 @@ const TEXTES = {
     theme_kazu: 'かず',
     compteurs: '練習する数え方（「いくつ？」もこの数え方の物だけ）',
     exemple: '最初の問題の前に例を見せる（10のまとまり）',
+    balance: 'はかりの種類',
+    balanceAiguille: '針（アナログ）',
+    balanceNumerique: '数字（デジタル）',
+    balanceAide: 'デジタル：今の台所のはかりのように数字で表示します（「見た目と ちがう」「いちばん おもいのは？」、「g で くらべる」「kg と g」のヒント、べんきょう「g と kg」「はかって みよう」）。「はりで くらべる」「はかりを よもう」「はかりの よみかた」は針の読み方を学ぶ活動なので、いつも針のはかりです。',
     theme_nagasa: 'ながさ',
     theme_omosa: 'おもさ',
     theme_kasa: 'かさ',
@@ -392,6 +400,9 @@ export function rendreParents() {
     groupeChoix('compter', t('compter'), [[true, t('oui')], [false, t('non')]]),
   );
   bActivites.append(groupeCompteurs(), groupeChoix('exemple', t('exemple'), [[true, t('oui')], [false, t('non')]]));
+  const balanceAide = document.createElement('p');
+  balanceAide.textContent = t('balanceAide');
+  bActivites.append(groupeChoix('balance', t('balance'), [['aiguille', t('balanceAiguille')], ['numerique', t('balanceNumerique')]]), balanceAide);
   const etudeAide = document.createElement('p');
   etudeAide.textContent = t('etudeAide');
   const aideMV = document.createElement('p');

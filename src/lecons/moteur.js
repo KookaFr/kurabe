@@ -276,7 +276,8 @@ export function rendreLecon() {
   const hReserve = !avecReserve ? 0 : et.bac ? 78 : Math.max(64, Math.min(96, H * 0.21));
   let instrument;
   const scene = sceneDe(et);
-  if (scene === 'hakari') instrument = creerHakariLecon(W, H - hReserve, et.max || MAX_HAKARI);
+  // はかりの よみかた : on apprend à lire l'aiguille, la はかり reste à aiguille quel que soit le réglage.
+  if (scene === 'hakari') instrument = creerHakariLecon(W, H - hReserve, et.max || MAX_HAKARI, e.mode === 'lecon-hakari');
   else if (scene === 'verre') instrument = creerVerreLecon(W, H - hReserve, et);
   else if (scene === 'corps') instrument = creerCorpsLecon(W, H - hReserve, et);
   else if (scene === 'shaku') instrument = creerShakuLecon(W, H - hReserve, et);
@@ -294,7 +295,7 @@ export function rendreLecon() {
   reserve.hidden = !avecReserve;
   plan.append(instrument, reserve);
   // Lire la はかり : le bouton 🔍「目もり？」 dans le coin (はかりの よみかた, はかって みよう).
-  if (scene === 'hakari' && !et.explication && ['lecon-hakari', 'lecon-pratique'].includes(e.mode)) {
+  if (scene === 'hakari' && !et.explication && ['lecon-hakari', 'lecon-pratique'].includes(e.mode) && instrument.querySelector('.cadran')) {
     const coin = boutonMemori('hakari');
     coin.classList.add('coin');
     plan.append(coin);
@@ -308,7 +309,7 @@ export function rendreLecon() {
   $('etude-suivant').hidden = !e.resolu;
 }
 
-function creerHakariLecon(W, H, max) {
+function creerHakariLecon(W, H, max, aiguille = false) {
   const el = document.createElement('div');
   el.className = 'hakari hakari-lecon';
   // Le plateau garde de quoi poser 3 rangées de poids lisibles (≈ 32 px), même sur un écran bas.
@@ -325,7 +326,7 @@ function creerHakariLecon(W, H, max) {
   plateau.style.width = `${Math.max(D * 1.15, largeur * 0.92)}px`;
   // 500 g : un nombre tous les 100 g, un trait tous les 10 g ; 2 kg : tous les 500 g et 100 g.
   const pas = max <= 500 ? { etiquette: 100, trait: 10 } : max <= 1000 ? { etiquette: 200, trait: 20 } : { etiquette: 500, trait: 100 };
-  const corps = creerHakari(D, max, pas);
+  const corps = creerHakari(D, max, { ...pas, aiguille });
   el.append(charge, plateau, corps);
   // Poids : jusqu'à 3 rangées (100 g, puis 10 g par 5) sur le plateau, et bien lisibles.
   el.geo = { max, taille: Math.max(26, Math.min(hCharge * 0.55, 90)), s: Math.max(18, Math.min(46, (largeur - 12) / 6.3, (hCharge - 26) / 2.9)) };
@@ -474,7 +475,7 @@ export function majLecon() {
   const scene = sceneDe(et);
   if (scene === 'hakari') {
     remplirPlateauLecon(instrument.querySelector('.hakari-charge'), e.plateau, 'plateau', geo.taille, s);
-    tournerAiguille(instrument.querySelector('svg'), somme(e.plateau), geo.max);
+    tournerAiguille(instrument.querySelector('.hakari-corps svg'), somme(e.plateau), geo.max);
   } else if (scene === 'verre') {
     instrument.querySelector('.verre .liquide').style.height = `${(somme(e.plateau) / geo.cap) * 100}%`;
   } else if (scene === 'corps') {

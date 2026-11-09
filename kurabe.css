@@ -1204,6 +1204,14 @@ button.ligne { cursor: pointer; }
 }
 
 .cadran { display: block; height: auto; }
+/* はかり numérique : un écran à cristaux liquides sur le corps de la はかり (chiffres à 7 segments). */
+.ecran-hakari { display: block; height: auto; }
+.ecran-hakari .facade { fill: color-mix(in srgb, var(--o2) 82%, #000); }
+.ecran-hakari .lcd { fill: #c7d5b4; stroke: #4c5a45; stroke-width: 1.6; }
+.ecran-hakari .seg { fill: #1f2a1c; opacity: .07; }
+.ecran-hakari .seg.on { opacity: 1; }
+.ecran-hakari .unite-lcd { font-family: var(--police); font-size: 13px; font-weight: 800; fill: #1f2a1c; }
+.ecran-hakari .touche { fill: color-mix(in srgb, var(--o2) 45%, #fff); stroke: color-mix(in srgb, var(--o2) 70%, #000); stroke-width: 1; }
 .cadran .face { fill: var(--surface); }
 .cadran line { stroke: var(--encre); stroke-width: 1.4; }
 .cadran line.g { stroke-width: 2.4; }

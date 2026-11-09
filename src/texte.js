@@ -20,6 +20,9 @@ export function uniteHtml(u) {
   return `<ruby>${echapper(sym)}<rt>${LECTURES_UNITES[u]}</rt></ruby>`;
 }
 export const nombreUnite = (x, u) => `${echapper(String(x))}\u00a0${uniteHtml(u)}`;
+// Le nombre avec sa lecture en hiragana au-dessus (comme グラム au-dessus de g) : 140 mL → ひゃくよんじゅう ミリリットル.
+// (Sans espace dans la balise : htmlMots() coupe le texte aux espaces.)
+const nombreLuUnite = (x, u) => `<ruby>${echapper(String(x))}<rt>${yomiNombre(x).replace(/\s/g, '')}</rt></ruby>\u00a0${uniteHtml(u)}`;
 
 // « ● » dans les textes : de la même couleur que les jetons dessinés (balise sans espace : voir htmlMots).
 // ◆ ◇ ◎ : des pastilles muettes devant un groupe, dans sa couleur (100 violet, 10 bleu clair, ばら orange).
@@ -30,7 +33,7 @@ export function html(segments) {
     if (typeof s === 'string' || typeof s === 'number') return pionsColores(echapper(s));
     // Mot qu'on peut toucher pour une explication (<aide-memori>, sans espace : voir htmlMots).
     if (s.mot) return `<aide-${s.mot}>${html(s.segs)}</aide-${s.mot}>`;
-    if (s.u) return nombreUnite(s.x, s.u);
+    if (s.u) return s.lu ? nombreLuUnite(s.x, s.u) : nombreUnite(s.x, s.u);
     if (s.d !== undefined) return echapper(s.d);
     if (reglages.ecriture === 'kanji' && s.k) return `<ruby>${echapper(s.k)}<rt>${echapper(s.y)}</rt></ruby>`;
     return echapper(s.y);
@@ -111,6 +114,8 @@ export const PHRASES = {
 
 const segUnite = (x, u) => ({ x, u, d: `${x}\u00a0${SYMBOLES_UNITES[u]}`, s: `${x}${LECTURES_UNITES[u]}` });
 export const segValeur = (v) => (v.u ? segUnite(v.x, v.u) : V(v.affichage, v.lecture));
+// Pareil, avec la lecture du nombre en hiragana au-dessus (énoncés « 140 mL と 110 mL、 どっちが おおい？ »).
+export const segValeurLue = (v) => (v.u && Number.isInteger(v.x) ? { ...segUnite(v.x, v.u), lu: true } : segValeur(v));
 export const cmTexte = (x) => String(Math.round(x * 10) / 10);
 export const segCm = (x) => segUnite(cmTexte(x), 'cm');
 
@@ -199,7 +204,13 @@ export const chiffresColores = (n) => {
   const t = String(n);
   return [...t].map((ch, i) => `<span class="place place-${PLACES[t.length - 1 - i] || 'm'}">${ch}</span>`).join('');
 };
-export const nombreYomi = (n, places = false) => `<span class="nb"><span class="nb-chiffre">${places ? chiffresColores(n) : n}</span><span class="nb-yomi">${yomiNombre(n)}</span></span>`;
+// La lecture peut passer à la ligne entre les mots (なな／じゅう／よん), jamais au milieu d'un mot.
+const yomiCoupable = (n) => {
+  if (!(n >= 20 && n < 100)) return yomiNombre(n);
+  const dizaines = YOMI_DIX[Math.floor(n / 10)].replace(/じゅう$/, '<wbr>じゅう');   // きゅう／じゅう
+  return n % 10 ? `${dizaines}<wbr>${YOMI_UN[n % 10]}` : dizaines;
+};
+export const nombreYomi = (n, places = false) => `<span class="nb"><span class="nb-chiffre">${places ? chiffresColores(n) : n}</span><span class="nb-yomi">${yomiCoupable(n)}</span></span>`;
 
 /* ----- Les compteurs (助数詞) : en japonais, on ne compte pas tout avec 「いくつ」.
    Une chose se compte avec son compteur, et la question change avec lui (いぬは なんびき？).

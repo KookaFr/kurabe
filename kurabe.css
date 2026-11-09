@@ -150,6 +150,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
 }
 
 rt { font-size: max(.6em, 11px); letter-spacing: 0; }
+/* Dans les énoncés, les lectures (ひゃくよんじゅう、 ミリリットル) un peu plus grandes : elles aident à lire les grands nombres. */
+.consigne rt { font-size: max(.66em, 12px); }
 
 .app {
   height: 100%;
@@ -1664,6 +1666,13 @@ body.mode-lecture button:not(.btn-lire):not([hidden]) {
 .choix-comparer.juste { border-color: var(--bon); background: var(--bon-fond); }
 .choix-comparer.essaye { opacity: .6; text-decoration: line-through; }
 @media (max-width: 560px) { .choix-comparer { padding-inline: 2px; } .choix-comparer .nb { font-size: clamp(2.4rem, 9vw, 4rem); } }
+/* Petit téléphone : la lecture (ななじゅうよん) reste dans son bouton — boutons plus larges, et passage à la
+   ligne entre les dizaines et les unités s'il le faut (avant, les deux lectures débordaient et se touchaient). */
+@media (max-width: 420px) {
+  .choix-comparer { min-width: 46%; }
+  .choix-comparer .nb { max-width: 100%; }
+  .choix-comparer .nb-yomi { max-width: 100%; white-space: normal; word-break: keep-all; text-align: center; }
+}
 
 /* Cadre de 10 (2 rangées de 5), barre de 10, plaque de 100. */
 .blocs { display: flex; flex-direction: column; align-items: center; gap: 8px; }

@@ -17,7 +17,7 @@ import {
 } from './mv.js';
 import { reglages } from '../reglages.js';
 import { activable } from '../tactile.js';
-import { htmlMots, K, lecture, MI, nombreUnite, PHRASES, segU, segValeur, TEHON, versParole } from '../texte.js';
+import { htmlMots, K, lecture, MI, nombreUnite, PHRASES, segU, segValeur, segValeurLue, TEHON, versParole } from '../texte.js';
 import { parler, paroles, sons } from '../voix.js';
 
 /* ----- Série de questions ----- */
@@ -60,6 +60,12 @@ function afficherQuestion() {
   focaliser($('consigne'));
 }
 
+// Comparer deux nombres (cm, g, mL…) : l'énoncé redit les deux nombres, avec leur lecture en hiragana
+// au-dessus ; 🔊 ou un toucher sur l'énoncé les fait réentendre.
+const consigneAffichee = (q) => ((q.type === 'nombre' || q.type === 'mesures')
+  ? [segValeurLue(q.valeurs[0]), 'と ', segValeurLue(q.valeurs[1]), '、 ', ...consigneDe(q)]
+  : consigneDe(q));
+
 export function parlerConsigne() {
   const q = courante();
   // Une fois la question résolue, 🔊 fait réécouter l'explication.
@@ -68,8 +74,7 @@ export function parlerConsigne() {
     return;
   }
   if (q.type === 'phrase') parler([...phraseDe(q), '…… ', ...PHRASES.nagaiMijikai]);
-  else if (q.type === 'nombre' || q.type === 'mesures') parler([segValeur(q.valeurs[0]), 'と ', segValeur(q.valeurs[1]), '、 ', ...consigneDe(q)]);
-  else parler(consigneDe(q));
+  else parler(consigneAffichee(q));
 }
 
 function rendreProgression() {
@@ -93,7 +98,7 @@ export function rendreQuestion() {
   $('ecran-question').classList.toggle('q-kazu', q.theme === 'kazu');
   // Dès le départ (avant de mesurer la place des objets) : les réponses かず en liste.
   $('choix-mots').classList.toggle('choix-liste', q.theme === 'kazu' && q.type !== 'comparer' && q.type !== 'tuto');
-  $('consigne').innerHTML = htmlMots(consigneDe(q));
+  $('consigne').innerHTML = htmlMots(consigneAffichee(q));
 
   const phrase = $('phrase');
   const choix = $('choix-mots');

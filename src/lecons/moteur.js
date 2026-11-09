@@ -20,6 +20,7 @@ import {
 import { terminer } from '../ecrans.js';
 import { etude, messageEtude } from '../etude/etude.js';
 import { boutonMemori } from '../explications.js';
+import { tp } from '../textes-perso.js';
 import {
   creerCorpsLecon, creerHiroLecon, creerShakuLecon, etapesCorps, etapesGou, etapesShaku, majCorpsLecon,
 } from './etapes-culture.js';
@@ -722,7 +723,7 @@ function choisirLecon(v) {
   sons.oups();
   let message = typeof et.choix.indice === 'function' ? et.choix.indice(v) : et.choix.indice || indiceLecture(et.choix.bonne, v);
   // « おしい » seulement si c'est presque juste (17 pour 16, pas 71 pour 17).
-  if (Math.abs(v - et.choix.bonne) > Math.max(1, Math.abs(et.choix.bonne) * 0.1)) message = ['もう いっかい！ ', ...sansOshii(message)];
+  if (Math.abs(v - et.choix.bonne) > Math.max(1, Math.abs(et.choix.bonne) * 0.1)) message = [...tp('encore'), ...sansOshii(message)];
   messageEtude(message);
   parler(message);
   rendreLecon();
@@ -735,5 +736,5 @@ export function leconSuivante() {
     commencerEtape();
     return;
   }
-  terminer('etude', ['さいごまで できたね！']);
+  terminer('etude', tp('finLecon'));
 }

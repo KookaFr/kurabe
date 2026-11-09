@@ -15,6 +15,7 @@ import { photos } from '../photos.js';
 import { consigneKazu, explicationKazu, messageErreurKazu, rappelKazu, rendreKazuQ } from './kazu.js';
 import { courante, repondre } from './session.js';
 import { reglages } from '../reglages.js';
+import { tp } from '../textes-perso.js';
 import { activable } from '../tactile.js';
 import {
   AGA, CHIISA, html, htmlMots, ICHIBAN, KARU, MEMORI, MI, MOTS, nombreUnite, nomDe, OMO, ONAJI, OO_I, OOKI, SAGA, segU,
@@ -340,7 +341,7 @@ export function rappelMV(q) {
   }
   if (q.objets.length === 3) return [ICHIBAN, ' ', ...mot, ' ＝ ', SUJI, 'が ', ICHIBAN, ' ', ...taille];
   const unite = q.mixte ? [ONAJI, 'じ たんいなら '] : [];
-  return [...unite, ...mot, ' ＝ ', SUJI, 'が ', ...taille];
+  return [...unite, ...tp(`regle.${q.theme}.${q.demande}`)];
 }
 
 export function explicationMV(q) {
@@ -410,16 +411,16 @@ export function messageErreurMV(q) {
     const regle = balanceNumerique()
       ? (q.demande === 'plus' ? [SUJI, 'が ', OOKI, 'きい ほうが ', OMO, 'い。'] : [SUJI, 'が ', CHIISA, 'さい ほうが ', KARU, 'い。'])
       : (q.demande === 'plus' ? ['はりが たくさん まわった ほうが ', OMO, 'い。'] : ['はりが すこししか まわらない ほうが ', KARU, 'い。']);
-    return q.essais.size <= 1 ? ['そう おもうよね。 はかりで たしかめよう。 ', ...regle] : ['おしい！ ', ...regle];
+    return q.essais.size <= 1 ? [...tp('mv.devine'), ' ', ...regle] : ['おしい！ ', ...regle];
   }
   if (q.type === 'balance') return ['おしい！ ', ...regleBalance(q.demande)];
-  if (q.type === 'hakari') return balanceNumerique({ aiguille: q.simple }) ? ['おしい！ はかりの ', SUJI, 'を よく ', MI, 'てね。'] : ['おしい！ はりを よく ', MI, 'てね。'];
+  if (q.type === 'hakari') return tp(balanceNumerique({ aiguille: q.simple }) ? 'mv.hakariNum' : 'mv.hakari');
   if (q.type === 'lecture') return indiceLecture(q.bonne, [...q.essais].pop());
   if (q.type === 'transvaser' && q.versePourErreur) {
     q.versePourErreur = false;
-    return ['おしい！ ', ...ouVerser(q), ' うつして くらべよう。 うつしても かさは かわらないよ。'];
+    return tp('mv.transvaser', { どこ: ouVerser(q) });
   }
-  return ['おしい！ たかさを よく ', MI, 'てね。'];
+  return tp('mv.verres');
 }
 
 /* ----- Dessins : objets, balance, はかり, verres et récipients ----- */
@@ -1025,11 +1026,11 @@ export function indiceLecture(bonne, choisi) {
   const c = Math.floor(bonne / 100) * 100;
   const memeCentaine = typeof choisi === 'number' && Math.floor(choisi / 100) === c / 100;
   if (!memeCentaine) {
-    return ['おしい！ はりの さきを よく ', MI, 'てね。 まず ', OOKI, 'きい ', MEMORI, 'を ', MI, 'よう。 はりの すぐ まえの ', OOKI, 'きい ', MEMORI, 'は いくつ？'];
+    return tp('lecture.grands');
   }
-  if (bonne === c) return ['おしい！ はりは ちょうど ', OOKI, 'きい ', MEMORI, 'の ', String(c), 'を さして いるよ。'];
-  if (!c) return ['おしい！ ちいさい ', MEMORI, 'を 0から ひとつずつ かぞえよう。 1つで ', segU(10, 'g'), '。'];
-  return ['おしい！ ', String(c), 'は あって いるよ。 そこから ちいさい ', MEMORI, 'を ひとつずつ かぞえよう。 1つで ', segU(10, 'g'), '。'];
+  if (bonne === c) return tp('lecture.juste', { 数: c });
+  if (!c) return tp('lecture.petitsZero');
+  return tp('lecture.petits', { 数: c });
 }
 
 // Lire la はかり : grandes graduations (100 g) et petites (10 g).

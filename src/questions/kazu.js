@@ -6,6 +6,7 @@
 import { $, aleatoire, choisir, entier, melanger } from '../outils.js';
 import { cible } from './mv.js';
 import { reglages } from '../reglages.js';
+import { tp } from '../textes-perso.js';
 import {
   AUTRES_YOMI, chiffresColores, CHIISA, compteur, COMPTEURS, compteursActifs, ecrit, htmlCompteur, MI, nombreYomi,
   ONAJI, OO_I, OOKI, segCompteur, sonsQuiChangent, SUJI, TOUS_COMPTEURS, V, YOMI_DIX, YOMI_UN, yomiNombre,
@@ -203,10 +204,10 @@ export function aideKazu(q) {
   const u = v % 10;
   const voir = partieAVoir(q);
   if (q.type === 'dizaines' && voir === 'ba') {
-    return ['◇10の まとまりは あって いるよ。 ', String(d * 10), '。 こんどは ◎ばらを ひとつずつ かぞえよう。'];
+    return tp('kazu.aideBara', { 数: d * 10 });
   }
   if (q.type === 'dizaines' && voir === 'dix') {
-    return ['◎ばらは あって いるよ。 ◇10の まとまりを 10ずつ かぞえよう： ', compterPar10(d), '。'];
+    return tp('kazu.aideDix', { かぞえる: compterPar10(d) });
   }
   if (q.type === 'lire' && voir === 'ba') {
     return ['「', YOMI_DIX[d], '」は あって いるよ。 ◎ばらを よく ', MI, 'て： ばら ', `${u}つは 「`, YOMI_UN[u], '」。'];
@@ -215,8 +216,7 @@ export function aideKazu(q) {
     return ['「', YOMI_UN[u], '」は あって いるよ。 ◇10の まとまりを よく ', MI, 'て： ◇10の まとまり ', `${d}つは 「`, YOMI_DIX[d], '」。'];
   }
   if (q.type === 'compteur') {
-    const c = q.compteur;
-    // Choisir : la règle de chaque compteur proposé. Lire : on compte ensemble jusqu'au nombre d'avant.
+    // Choisir : la règle de chaque compteur proposé. Lire : le son qui change (indiceSon), à retenir.
     if (q.sens === 'choisir') return [q.options.map((x) => COMPTEURS[x].indice).join('、 '), '。'];
     return indiceSon(q);
   }
@@ -247,14 +247,14 @@ export function explicationSon(c, v, choisi) {
   const juste = compteur(v, c).y;
   const autre = typeof choisi === 'string' ? COMPTEURS[c].yomi.indexOf(choisi) + 1 : 0;
   if (autre && autre !== v) {
-    return ['おしい！ 「', choisi, '」は ', String(autre), 'の とき。 ここは ', String(v), 'だよ。'];
+    return tp('son.autre', { よみ: choisi, かず: autre, 数: v });
   }
   if (c === 'にん') {
-    if (v <= 2) return ['おしい！ ひとは 1で 「ひとり」、 2で 「ふたり」。 とくべつな いいかた だよ。 おぼえよう。'];
-    if (v === 4) return ['おしい！ 4の ときは 「よん」では なくて 「よ」： 「よにん」。 おぼえよう。'];
+    if (v <= 2) return tp('son.nin12');
+    if (v === 4) return tp('son.nin4');
   }
   if (!COMPTEURS[c].change.includes(v)) {
-    return ['おしい！ ', String(v), 'の ときは おとが かわらないよ。 「', LECTURE_SIMPLE(v), '」と 「', c, '」で 「', juste, '」。'];
+    return tp('son.pareil', { 数: v, よみかた: LECTURE_SIMPLE(v), 助数詞: c, こたえ: juste });
   }
   // Ce qui change : le nombre (いち → いっ) et/ou le compteur (ほん → ぼん).
   const n = LECTURE_SIMPLE(v);
@@ -263,11 +263,11 @@ export function explicationSon(c, v, choisi) {
   const changes = [];
   if (debutJuste !== n) changes.push(['「', n, '」が 「', debutJuste, '」に']);
   if (finJuste !== c) changes.push(['「', c, '」が 「', finJuste, '」に']);
-  return ['おしい！ ', String(v), 'の ときは おとが かわるよ。 ', ...changes.flatMap((x, i) => (i ? ['、 ', ...x] : x)), ' かわって 「', juste, '」。 おぼえよう。'];
+  return tp('son.change', { 数: v, かわる: changes.flatMap((x, i) => (i ? ['、 ', ...x] : x)), こたえ: juste });
 }
 
 export function messageErreurKazu(q) {
-  if (q.type === 'compter') return ['おしい！ ひとつずつ、 ゆびで さしながら かぞえよう。'];
+  if (q.type === 'compter') return tp('kazu.compter');
   if (q.type === 'compteur') {
     // Les questions à se poser, seulement pour les compteurs proposés : いきもの？ ほそながい もの？
     const questions = { 'こ': 'ちいさい もの？', 'ひき': 'いきもの？', 'ほん': 'ほそながい もの？', 'まい': 'うすい もの？', 'だい': 'のりもの？', 'にん': 'ひと？', 'さつ': 'ほんや ノート？' };
@@ -276,13 +276,13 @@ export function messageErreurKazu(q) {
       : indiceSon(q);
   }
   if (q.type === 'lire') {
-    if (q.sens === 'yomi') return ['おしい！ こえを よく きいてね。'];
-    return q.valeur < 10 ? ['おしい！ ●を かぞえて みよう。'] : ['おしい！ ◇10の まとまりと ●を よく ', MI, 'てね。'];
+    if (q.sens === 'yomi') return tp('kazu.lireVoix');
+    return tp(q.valeur < 10 ? 'kazu.lirePetit' : 'kazu.lireGrand');
   }
   if (q.type === 'dizaines') {
-    return partieAVoir(q) === 'ba' ? ['おしい！ ◎ばらを ゆびで さしながら かぞえよう。'] : ['おしい！ ◇10の まとまりを さきに かぞえよう。'];
+    return tp(partieAVoir(q) === 'ba' ? 'kazu.baraErreur' : 'kazu.dixErreur');
   }
-  return ['おしい！ ◇10の まとまりの かずを くらべよう。'];
+  return tp('kazu.comparer');
 }
 
 // Les jetons d'un nombre : centaines (plaques de 100), dizaines (cadres de 10 pleins : « 10の まとまり »),

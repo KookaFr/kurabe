@@ -2248,3 +2248,20 @@ html[data-motion="reduce"] .dessin-memori *, html[data-motion="reduce"] .btn-mem
   .oto-question .case-oto .oto-nombre { font-size: 1.8rem; }
   .oto-question .case-oto .oto-yomi { font-size: 1.2rem; }
 }
+
+/* ---------- Espace parents : textes des aides modifiables ---------- */
+.actions-textes { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.statut-textes:empty { display: none; }
+.statut-textes { color: var(--bon); font-weight: 700; }
+.groupe-textes { border: 2px solid var(--bord); border-radius: 12px; margin: 8px 0; background: var(--surface); }
+.groupe-textes > summary { padding: 12px 14px; font-weight: 700; cursor: pointer; min-height: 44px; }
+.texte-perso { padding: 10px 14px 14px; border-top: 1px solid var(--bord); display: grid; gap: 6px; }
+.texte-perso label { font-weight: 700; font-size: .95rem; }
+.texte-perso textarea {
+  width: 100%; min-height: 3.2em; padding: 8px 10px; border: 2px solid var(--bord); border-radius: 10px;
+  background: var(--papier); color: var(--encre); font: inherit; font-size: 1.05rem; line-height: 1.5; resize: vertical;
+}
+.texte-perso.modifie textarea { border-color: var(--action); }
+.apercu-texte { margin: 0; padding: 6px 10px; border-radius: 8px; background: var(--papier); font-size: 1.1rem; }
+.original-texte, .vars-texte { margin: 0; font-size: .85rem; color: var(--encre-douce); }
+.boutons-texte { display: flex; gap: 8px; flex-wrap: wrap; }

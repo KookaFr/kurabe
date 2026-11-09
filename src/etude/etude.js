@@ -13,11 +13,12 @@ import {
 } from './verre.js';
 import { demarrerLecon, estLecon, LECONS, leconSuivante, rendreLecon } from '../lecons/moteur.js';
 import { dejaVue, ouvrirExplication } from '../explications.js';
+import { tp } from '../textes-perso.js';
 import { $, entier } from '../outils.js';
 import { plateforme } from '../plateforme.js';
 import { ecrireReglages, reglages } from '../reglages.js';
 import { activable } from '../tactile.js';
-import { htmlMots, K, PHRASES, SUJI, uniteHtml } from '../texte.js';
+import { htmlMots, PHRASES, SUJI, uniteHtml } from '../texte.js';
 import { note, parler, sons } from '../voix.js';
 
 export let etude = null;
@@ -374,5 +375,5 @@ export function suivantEtude() {
     nouveauProbleme();
     return;
   }
-  terminer('etude', [String(etude.total), K('問', 'もん'), ' できたよ。']);
+  terminer('etude', tp('finSerie', { 数: etude.total }));
 }

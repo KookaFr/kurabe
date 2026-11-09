@@ -133,6 +133,17 @@ Une carte illustrée, lue à voix haute, en 4 étapes : une はかり (ou une �
 
 Dans l'espace parents, on choisit la balance de cuisine : **à aiguille** (au départ) ou **numérique** (un écran à chiffres, comme les balances actuelles ; les chiffres défilent jusqu'au poids). Le réglage vaut pour 「見た目と ちがう」, 「いちばん おもいのは？」, l'aide de 「g で くらべる」 et 「kg と g」, et les leçons 「g と kg」 et 「はかって みよう」, dont les phrases parlent alors des chiffres (「はかりの すうじが 300 g に なる ように…」). 「はりで くらべる」, 「はかりを よもう」 et 「はかりの よみかた」 gardent toujours l'aiguille : on y apprend à la lire.
 
+## Textes des aides modifiables (parents, enseignants)
+
+Dans l'espace parents, « Textes des aides et des indices » : 44 textes (encouragements, indices après une erreur, aides de 「わからない」, règles rappelées), groupés par onglet. Chacun a un champ pour le changer, un aperçu (avec les furigana), 🔊 pour l'écouter et « rétablir ». Écriture :
+
+- 漢字《かんじ》 : un kanji avec sa lecture (｜大きな《おおきな》 pour un groupe entier) ; en mode hiragana, seule la lecture s'affiche ;
+- {数}, {こたえ}… : les parties que l'appli remplace (le nombre, la bonne lecture…) ; la liste est donnée sous chaque champ ;
+- « 10 g », « 200 mL », « 3 cm » : la voix dit aussi l'unité ; 目《め》もり reste le mot qu'on touche pour l'explication ;
+- un texte vide revient au texte d'origine.
+
+« Exporter (tableur) » enregistre `kurabe-textes.csv` (colonnes キー, 場所, 説明, 元の文, 新しい文 ; lisible par Excel, Numbers, Google Sheets). On écrit ses textes dans la colonne 新しい文, on enregistre au format CSV, puis « Importer » (sur le même appareil ou un autre : un enseignant peut préparer un fichier pour toute la classe). Les textes restent sur l'appareil (`textes-perso.js`).
+
 ## Zoom
 
 On peut agrandir l'écran à deux doigts pour lire, sauf quand les doigts sont dans une scène qu'on manipule (verser, balance, réserve de poids, ruban, はかり) : là, un deuxième doigt est presque toujours un accident.
@@ -175,7 +186,8 @@ Pas d'outil de construction : `index.html` charge `src/app.js` comme module ES, 
 - `src/questions/longueurs.js`, `src/questions/mv.js` (おもさ・かさ), `src/questions/kazu.js` : génération, phrases et rendu des questions de chaque onglet.
 - `src/etude/etude.js`, `src/etude/ruban.js`, `src/etude/verre.js` : べんきょう (le ruban sur la règle, le verre doseur).
 - `src/lecons/moteur.js` : les leçons guidées (étapes, pièces à poser ou enlever, réserve, vérification) ; `etapes-kazu.js`, `etapes-masses.js`, `etapes-culture.js`, `versement.js` : les étapes de chaque leçon.
-- `src/parents.js` : l'espace parents (textes français / japonais, réglages, photos).
+- `src/parents.js` : l'espace parents (textes français / japonais, réglages, photos, textes des aides).
+- `src/textes-perso.js` : les textes des aides modifiables (registre, notation 漢字《よみ》 et {variables}, CSV).
 
 Vérifier : `npm run lint` (ESLint) et `npm test` (test de fumée Playwright sur quatre formats d'écran).
 

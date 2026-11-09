@@ -9,7 +9,11 @@ import { definirPhotos, photos, urlPhoto, urlsPhotos } from './photos.js';
 import { plateforme } from './plateforme.js';
 import { A_COMPTER } from './questions/kazu.js';
 import { ecrireReglages, reglages } from './reglages.js';
-import { compteursActifs, lecture, PHRASES, TOUS_COMPTEURS } from './texte.js';
+import { compteursActifs, htmlMots, lecture, PHRASES, TOUS_COMPTEURS } from './texte.js';
+import {
+  definirTextePerso, exempleTexte, exporterCSV, GROUPES_TEXTES, importerCSV, textePerso, TEXTES_PERSO, texteActuel, toutRetablir,
+  variablesDe,
+} from './textes-perso.js';
 import { majBoutonsLire, parler, VOIX_HOMME, voixGrave, voixJa, voixJaponaise } from './voix.js';
 
 const TEXTES = {
@@ -34,6 +38,23 @@ const TEXTES = {
     theme_kazu: 'Nombres (かず)',
     compteurs: 'Compteurs travaillés (かぞえかた ; « いくつ？ » ne compte que des choses qui utilisent ces compteurs)',
     exemple: 'Exemple guidé avant la 1re question (« れい » : 10の まとまり)',
+    textes: 'Textes des aides et des indices',
+    textesAide: 'Vous pouvez changer les mots des aides, des indices, des règles et des encouragements, pour qu’ils ressemblent à ceux de l’école ou de la maison. Écrivez 漢字《かんじ》 pour un kanji avec sa lecture. Gardez les parties entre accolades ({数}…) : l’appli les remplace (par exemple par le nombre). « 10 g », « 200 mL » : la voix dit aussi l’unité. Un texte vide revient au texte d’origine. Pour préparer les textes sur un ordinateur : « Exporter » donne un fichier tableur (Excel, Numbers, Google Sheets) ; écrivez vos textes dans la colonne 新しい文, enregistrez au format CSV, puis « Importer » (ici ou sur un autre appareil).',
+    groupe_general: 'Partout',
+    groupe_kazu: 'Nombres (かず)',
+    groupe_nagasa: 'Longueurs (ながさ)',
+    groupe_mv: 'Masses et liquides (おもさ・かさ)',
+    exporter: 'Exporter (tableur)',
+    importer: 'Importer',
+    toutRetablir: 'Tout rétablir',
+    confirmerRetablir: 'Remettre tous les textes d’origine ?',
+    retablir: 'Rétablir',
+    ecouterTexte: 'Écouter',
+    original: 'Texte d’origine :',
+    variables: 'Remplacé par l’appli :',
+    modifies: '{n} modifié(s)',
+    importOk: '{n} texte(s) importé(s).',
+    importRien: 'Aucun texte reconnu dans ce fichier (il faut les colonnes キー et 新しい文).',
     balance: 'Balance de cuisine (はかり)',
     balanceAiguille: 'À aiguille',
     balanceNumerique: 'Numérique (chiffres)',
@@ -131,6 +152,23 @@ const TEXTES = {
     theme_kazu: 'かず',
     compteurs: '練習する数え方（「いくつ？」もこの数え方の物だけ）',
     exemple: '最初の問題の前に例を見せる（10のまとまり）',
+    textes: 'ヒントやことばを変える',
+    textesAide: 'ヒント、きまり、ほめことばなどを、学校や家での言い方に合わせて変えられます。漢字《かんじ》と書くと、漢字に読みがつきます。{数} などの { } の部分は、アプリが数や名前に置きかえるので、そのまま残してください。「10 g」「200 mL」と書くと、単位も読み上げます。空にすると元の文にもどります。パソコンで準備するには：「書き出す」で表のファイル（Excel・Numbers・Googleスプレッドシート）を作り、「新しい文」の列に書いて CSV で保存し、「読み込む」で取りこみます（ほかの端末でもできます）。',
+    groupe_general: '全体',
+    groupe_kazu: 'かず',
+    groupe_nagasa: 'ながさ',
+    groupe_mv: 'おもさ・かさ',
+    exporter: '書き出す（表）',
+    importer: '読み込む',
+    toutRetablir: 'すべて元にもどす',
+    confirmerRetablir: 'すべての文を元にもどしますか？',
+    retablir: '元にもどす',
+    ecouterTexte: '聞く',
+    original: '元の文：',
+    variables: 'アプリが置きかえる部分：',
+    modifies: '{n}件変更',
+    importOk: '{n}件の文を読み込みました。',
+    importRien: '読み込める文がありません（「キー」と「新しい文」の列が必要です）。',
     balance: 'はかりの種類',
     balanceAiguille: '針（アナログ）',
     balanceNumerique: '数字（デジタル）',
@@ -369,6 +407,124 @@ function listePhotos() {
   return liste;
 }
 
+/* ----- Textes des aides et des indices, modifiables (textes-perso.js) ----- */
+
+function blocTextes() {
+  const b = bloc(t('textes'), t('textesAide'));
+  b.classList.add('bloc-textes');
+  const statut = document.createElement('p');
+  statut.className = 'statut-textes';
+  statut.setAttribute('role', 'status');
+  const actions = document.createElement('div');
+  actions.className = 'actions-textes';
+  const bouton = (texte, action) => {
+    const x = document.createElement('button');
+    x.type = 'button';
+    x.className = 'btn btn-petit';
+    x.textContent = texte;
+    x.addEventListener('click', action);
+    return x;
+  };
+  const fichier = document.createElement('input');
+  fichier.type = 'file';
+  fichier.accept = '.csv,text/csv,text/plain';
+  fichier.hidden = true;
+  fichier.addEventListener('change', async () => {
+    const f = fichier.files && fichier.files[0];
+    if (!f) return;
+    const { lus } = importerCSV(await f.text());
+    fichier.value = '';
+    rendreParents();
+    const s = $('parents').querySelector('.statut-textes');
+    if (s) s.textContent = lus ? t('importOk').replace('{n}', lus) : t('importRien');
+  });
+  actions.append(
+    bouton(t('exporter'), () => plateforme.fichiers.enregistrer('kurabe-textes.csv', exporterCSV(reglages.langue), 'text/csv')),
+    bouton(t('importer'), () => fichier.click()),
+    bouton(t('toutRetablir'), () => {
+      if (!window.confirm(t('confirmerRetablir'))) return;
+      toutRetablir();
+      rendreParents();
+    }),
+    fichier,
+  );
+  b.append(actions, statut);
+  GROUPES_TEXTES.forEach((g) => {
+    const liste = TEXTES_PERSO.filter((d) => d.groupe === g);
+    const details = document.createElement('details');
+    details.className = 'groupe-textes';
+    const resume = document.createElement('summary');
+    const majResume = () => {
+      const n = liste.filter((d) => textePerso(d.cle) !== null).length;
+      resume.textContent = `${t(`groupe_${g}`)}${n ? ` — ${t('modifies').replace('{n}', n)}` : ''}`;
+    };
+    majResume();
+    details.append(resume);
+    liste.forEach((d) => details.append(champTexte(d, majResume)));
+    b.append(details);
+  });
+  return b;
+}
+
+function champTexte(d, majResume) {
+  const div = document.createElement('div');
+  div.className = 'texte-perso';
+  const id = `texte-${d.cle.replace(/\W/g, '-')}`;
+  const label = document.createElement('label');
+  label.htmlFor = id;
+  label.textContent = reglages.langue === 'ja' ? d.ja : d.fr;
+  const zone = document.createElement('textarea');
+  zone.id = id;
+  zone.rows = 2;
+  zone.lang = 'ja';
+  zone.value = texteActuel(d.cle);
+  // Ce que verra l'élève (avec les furigana), et le texte d'origine quand on l'a changé.
+  const apercu = document.createElement('p');
+  apercu.className = 'apercu-texte';
+  apercu.lang = 'ja';
+  const original = document.createElement('p');
+  original.className = 'original-texte';
+  const vars = variablesDe(d.cle);
+  const aideVars = document.createElement('p');
+  aideVars.className = 'vars-texte';
+  aideVars.hidden = !vars.length;
+  aideVars.textContent = `${t('variables')} ${vars.map((v) => `{${v}}`).join(' ')}`;
+  const maj = () => {
+    apercu.innerHTML = htmlMots(exempleTexte(d.cle, zone.value || d.defaut));
+    const change = textePerso(d.cle) !== null;
+    div.classList.toggle('modifie', change);
+    original.hidden = !change;
+    original.textContent = `${t('original')} ${d.defaut}`;
+    majResume();
+  };
+  let minuteur = 0;
+  zone.addEventListener('input', () => {
+    clearTimeout(minuteur);
+    minuteur = setTimeout(() => { definirTextePerso(d.cle, zone.value); maj(); }, 300);
+    apercu.innerHTML = htmlMots(exempleTexte(d.cle, zone.value || d.defaut));
+  });
+  const boutons = document.createElement('div');
+  boutons.className = 'boutons-texte';
+  const ecouter = document.createElement('button');
+  ecouter.type = 'button';
+  ecouter.className = 'btn btn-petit';
+  ecouter.textContent = `🔊 ${t('ecouterTexte')}`;
+  ecouter.addEventListener('click', () => parler(exempleTexte(d.cle, zone.value || d.defaut)));
+  const retablir = document.createElement('button');
+  retablir.type = 'button';
+  retablir.className = 'btn btn-petit';
+  retablir.textContent = t('retablir');
+  retablir.addEventListener('click', () => {
+    definirTextePerso(d.cle, '');
+    zone.value = d.defaut;
+    maj();
+  });
+  boutons.append(ecouter, retablir);
+  div.append(label, zone, apercu, original, aideVars, boutons);
+  maj();
+  return div;
+}
+
 export function rendreParents() {
   $('ecran-parents').lang = reglages.langue;
   $('parents-titre').textContent = t('titre');
@@ -493,6 +649,6 @@ export function rendreParents() {
 
   const bIpad = bloc(t('ipad'), t('ipadAide'));
 
-  zone.append(bLangue, bActivites, bPhotos, bVoix, bToucher, bIpad);
+  zone.append(bLangue, bActivites, bPhotos, bVoix, bToucher, blocTextes(), bIpad);
   zone.scrollTop = defilement;
 }

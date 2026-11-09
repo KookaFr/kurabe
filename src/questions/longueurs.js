@@ -13,6 +13,7 @@ import { genererQuestionKazu } from './kazu.js';
 import { consigneMV, estMV, explicationMV, genererQuestionMV, rappelMV } from './mv.js';
 import { courante, majBoutonAide, rendreQuestion, repondre } from './session.js';
 import { reglages } from '../reglages.js';
+import { tp } from '../textes-perso.js';
 import { activable } from '../tactile.js';
 import {
   CHIISA, cmTexte, html, htmlMots, ICHIBAN, MIJIKA, NAGA, nomDe, ONAJI, OOKI, PHRASES, segCm, segValeur, SUJI,
@@ -280,7 +281,7 @@ export function rappelDe(q) {
   if (q.type === 'trio') return [ICHIBAN, ' ', mot, 'い ＝ ', SUJI, 'が ', ICHIBAN, ' ', ...taille];
   // 1 m et 75 cm : la règle ne vaut qu'une fois dans la même unité.
   const unite = q.mixte ? [ONAJI, 'じ たんいなら '] : [];
-  return [...unite, mot, 'い ＝ ', SUJI, 'が ', ...taille];
+  return [...unite, ...tp(`regle.nagasa.${sens}`)];
 }
 
 // L'explication donne toujours les longueurs, la règle, puis la conclusion avec l'écart.

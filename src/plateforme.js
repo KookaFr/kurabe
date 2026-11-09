@@ -82,6 +82,20 @@ const stockage = (() => {
   };
 })();
 
+/* ----- Fichiers : enregistrer un fichier sur l'appareil (textes des aides, au format tableur) ----- */
+const fichiers = {
+  enregistrer(nom, contenu, type = 'text/plain') {
+    const url = URL.createObjectURL(new Blob([contenu], { type }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nom;
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  },
+};
+
 /* ----- Retour haptique ----- */
 const retour = {
   vibrer(ms) {
@@ -118,4 +132,4 @@ const installation = {
   },
 };
 
-export const plateforme = { voix, stockage, retour, installation };
+export const plateforme = { voix, stockage, retour, installation, fichiers };

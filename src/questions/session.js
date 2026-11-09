@@ -5,6 +5,7 @@
 import { objetDessine } from '../dessins.js';
 import { ecranActuel, focaliser, montrer, terminer } from '../ecrans.js';
 import { boutonMemori, dejaVue, ouvrirExplication } from '../explications.js';
+import { tp } from '../textes-perso.js';
 import { $, echapper } from '../outils.js';
 import { aideKazu, exempleDe } from './kazu.js';
 import {
@@ -17,7 +18,7 @@ import {
 } from './mv.js';
 import { reglages } from '../reglages.js';
 import { activable } from '../tactile.js';
-import { htmlMots, K, lecture, MI, nombreUnite, PHRASES, segU, segValeur, segValeurLue, TEHON, versParole } from '../texte.js';
+import { htmlMots, lecture, nombreUnite, PHRASES, segU, segValeur, segValeurLue, TEHON, versParole } from '../texte.js';
 import { parler, paroles, sons } from '../voix.js';
 
 /* ----- Série de questions ----- */
@@ -218,7 +219,7 @@ function messageAide(q) {
       const g = q.valeurs.find((v) => v.grande);
       return [segValeur(g), 'は ', segU(g.val, uniteDe(q.theme)), '。'];
     }
-    return q.theme === 'omosa' ? ['はかりで くらべて ', MI, 'よう。'] : ['カップで くらべて ', MI, 'よう。'];
+    return q.theme === 'omosa' ? tp('mv.aidePoids') : tp('mv.aideLiquide');
   }
   if (q.mixte && q.aide === 1) {
     const m = q.valeurs.find((v) => v.m);
@@ -284,7 +285,7 @@ export function repondre(reponse) {
   sons.oups();
   // Deviner faux dans 見た目と ちがう est le but du jeu : pas de « もう いっかい » à la première réponse.
   const devine = q.type === 'devine' && q.etape === 'devine';
-  donnerAide(q, devine ? [] : presque(q, reponse) ? ['おしい！ '] : ['もう いっかい！ '], reponse);
+  donnerAide(q, devine ? [] : presque(q, reponse) ? tp('presque') : tp('encore'), reponse);
 }
 
 // « おしい » n'est vrai que si la réponse était presque juste (14 pour 15, deux longueurs très proches) ;
@@ -410,10 +411,10 @@ export function nePasSavoir() {
     || (q.type === 'libre' && !q.aligne) || (q.type === 'transvaser' && q.etape === 'avant')
     || (q.type === 'devine' && q.etape === 'devine');
   if (q.sansSavoir === 1 || resteAide) {
-    donnerAide(q, ['だいじょうぶ！ ']);
+    donnerAide(q, tp('daijoubu'));
     return;
   }
-  resoudre(q, ['こたえを ', MI, 'て みよう。 ', ...explication(q)], false);
+  resoudre(q, [...tp('voirReponse'), ...explication(q)], false);
 }
 
 function rendreApresReponse(erreur) {
@@ -469,5 +470,5 @@ export function suivant() {
 
 function afficherFin() {
   const n = session.questions.filter((q) => q.type !== 'tuto').length;
-  terminer('question', [String(n), K('問', 'もん'), ' できたよ。']);
+  terminer('question', tp('finSerie', { 数: n }));
 }

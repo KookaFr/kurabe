@@ -5,6 +5,7 @@
 
 import { echapper } from './outils.js';
 import { reglages } from './reglages.js';
+import { tp } from './textes-perso.js';
 
 export const K = (k, y) => ({ k, y });
 // Valeur avec unité : affichée « 10 cm », lue « 10センチ ».
@@ -101,13 +102,14 @@ export const PHRASES = {
   ichibanMijikai: [ICHIBAN, ' ', MIJIKA, 'いのは どれ？'],
   tehon: [TEHON, 'と ', ONAJI, 'じ ', NAGA, 'さは どれ？'],
   nagaiMijikai: [NAGA, 'い？ ', MIJIKA, 'い？'],
-  seikai: [K('正解', 'せいかい'), '！ '],
-  oshii: ['おしい！ はしを よく ', K('見', 'み'), 'てね。'],
-  oshiiTehon: ['おしい！ ', TEHON, 'の はしと くらべてね。'],
-  oshiiSoroe: ['おしい！ はしを そろえて ', K('見', 'み'), 'よう。'],
-  barres: ['ぼうで くらべて ', K('見', 'み'), 'よう。'],
-  soroeta: ['はしを そろえたよ。'],
-  otsukare: ['おつかれさま！'],
+  // Modifiables par les parents ou l'enseignant (textes-perso.js) : lus au moment où on les affiche.
+  get seikai() { return tp('seikai'); },
+  get oshii() { return tp('nagasa.oshii'); },
+  get oshiiTehon() { return tp('nagasa.tehon'); },
+  get oshiiSoroe() { return tp('nagasa.soroe'); },
+  get barres() { return tp('nagasa.barres'); },
+  get soroeta() { return tp('nagasa.soroeta'); },
+  get otsukare() { return tp('otsukare'); },
 };
 
 // Nombre + unité : affiché « 10 g » (avec グラム en petit au-dessus), lu « 10グラム ».

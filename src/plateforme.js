@@ -92,7 +92,8 @@ const retour = {
 /* ----- Installation : le service worker (hors ligne, mises à jour) -----
    surNouvelleVersion(activer) : une nouvelle version attend ; activer() la met en service (la page se recharge). */
 const installation = {
-  possible: 'serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost'),
+  // Pas de service worker dans la page de démonstration (Artifact) : elle n'a pas de sw.js à côté.
+  possible: !window.KURABE_ARTIFACT && 'serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost'),
   enregistrerServiceWorker(surNouvelleVersion) {
     let rechargement = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {

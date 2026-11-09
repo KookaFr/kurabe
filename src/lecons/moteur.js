@@ -580,7 +580,7 @@ function poserPiece(k) {
   r.n -= 1;
   const piece = { v: r.v, c: r.c, m: r.m, id: ++compteurPieces };
   // Sans « vers », la pièce va sur le plateau (comme dans compteLecon).
-  if (et.vers === 'plateau' || !et.vers) e.plateau.push(piece);
+  if (et.vers === 'plateau' || et.vers === undefined) e.plateau.push(piece);
   else e.cotes[et.vers].push(piece);
   note(520 + Math.min(r.m, 100) * 2, { duree: 0.09, volume: 0.1, type: 'triangle' });
   if (reglages.sons) plateforme.retour.vibrer(8);

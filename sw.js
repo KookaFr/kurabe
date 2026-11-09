@@ -18,7 +18,12 @@ const FICHIERS = [
 self.addEventListener('install', (ev) => {
   // cache: 'reload' : on va chercher les fichiers sur le réseau, jamais dans le cache HTTP du navigateur
   // (sinon un module vieux de quelques minutes pouvait se retrouver dans le nouveau cache).
-  ev.waitUntil(caches.open(VERSION).then((c) => c.addAll(FICHIERS.map((f) => new Request(f, { cache: 'reload' })))));
+  ev.waitUntil(caches.open(VERSION)
+    .then((c) => c.addAll(FICHIERS.map((f) => new Request(f, { cache: 'reload' }))))
+    // Les versions 30 et plus anciennes n'ont pas la barre « あたらしく する » : on les remplace tout de suite,
+    // comme elles le faisaient elles-mêmes (la nouvelle version s'affiche au prochain lancement).
+    .then(() => caches.keys())
+    .then((cles) => { if (cles.some((c) => /^kurabe-v([12]?\d|30)$/.test(c))) self.skipWaiting(); }));
 });
 
 self.addEventListener('activate', (ev) => {
@@ -34,7 +39,9 @@ self.addEventListener('message', (ev) => {
   if (ev.data && ev.data.type === 'activer') self.skipWaiting();
 });
 
-// Cache d'abord (l'app marche sans réseau) ; le réseau rafraîchit le cache en arrière-plan.
+// Cache d'abord : l'app marche sans réseau. Les fichiers de la version ne sont jamais réécrits dans son cache
+// (sinon une version suivante s'y glisserait fichier par fichier) : on change de version en installant un nouveau
+// service worker, avec la barre « あたらしく する ». Seul un fichier absent du cache est demandé au réseau.
 self.addEventListener('fetch', (ev) => {
   const requete = ev.request;
   if (requete.method !== 'GET' || new URL(requete.url).origin !== self.location.origin) return;
@@ -42,14 +49,7 @@ self.addEventListener('fetch', (ev) => {
   const cle = requete.mode === 'navigate' ? './index.html' : requete;
   ev.respondWith(caches.open(VERSION).then(async (cache) => {
     const enCache = await cache.match(cle, { ignoreSearch: true });
-    const reseau = fetch(requete).then((r) => {
-      if (r.ok) cache.put(cle, r.clone());
-      return r;
-    }).catch(() => enCache || Response.error());
-    if (enCache) {
-      ev.waitUntil(reseau.catch(() => {}));
-      return enCache;
-    }
-    return reseau;
+    if (enCache) return enCache;
+    return fetch(requete).catch(() => Response.error());
   }));
 });

@@ -160,6 +160,10 @@ Pas d'outil de construction : `index.html` charge `src/app.js` comme module ES, 
 
 Vérifier : `npm run lint` (ESLint) et `npm test` (test de fumée Playwright sur quatre formats d'écran).
 
+Police : `polices/` contient BIZ UDPGothic réduite aux caractères de l'application (environ 150 Ko par graisse au lieu de 2,2 Mo) ; les polices complètes sont dans `polices/complet/` et ne sont jamais téléchargées par l'app. Après avoir ajouté des textes avec de nouveaux kanji : `python3 outils/police.py` (il faut `pip install fonttools brotli`). Un caractère absent s'affiche quand même, avec la police du système.
+
+Mise en ligne : `npm run version-sw <numéro>` change la version du service worker. Les appareils reçoivent la nouvelle version en arrière-plan, puis la barre 「あたらしく する」 la propose à l'accueil ; les fichiers d'une version ne sont jamais mélangés avec ceux de la suivante.
+
 ## インストール / Installation
 
 - **Android (Chrome)**: menu ⋮ › « Installer l'application » (アプリをインストール)

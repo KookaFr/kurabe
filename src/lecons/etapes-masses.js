@@ -8,7 +8,7 @@ import { enG, enKg, equilibre, guidePoids, P, somme, unePose } from './moteur.js
 import { aleatoire, choisir, entier } from '../outils.js';
 import { choixLecture, CHOSES, lectureHakari } from '../questions/mv.js';
 import { reglages } from '../reglages.js';
-import { AGA, KARU, ME, MI, nomDe, OMO, ONAJI, OOKI, SAGA, segU, SUJI, V } from '../texte.js';
+import { AGA, KARU, MEMORI, MI, nomDe, OMO, ONAJI, OOKI, SAGA, segU, SUJI, V } from '../texte.js';
 
 // てんびん (むかしの はかり) : à partir des poids identiques, les masses sont en g (おもり 1こ ＝ 100 g).
 export function etapesBalance() {
@@ -83,7 +83,7 @@ export function etapesUnites() {
     {
       dire: ['1えんだまを のせて、 ぜんぶで 10こに しよう。'],
       hakari: [P('yen1', 1)], reserve: [P('yen1', 1, 9)], vers: 'plateau', retirer: true, fini: (e) => total(e) === 10,
-      bravo: [enG(1), 'が 10こで ', enG(10), '。 はりが ちいさい ', ME, 'もり 1つ ぶん うごいた。'],
+      bravo: [enG(1), 'が 10こで ', enG(10), '。 はりが ちいさい ', MEMORI, ' 1つ ぶん うごいた。'],
     },
     {
       dire: ['こんどは ', enG(10), 'の おもりを 10こ のせよう。'],
@@ -93,7 +93,7 @@ export function etapesUnites() {
     {
       dire: [enG(100), 'の おもりを 5こ のせよう。'],
       hakari: [], reserve: [P('g100', 100, 5)], vers: 'plateau', retirer: true, fini: (e) => total(e) === 500,
-      bravo: [enG(100), 'が 5こで ', enG(500), '。 この はかりの いちばん ', OOKI, 'きい ', ME, 'もり。'],
+      bravo: [enG(100), 'が 5こで ', enG(500), '。 この はかりの いちばん ', OOKI, 'きい ', MEMORI, '。'],
     },
     {
       dire: [OOKI, 'きい はかりに かえたよ（', segU(2, 'kg'), ' まで）。 ', enG(100), 'の おもりを 10こ のせよう。'],
@@ -232,9 +232,15 @@ export function etapesHakari() {
       bravo: ['はりが 0 に もどった。 ', KARU, 'く なると、 はりは もどる。'],
     },
     {
-      dire: ['ちいさい ', ME, 'もりは 1つ ', enG(10), '。 ', enG(10), 'の おもりを 3こ のせて、 はりを ', MI, 'よう。'],
+      // 目もり : l'explication illustrée (bouton sous la はかり) avant de compter les petits traits.
+      dire: ['はかりの まわりの ほそい せんを よく ', MI, 'て みよう。 したの ボタンを おしてね。'],
+      hakari: [P('g100', 100)], explication: 'hakari', fini: (e) => e.explicationVue,
+      bravo: ['ほそい せんが ', MEMORI, '。 ', MEMORI, 'を かぞえると、 ', OMO, 'さが よめるね。'],
+    },
+    {
+      dire: ['ちいさい ', MEMORI, 'は 1つ ', enG(10), '。 ', enG(10), 'の おもりを 3こ のせて、 はりを ', MI, 'よう。'],
       hakari: [P('g100', 100)], reserve: [P('g10', 10, 5)], vers: 'plateau', retirer: true, fini: (e) => totalPlateau(e) === 130,
-      bravo: ['100 と、 ちいさい ', ME, 'もり 3つ。 ', enG(130), '。'],
+      bravo: ['100 と、 ちいさい ', MEMORI, ' 3つ。 ', enG(130), '。'],
     },
     etapeLecture(premiere),
     etapeLecture(seconde),

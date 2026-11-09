@@ -47,6 +47,11 @@ async function jouer(page) {
     await page.waitForTimeout(350);
     return true;
   };
+  // L'explication 「目もりって なに？」 (ouverte la première fois) : on la fait avancer.
+  if (await page.locator('#explication').isVisible()) {
+    await clic('#explication-suivant');
+    return;
+  }
   if (!(await page.locator('#ecran-etude').isHidden())) {
     if (!(await clic('#etude-suivant'))) if (!(await clic('.reserve-piece:not([disabled])'))) await clic('#etude-plus:not([disabled])');
     return;

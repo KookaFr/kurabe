@@ -4,6 +4,7 @@
 
 import { objetDessine } from '../dessins.js';
 import { ecranActuel, focaliser, montrer, terminer } from '../ecrans.js';
+import { boutonMemori, dejaVue, ouvrirExplication } from '../explications.js';
 import { $, echapper } from '../outils.js';
 import { aideKazu, exempleDe } from './kazu.js';
 import {
@@ -32,6 +33,8 @@ export function demarrer(niveau) {
   };
   montrer('question');
   afficherQuestion();
+  // La première fois, 「はかりを よもう」 commence par l'explication 「目もりって なに？」.
+  if (session.questions.some((q) => q.type === 'lecture') && !dejaVue('hakari')) ouvrirExplication('hakari', { apres: parlerConsigne });
 }
 
 export let debutAffichage = 0;   // le ResizeObserver ignore le changement de taille qui suit l'affichage d'une question
@@ -105,6 +108,12 @@ export function rendreQuestion() {
 
   if (estMV(q)) {
     rendreMV(q, etabli);
+    // Lire la はかり : le bouton 🔍「目もり？」 dans le coin de la scène.
+    if (q.type === 'lecture') {
+      const coin = boutonMemori('hakari');
+      coin.classList.add('coin');
+      etabli.append(coin);
+    }
     majBoutonAide();
     return;
   }

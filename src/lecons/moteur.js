@@ -19,6 +19,7 @@ import {
 } from '../dessins.js';
 import { terminer } from '../ecrans.js';
 import { etude, messageEtude } from '../etude/etude.js';
+import { boutonMemori } from '../explications.js';
 import {
   creerCorpsLecon, creerHiroLecon, creerShakuLecon, etapesCorps, etapesGou, etapesShaku, majCorpsLecon,
 } from './etapes-culture.js';
@@ -36,7 +37,7 @@ import { sansOshii } from '../questions/session.js';
 import { reglages } from '../reglages.js';
 import { activable } from '../tactile.js';
 import {
-  html, htmlMots, lecture, ME, MI, nombreUnite, nombreYomi, nomDe, OMO, OOKI, PHRASES, segU, uniteHtml, yomiNombre,
+  html, htmlMots, lecture, MEMORI, MI, nombreUnite, nombreYomi, nomDe, OMO, OOKI, PHRASES, segU, uniteHtml, yomiNombre,
 } from '../texte.js';
 import { note, parler, sons } from '../voix.js';
 
@@ -159,6 +160,7 @@ function commencerEtape() {
   e.etatLecon = null;
   e.guide = false;
   e.aPoser = null;
+  e.explicationVue = false;
   arreterVersement(false);
   e.liq = et.versement ? nouveauVersement(et.versement) : null;
   messageEtude([]);
@@ -242,6 +244,23 @@ export function rendreLecon() {
       choix.append(b);
     });
   }
+  // Étape « explication » (目もり) : un grand bouton à la place des choix ; l'étape est réussie
+  // quand on a regardé l'explication jusqu'au bout.
+  if (et.explication) {
+    commandes.hidden = false;
+    choix.hidden = false;
+    const b = boutonMemori(et.explication, {
+      grand: true,
+      apres: (jusquauBout) => {
+        if (!jusquauBout || etude !== e || e.etape !== et || e.resolu) return;
+        e.explicationVue = true;
+        verifierLecon(null);
+        rendreLecon();
+      },
+    });
+    b.classList.toggle('a-regarder', !e.resolu);
+    choix.append(b);
+  }
 
   const plan = $('etude-plan');
   plan.classList.remove('anime');
@@ -270,6 +289,12 @@ export function rendreLecon() {
   reserve.className = 'reserve';
   reserve.hidden = !avecReserve;
   plan.append(instrument, reserve);
+  // Lire la はかり : le bouton 🔍「目もり？」 dans le coin (はかりの よみかた, はかって みよう).
+  if (scene === 'hakari' && !et.explication && ['lecon-hakari', 'lecon-pratique'].includes(e.mode)) {
+    const coin = boutonMemori('hakari');
+    coin.classList.add('coin');
+    plan.append(coin);
+  }
   e.scene = { instrument, reserve };
   majLecon();
   requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -690,7 +715,7 @@ function choisirLecon(v) {
   }
   e.essais.add(v);
   sons.oups();
-  let message = et.choix.indice || ['おしい！ はりの さきを よく ', MI, 'てね。 ', OOKI, 'きい ', ME, 'もりから かぞえよう。'];
+  let message = et.choix.indice || ['おしい！ はりの さきを よく ', MI, 'てね。 ', OOKI, 'きい ', MEMORI, 'から かぞえよう。'];
   // « おしい » seulement si c'est presque juste (17 pour 16, pas 71 pour 17).
   if (Math.abs(v - et.choix.bonne) > Math.max(1, Math.abs(et.choix.bonne) * 0.1)) message = ['もう いっかい！ ', ...sansOshii(message)];
   messageEtude(message);

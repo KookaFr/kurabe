@@ -12,6 +12,7 @@ import {
   verifierEtudeMV, volumeMax,
 } from './verre.js';
 import { demarrerLecon, estLecon, LECONS, leconSuivante, rendreLecon } from '../lecons/moteur.js';
+import { dejaVue, ouvrirExplication } from '../explications.js';
 import { $, entier } from '../outils.js';
 import { plateforme } from '../plateforme.js';
 import { ecrireReglages, reglages } from '../reglages.js';
@@ -46,6 +47,8 @@ export function demarrerEtude(mode) {
   montrer('etude');
   rendreChoixMax();
   nouveauProbleme();
+  // La première fois, le verre doseur commence par l'explication 「目もりって なに？」.
+  if (mode === 'verre' && !dejaVue('kappu')) ouvrirExplication('kappu', { apres: () => parler(consigneEtude(true)) });
 }
 
 function nouveauProbleme() {
@@ -323,6 +326,7 @@ export function installerGestesEtude() {
 
   plan.addEventListener('pointerdown', (ev) => {
     if (!etude || etude.resolu || estLecon()) return;
+    if (ev.target.closest('.btn-memori')) return;   // le bouton 🔍「目もり？」 n'est pas un geste
     ev.preventDefault();
     plan.setPointerCapture(ev.pointerId);
     const cible = presDuDepart(ev) ? 'depart' : 'fin';

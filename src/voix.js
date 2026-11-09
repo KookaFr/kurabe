@@ -162,7 +162,7 @@ export function installerLectureAuToucher() {
     if (!depart || !lectureActive()) return;
     const bouge = Math.hypot(ev.clientX - depart.x, ev.clientY - depart.y) > 12 || performance.now() - depart.t > 1500;
     depart = null;
-    if (bouge || ev.target.closest('button, a, input, label, select, textarea, .zone-etude')) return;
+    if (bouge || ev.target.closest('button, [role="button"], a, input, label, select, textarea, .zone-etude, .explication')) return;
     if (ev.target.closest('#ecran-parents, #ecran-photo')) return;
     const bloc = ev.target.closest('.phrase-lue') || ev.target.closest(LISIBLE);
     // Un bloc qui a sa propre phrase à dire (le rappel « 16 ＝ じゅうろく » → « この すうじは じゅうろく »).

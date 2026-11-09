@@ -81,6 +81,23 @@ export const ACTIVITES = [
   { n: 34, theme: 'kasa', groupe: 'culture', etude: 'lecon-gou', titre: ['ごうと しょう'], sous: ['おこめの カップ'], fr: 'ね、しっていた？ 合 et 升 : 1 合 ＝ 180 mL (le riz), 1 升 ＝ 1,8 L', barres: 'lecon-gou' },
 ];
 export const themeDe = (a) => a.theme || 'nagasa';
+
+// Liens entre もんだい et べんきょう : à la fin d'une série, un bouton propose l'activité liée
+// (après はかりを よもう → la leçon はかりの よみかた ; après la leçon → les questions).
+export const LIENS = {
+  // もんだい → べんきょう
+  35: 39, 36: 39, 37: 40, 38: 40,
+  6: 10, 7: 10,
+  25: 28, 14: 28, 15: 28, 29: 28, 16: 27, 17: 27, 13: 26,
+  22: 24, 23: 24,
+  // べんきょう → もんだい
+  39: 35, 40: 37, 41: 36,
+  10: 6, 11: 6, 12: 6,
+  28: 29, 27: 16, 30: 29, 26: 13,
+  24: 22,
+};
+export const activiteLiee = (n) => ACTIVITES.find((a) => a.n === LIENS[n]) || null;
+export const lancerActivite = (a) => (a.etude ? demarrerEtude(a.etude) : demarrer(a.n));
 // Numéro affiché : 1, 2, 3… dans chaque onglet (les もんだい, puis les べんきょう).
 // Trois groupes : もんだい, べんきょう, puis ね、しっていた？ (la culture : むかしは…).
 const groupeDe = (a) => a.groupe || (a.etude ? 'etude' : 'probleme');
@@ -293,7 +310,7 @@ export function rendreAccueil() {
       carte.innerHTML = `<span class="numero">${numeroAffiche(a)}</span>${svgActivite(a.barres)}`
         + `<strong>${html(a.titre)}</strong><span class="sous">${html(a.sous)}</span>`;
       carte.setAttribute('aria-label', `${numeroAffiche(a)}. ${lecture(a.titre)} ${lecture(a.sous)}`);
-      activable(carte, () => (a.etude ? demarrerEtude(a.etude) : demarrer(a.n)));
+      activable(carte, () => lancerActivite(a));
       zone.append(carte);
     });
   });

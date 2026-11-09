@@ -17,7 +17,7 @@ import { courante, repondre } from './session.js';
 import { reglages } from '../reglages.js';
 import { activable } from '../tactile.js';
 import {
-  AGA, CHIISA, html, htmlMots, ICHIBAN, KARU, ME, MI, MOTS, nombreUnite, nomDe, OMO, ONAJI, OO_I, OOKI, SAGA, segU,
+  AGA, CHIISA, html, htmlMots, ICHIBAN, KARU, MEMORI, MI, MOTS, nombreUnite, nomDe, OMO, ONAJI, OO_I, OOKI, SAGA, segU,
   segValeur, SUJI, SUKU,
 } from '../texte.js';
 
@@ -324,8 +324,8 @@ export function consigneMV(q) {
 export function rappelMV(q) {
   if (q.theme === 'kazu') return rappelKazu(q);
   if (q.type === 'lecture') {
-    if (q.pas === 100) return [OOKI, 'きい ', ME, 'もり 1つ ＝ ', segU(100, 'g')];
-    return ['ちいさい ', ME, 'もり 1つ ＝ ', segU(10, 'g')];
+    if (q.pas === 100) return [OOKI, 'きい ', MEMORI, ' 1つ ＝ ', segU(100, 'g')];
+    return ['ちいさい ', MEMORI, ' 1つ ＝ ', segU(10, 'g')];
   }
   const mot = motDe(q.theme, q.demande);
   const taille = q.demande === 'plus' ? [OOKI, 'きい'] : [CHIISA, 'さい'];
@@ -402,7 +402,7 @@ export function messageErreurMV(q) {
   }
   if (q.type === 'balance') return ['おしい！ ', ...regleBalance(q.demande)];
   if (q.type === 'hakari') return ['おしい！ はりを よく ', MI, 'てね。'];
-  if (q.type === 'lecture') return ['おしい！ はりの さきを よく ', MI, 'てね。 ', OOKI, 'きい ', ME, 'もりから かぞえよう。'];
+  if (q.type === 'lecture') return ['おしい！ はりの さきを よく ', MI, 'てね。 ', OOKI, 'きい ', MEMORI, 'から かぞえよう。'];
   if (q.type === 'transvaser' && q.versePourErreur) {
     q.versePourErreur = false;
     return ['おしい！ ', ...ouVerser(q), ' うつして くらべよう。 うつしても かさは かわらないよ。'];
@@ -979,9 +979,9 @@ function rendreMesuresQ(q, scene, W, H) {
 export function lectureHakari(v) {
   const c = Math.floor(v / 100) * 100;
   const p = (v - c) / 10;
-  if (!c) return ['ちいさい ', ME, 'もり ', String(p), 'つ。 ', segU(v, 'g'), '。'];
+  if (!c) return ['ちいさい ', MEMORI, ' ', String(p), 'つ。 ', segU(v, 'g'), '。'];
   if (!p) return ['はりは ', String(c), 'を さして いる。 ', segU(v, 'g'), '。'];
-  return [String(c), 'と、 ちいさい ', ME, 'もり ', String(p), 'つ。 ', segU(v, 'g'), '。'];
+  return [String(c), 'と、 ちいさい ', MEMORI, ' ', String(p), 'つ。 ', segU(v, 'g'), '。'];
 }
 
 export function choixLecture(v) {

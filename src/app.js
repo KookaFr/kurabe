@@ -13,8 +13,11 @@
    Tout reste sur l'appareil : aucun compte, aucune donnée envoyée.
    ========================================================================== */
 
-import { rendreAccueil } from './accueil.js';
-import { appliquerAnimations, ecranActuel, finDe, montrer, proposerMiseAJour } from './ecrans.js';
+import { ACTIVITES, activiteLiee, lancerActivite, rendreAccueil } from './accueil.js';
+import {
+  appliquerAnimations, definirLiens, ecranActuel, finDe, lienActuel, montrer, proposerMiseAJour,
+} from './ecrans.js';
+import { installerMotsAide } from './explications.js';
 import {
   bouger, consigneEtude, demarrerEtude, etude, installerGestesEtude, rendreEtude, suivantEtude,
 } from './etude/etude.js';
@@ -40,6 +43,13 @@ activable($('quitter-oui'), () => { rendreAccueil(); montrer('accueil'); });
 activable($('quitter-non'), () => { $('confirmation-quitter').hidden = true; });
 activable($('btn-recommencer'), () => (finDe === 'etude' ? demarrerEtude(etude.mode) : demarrer(session.niveau)));
 activable($('btn-menu'), () => { rendreAccueil(); montrer('accueil'); });
+// Fin d'une série : l'activité liée (もんだい ↔ べんきょう).
+definirLiens((de) => {
+  const a = de === 'etude' ? ACTIVITES.find((x) => x.etude === etude?.mode) : ACTIVITES.find((x) => x.n === session?.niveau);
+  const cible = a && activiteLiee(a.n);
+  return cible ? { cible } : null;
+});
+activable($('btn-lien'), () => { if (lienActuel) lancerActivite(lienActuel.cible); });
 
 activable($('etude-plus'), () => bouger(1, 'petit'));
 activable($('etude-moins'), () => bouger(-1, 'petit'));
@@ -56,6 +66,7 @@ $('btn-fermer-parents').addEventListener('click', () => { rendreAccueil(); montr
 installerBoutonsLire();
 installerLectureAuToucher();
 installerPhotos();
+installerMotsAide();
 
 // Les voix arrivent parfois après le démarrage : la liste de l'espace parents se met à jour.
 plateforme.voix.surChangementVoix(() => { if (ecranActuel === 'parents') rendreParents(); });

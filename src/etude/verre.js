@@ -4,6 +4,7 @@
    ====================================================================== */
 
 import { creerVerreGradue, dessinerEcart } from '../dessins.js';
+import { boutonMemori } from '../explications.js';
 import { etude, majCommandesEtude, messageEtude, reussirEtude } from './etude.js';
 import { $, entier } from '../outils.js';
 import { reglages } from '../reglages.js';
@@ -74,7 +75,10 @@ function dessinerEtudeVerre(plan) {
     poignee.innerHTML = '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8l5-5 5 5M7 16l5 5 5-5M12 3v18"/></svg>';
     const bulle = document.createElement('span');
     bulle.className = 'bulle-etude bulle-verre';
-    plan.append(v, poignee, bulle);
+    // 🔍「目もり？」 : l'explication illustrée de la カップ, dans le coin.
+    const coin = boutonMemori('kappu');
+    coin.classList.add('coin');
+    plan.append(v, poignee, bulle, coin);
     e.geo = { ppm: (h - 4) / cap, bas: H - 12 - 4, gauche, w };
     requestAnimationFrame(() => requestAnimationFrame(() => plan.classList.add('anime')));
   }
@@ -89,6 +93,8 @@ function dessinerEtudeVerre(plan) {
   // À droite de la poignée, à la hauteur du niveau (sans la cacher).
   bulle.style.left = `${gauche + w + 62}px`;
   bulle.style.top = `${y - 19}px`;
+  // Le bouton 🔍「目もり？」 se met en bas quand le niveau (et sa bulle) est en haut, et inversement.
+  plan.querySelector('.btn-memori.coin')?.classList.toggle('en-bas', y < plan.clientHeight / 2);
   plan.querySelectorAll('.ecart').forEach((x) => x.remove());
   if (e.resolu && e.base) {
     const yBase = bas - e.base * ppm;

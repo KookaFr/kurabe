@@ -28,6 +28,8 @@ const pionsColores = (t) => t.replace(/●/g, '<mark>●</mark>').replace(/◆/g
 export function html(segments) {
   return segments.map((s) => {
     if (typeof s === 'string' || typeof s === 'number') return pionsColores(echapper(s));
+    // Mot qu'on peut toucher pour une explication (<aide-memori>, sans espace : voir htmlMots).
+    if (s.mot) return `<aide-${s.mot}>${html(s.segs)}</aide-${s.mot}>`;
     if (s.u) return nombreUnite(s.x, s.u);
     if (s.d !== undefined) return echapper(s.d);
     if (reglages.ecriture === 'kanji' && s.k) return `<ruby>${echapper(s.k)}<rt>${echapper(s.y)}</rt></ruby>`;
@@ -64,6 +66,9 @@ export const ICHIBAN = K('一番', 'いちばん');
 export const TEHON = K('手本', 'てほん');
 export const ONAJI = K('同', 'おな');
 export const ME = K('目', 'め');   // 目もり (graduations), écrit comme dans les manuels
+// 目もり qu'on peut toucher : ouvre l'explication illustrée 「目もりって なに？」 (explications.js).
+// Seulement dans les consignes et les explications, jamais dans un bouton.
+export const MEMORI = { mot: 'memori', segs: [ME, 'もり'], s: 'めもり', y: 'めもり' };
 
 // Ce qu'on compare, c'est le nombre écrit (sur la règle, la はかり, l'étiquette) : 「すうじ」.
 // (「かず」 évoque d'abord le nombre d'objets qu'on compte.)

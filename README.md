@@ -137,6 +137,29 @@ Vous pourrez aussi y ajouter des photos d'objets de la maison. Avec leur longueu
 
 Les photos et les réglages restent sur l'appareil. Aucun compte n'est nécessaire, et rien n'est envoyé sur Internet.
 
+## Structure du code
+
+Pas d'outil de construction : `index.html` charge `src/app.js` comme module ES, qui importe le reste. Un module par sujet, en français dans les commentaires :
+
+- `src/app.js` : point d'entrée ; branche les boutons, les gestes et les changements de taille, puis démarre (accueil, photos, service worker).
+- `src/plateforme.js` : tout ce qui touche à l'appareil (voix `speechSynthesis`, stockage IndexedDB, vibration, service worker) ; c'est ici qu'une application native (Capacitor) se branchera.
+- `src/outils.js` : `$`, `echapper`, tirages au hasard.
+- `src/reglages.js` : réglages par défaut, lecture et écriture sur l'appareil.
+- `src/texte.js` : textes japonais (kanji avec furigana ou hiragana), unités, lecture des nombres en hiragana, compteurs (助数詞), ce que dit la voix.
+- `src/voix.js` : parler, lire ce qu'on touche (bouton 👆), sons.
+- `src/tactile.js` : garde tactile (appui maintenu, anti-rebond, tolérance au glissement).
+- `src/photos.js` : photos des objets de la maison et écran d'ajout (recadrage, nom, mesures).
+- `src/dessins.js` : objets dessinés, règle graduée, balance, はかり, verres et récipients.
+- `src/ecrans.js` : passage d'un écran à l'autre, écran de fin, barre de mise à jour, animations réduites.
+- `src/accueil.js` : onglets, liste des activités et leurs cartes.
+- `src/questions/session.js` : une série de questions (affichage, réponses, aides, « わからない », question suivante).
+- `src/questions/longueurs.js`, `src/questions/mv.js` (おもさ・かさ), `src/questions/kazu.js` : génération, phrases et rendu des questions de chaque onglet.
+- `src/etude/etude.js`, `src/etude/ruban.js`, `src/etude/verre.js` : べんきょう (le ruban sur la règle, le verre doseur).
+- `src/lecons/moteur.js` : les leçons guidées (étapes, pièces à poser ou enlever, réserve, vérification) ; `etapes-kazu.js`, `etapes-masses.js`, `etapes-culture.js`, `versement.js` : les étapes de chaque leçon.
+- `src/parents.js` : l'espace parents (textes français / japonais, réglages, photos).
+
+Vérifier : `npm run lint` (ESLint) et `npm test` (test de fumée Playwright sur quatre formats d'écran).
+
 ## インストール / Installation
 
 - **Android (Chrome)**: menu ⋮ › « Installer l'application » (アプリをインストール)

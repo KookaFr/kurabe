@@ -5,7 +5,7 @@
   "description": "くらべよう — compter et comparer des longueurs, des masses et des liquides",
   "scripts": {
     "test": "node tests/fumee.js",
-    "lint": "eslint kurabe.js sw.js tests outils",
+    "lint": "eslint src sw.js tests outils",
     "version-sw": "node outils/version.js",
     "verifier": "npm run lint && npm test"
   },

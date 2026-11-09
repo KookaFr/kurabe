@@ -2181,30 +2181,41 @@ html[data-motion="reduce"] .dessin-memori *, html[data-motion="reduce"] .btn-mem
 .case-oto .oto-yomi b { color: var(--o5); font-weight: 800; }
 .case-oto.change { border-color: var(--o5); background: color-mix(in srgb, var(--o5) 12%, var(--surface)); }
 .case-oto.en-appui { transform: scale(.96); }
-.case-oto.petite { min-height: 52px; min-width: 76px; }
-.case-oto.petite .oto-nombre { font-size: 1.2rem; }
 .oto-question .oto-tas { display: grid; grid-template-columns: repeat(var(--n, 5), auto); gap: 2px 6px; font-size: clamp(1.6rem, 6vw, 2.6rem); line-height: 1.15; letter-spacing: 0; }
 .oto-question .case-oto { min-width: 120px; min-height: 96px; cursor: default; }
 .oto-question .case-oto .oto-nombre { font-size: 2.6rem; }
 .oto-question .case-oto .oto-yomi { font-size: 1.6rem; color: var(--action); }
-.oto-resume { gap: 10px; }
-.oto-ligne { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; }
-.oto-chose { font-size: 1.6rem; }
-.oto-compteur { min-width: 2.6em; font-weight: 800; font-size: 1.1rem; }
+/* Le résumé : un tableau nombres × compteurs */
+.oto-table { border-collapse: separate; border-spacing: 6px; width: min(100%, 620px); table-layout: fixed; }
+.oto-table th { font-weight: 800; font-size: 1.15rem; }
+.oto-table thead th span { margin-right: .2em; }
+.oto-table tbody th { width: 2.4em; text-align: right; padding-right: 4px; font-size: 1.4rem; }
+.oto-table td { padding: 0; }
+.case-mini {
+  width: 100%; min-height: 44px; padding: 4px 2px; border: 2px solid var(--bord); border-radius: 10px;
+  background: var(--surface); font-size: 1.1rem; line-height: 1.2; word-break: keep-all; touch-action: manipulation; cursor: pointer;
+  color: var(--encre-douce);
+}
+.case-mini b { color: var(--o5); font-weight: 800; }
+.case-mini.change { border-color: var(--o5); background: color-mix(in srgb, var(--o5) 12%, var(--surface)); color: var(--encre); }
+.case-mini.en-appui { transform: scale(.96); }
+@media (max-width: 480px) {
+  .oto-table { border-spacing: 4px; }
+  .oto-table th { font-size: 1rem; }
+  .oto-table tbody th { width: 1.9em; font-size: 1.2rem; }
+  .case-mini { font-size: .95rem; padding: 3px 1px; }
+}
+@media (orientation: landscape) and (max-height: 520px) {
+  .oto-table { border-spacing: 3px 2px; }
+  .case-mini { min-height: 34px; padding: 1px; font-size: .9rem; }
+  .oto-table tbody th { font-size: 1.05rem; }
+}
 /* Téléphone debout : deux colonnes (1 à 5, puis 6 à 10), le nombre à gauche de sa lecture. */
 @media (max-width: 480px) {
   .oto-tableau .oto-grille { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(var(--lignes, 5), auto); grid-auto-flow: column; gap: 6px; }
   .oto-tableau .case-oto { flex-direction: row; justify-content: flex-start; gap: 6px; min-height: 44px; padding: 4px 6px; border-width: 2px; border-radius: 10px; }
   .oto-tableau .case-oto .oto-nombre { min-width: 1.3em; text-align: right; font-size: 1.2rem; }
   .oto-tableau .case-oto .oto-yomi { font-size: .92rem; }
-  /* Le résumé : le compteur sur sa ligne, puis ses nombres côte à côte. */
-  .oto-ligne { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); width: 100%; gap: 4px; }
-  .oto-ligne .oto-chose, .oto-ligne .oto-compteur { grid-column: span 5; display: none; }
-  .oto-ligne .oto-compteur { display: block; text-align: left; font-size: 1rem; }
-  .oto-ligne .oto-compteur::before { content: attr(data-emoji) " "; }
-  .case-oto.petite { min-width: 0; min-height: 46px; padding: 2px 1px; border-width: 2px; border-radius: 10px; }
-  .case-oto.petite .oto-nombre { font-size: 1.05rem; }
-  .case-oto.petite .oto-yomi { font-size: .64rem; letter-spacing: -.02em; }
 }
 @media (orientation: landscape) and (max-height: 520px) {
   .oto-lecon { gap: 6px; }

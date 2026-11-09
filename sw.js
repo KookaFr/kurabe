@@ -2,7 +2,7 @@
    VERSION change à chaque mise à jour (npm run version-sw l'écrit depuis git) : le nouveau cache se remplit,
    puis la page propose « あたらしく する » ; l'ancienne version reste servie jusqu'à ce que l'élève accepte,
    pour ne jamais mélanger un index.html neuf et des modules src/ anciens. */
-const VERSION = 'kurabe-v32-f364622';
+const VERSION = 'kurabe-v32-171f49c';
 const FICHIERS = [
   './index.html', './kurabe.css', './manifest.webmanifest',
   './icone.svg', './icone-180.png', './icone-192.png', './icone-512.png', './icone-maskable-512.png',

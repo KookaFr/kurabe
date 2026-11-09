@@ -160,6 +160,8 @@ export function versParole(texte) {
     // 1こ → いっこ (la voix disait « いちこ »), 1かい → いっかい, 1しょう → いっしょう, 1すん → いっすん…
     .replace(/(\d+)\s*(こ|かい|しょう|すん|しゃく|さつ)/g, (m, n, c) => lectureSokuon(Number(n), c) || m)
     .replace(/→/g, ' で ')
+    // « おとが かわるよ： 1、 3… » : la voix enchaînait trop vite ; « ： » se dit comme une fin de phrase.
+    .replace(/\s*：\s*/g, '。 ')
     .replace(/●/g, 'まる')
     .replace(/\s+/g, ' ')
     .trim();

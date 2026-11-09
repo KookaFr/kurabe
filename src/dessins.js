@@ -255,7 +255,13 @@ export function tournerAiguille(svg, val, max) {
   svg.querySelector('.secteur').style.strokeDasharray = `${angle} 360`;
 }
 
-export function creerHakari(D, max, options) {
+// Un petit cadran (téléphone) ne peut pas porter 11 nombres : au plus 6 (0, 200, 400… 1000).
+const pasPetitCadran = (max) => [100, 200, 500, 1000].find((p) => max / p <= 5) || 1000;
+export function creerHakari(D, max, options = {}) {
+  if (options.etiquette === undefined && D < 240) {
+    const etiquette = pasPetitCadran(max);
+    options = { ...options, etiquette, trait: etiquette / 10 };
+  }
   const corps = document.createElement('span');
   corps.className = 'hakari-corps';
   corps.style.width = `${D * 1.12}px`;

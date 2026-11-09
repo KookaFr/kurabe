@@ -12,7 +12,9 @@ import {
   explication, genererQuestion, libres, lignes, phraseDe, rappelDe, reinitialiserLongueurs, rendreLibre,
   rendrePhrase, valeurCm,
 } from './longueurs.js';
-import { cibles, estMV, messageErreurMV, ouVerser, regleMV, reinitialiserCibles, rendreMV, uniteDe } from './mv.js';
+import {
+  cibles, estMV, messageErreurMV, ouVerser, regleMV, reinitialiserCibles, remplirChoixLecture, rendreMV, uniteDe,
+} from './mv.js';
 import { reglages } from '../reglages.js';
 import { activable } from '../tactile.js';
 import { htmlMots, K, lecture, MI, nombreUnite, PHRASES, segU, segValeur, TEHON, versParole } from '../texte.js';
@@ -107,6 +109,7 @@ export function rendreQuestion() {
   reinitialiserCibles();
 
   if (estMV(q)) {
+    if (q.type === 'lecture') remplirChoixLecture(q);
     rendreMV(q, etabli);
     // Lire la はかり : le bouton 🔍「目もり？」 dans le coin de la scène.
     if (q.type === 'lecture') {

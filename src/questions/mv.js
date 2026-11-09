@@ -468,7 +468,8 @@ function rendreLectureQ(q, scene, W, H) {
   const col = document.createElement('div');
   col.className = 'hakari hakari-lecture';
   const hCharge = Math.max(50, Math.min(140, H * 0.3));
-  const D = Math.max(90, Math.min(H - hCharge - 24, W * 0.6, 300));
+  // Toute la はかり doit tenir : la charge, le plateau (≈ 14 px) et le corps (1,08 × le cadran).
+  const D = Math.max(80, Math.min((H - hCharge - 18) / 1.08, W * 0.6, 300));
   const charge = document.createElement('span');
   charge.className = 'hakari-charge';
   charge.style.height = `${hCharge}px`;
@@ -485,7 +486,11 @@ function rendreLectureQ(q, scene, W, H) {
   if (q.vuAiguilles || animationsReduites()) tournerAiguille(svg, q.valeur, q.max);
   else setTimeout(() => { scene.classList.add('anime'); tournerAiguille(svg, q.valeur, q.max); }, 400);
   q.vuAiguilles = true;
-  // Les trois réponses, en grands boutons sous l'établi.
+}
+
+// Les trois réponses de 「はかりを よもう」, en grands boutons sous l'établi. Elles s'affichent AVANT
+// qu'on mesure la place de la はかり (sinon elle était dessinée trop grande, puis coupée en bas).
+export function remplirChoixLecture(q) {
   const choix = $('choix-mots');
   choix.hidden = false;
   choix.replaceChildren();
@@ -957,7 +962,8 @@ function rendreMesuresQ(q, scene, W, H) {
     col.append(bouton);
     if (jauges) {
       if (q.theme === 'omosa') {
-        const corps = creerHakari(Math.max(50, Math.min(colW * 0.62, hJauge / 1.1, 200)), q.max);
+        // Le corps fait 1,12 × le cadran : 0,85 × la colonne laisse une petite marge.
+        const corps = creerHakari(Math.max(50, Math.min(colW * 0.85, hJauge / 1.1, 220)), q.max);
         cadrans.push([corps.querySelector('svg'), v.val]);
         col.append(corps);
       } else {

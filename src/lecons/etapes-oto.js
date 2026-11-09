@@ -38,7 +38,7 @@ const change = (n, c) => COMPTEURS[c].change.includes(n <= 10 ? n : dernier(n));
 // La lecture avec ce qui change en gras : ろっ|ぽん (le nombre et/ou le compteur).
 function lectureMarquee(n, c) {
   const y = lectureCompteur(n, c);
-  if (!change(n, c)) return echapper(y);
+  if (!change(n, c)) return c === 'にん' ? echapper(y) : `${echapper(y.slice(0, y.length - c.length))}<wbr>${echapper(c)}`;
   if (c === 'にん') return `<b>${echapper(y)}</b>`;
   const u = dernier(n);
   const base = COMPTEURS[c].yomi[u - 1];   // ろっぽん
@@ -47,7 +47,8 @@ function lectureMarquee(n, c) {
   const debut = base.slice(0, base.length - c.length);
   const fin = base.slice(base.length - c.length);
   const marque = (x, ok) => (ok ? echapper(x) : `<b>${echapper(x)}</b>`);
-  return `${echapper(avant)}${marque(debut, debut === simple)}${marque(fin, fin === c)}`;
+  // <wbr> : sur une case étroite, la lecture passe à la ligne entre le nombre et le compteur (じゅっ／ぽん).
+  return `${echapper(avant)}${marque(debut, debut === simple)}<wbr>${marque(fin, fin === c)}`;
 }
 
 const listeDite = (c, nombres) => V('', ` ${nombres.map((n) => lectureCompteur(n, c)).join('、 ')}。`);
@@ -113,10 +114,10 @@ export function etapesOto() {
 
 /* ----- La scène : le tableau des lectures, la question, ou le résumé ----- */
 
-function caseLecture(n, c, { cachee = false, petite = false } = {}) {
+function caseLecture(n, c, { cachee = false } = {}) {
   const b = document.createElement('button');
   b.type = 'button';
-  b.className = `case-oto${change(n, c) ? ' change' : ''}${petite ? ' petite' : ''}`;
+  b.className = `case-oto${change(n, c) ? ' change' : ''}`;
   b.innerHTML = `<span class="oto-nombre">${n}</span><span class="oto-yomi">${cachee ? '？' : lectureMarquee(n, c)}</span>`;
   b.setAttribute('aria-label', cachee ? `${n}` : lectureCompteur(n, c));
   if (!cachee) activable(b, () => parler(lectureCompteur(n, c)), { garde: false });
@@ -128,14 +129,33 @@ export function creerOtoLecon(W, H, et) {
   el.className = 'oto-lecon';
   const { c, nombres, question, resume } = et.oto;
   if (resume) {
+    // Le résumé en tableau : les nombres en lignes (1, 3, 6, 8, 10…), les compteurs en colonnes.
+    // On voit d'un coup d'œil où le son change (en orange) et où il ne change pas (さんこ).
     el.classList.add('oto-resume');
-    resume.forEach((k) => {
-      const ligne = document.createElement('div');
-      ligne.className = 'oto-ligne';
-      ligne.innerHTML = `<span class="oto-chose" aria-hidden="true">${CHOSES[k].emoji}</span><span class="oto-compteur" data-emoji="${CHOSES[k].emoji}">${k}</span>`;
-      COMPTEURS[k].change.forEach((n) => ligne.append(caseLecture(n, k, { petite: true })));
-      el.append(ligne);
+    const nombres = [...new Set(resume.flatMap((k) => COMPTEURS[k].change))].sort((a, b) => a - b);
+    const table = document.createElement('table');
+    table.className = 'oto-table';
+    table.style.setProperty('--colonnes', String(resume.length));
+    const tete = resume.map((k) => `<th scope="col"><span aria-hidden="true">${CHOSES[k].emoji}</span>${echapper(k)}</th>`).join('');
+    table.innerHTML = `<thead><tr><td></td>${tete}</tr></thead><tbody></tbody>`;
+    const corps = table.querySelector('tbody');
+    nombres.forEach((n) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<th scope="row">${n}</th>`;
+      resume.forEach((k) => {
+        const td = document.createElement('td');
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = `case-mini${change(n, k) ? ' change' : ''}`;
+        b.innerHTML = lectureMarquee(n, k);
+        b.setAttribute('aria-label', lectureCompteur(n, k));
+        activable(b, () => parler(lectureCompteur(n, k)), { garde: false });
+        td.append(b);
+        tr.append(td);
+      });
+      corps.append(tr);
     });
+    el.append(table);
   } else if (question) {
     el.classList.add('oto-question');
     const tas = document.createElement('div');

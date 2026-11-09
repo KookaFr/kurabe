@@ -333,7 +333,7 @@ export function rappelMV(q) {
   if (q.type === 'balance') {
     return q.demande === 'plus' ? [SAGA, 'がった ほう ＝ ', OMO, 'い'] : [AGA, 'がった ほう ＝ ', KARU, 'い'];
   }
-  if (q.type === 'devine' && balanceNumerique()) {
+  if ((q.type === 'devine' || (q.type === 'hakari' && q.simple)) && balanceNumerique()) {
     return q.demande === 'plus' ? [SUJI, 'が ', OOKI, 'きい ほう ＝ ', OMO, 'い'] : [SUJI, 'が ', CHIISA, 'さい ほう ＝ ', KARU, 'い'];
   }
   if ((q.type === 'hakari' && q.simple) || q.type === 'devine') {
@@ -378,7 +378,7 @@ export function explicationMV(q) {
   const leger = 1 - lourd;
   if (q.type === 'hakari' || q.type === 'devine') {
     const piege = q.type === 'devine' && q.piege ? [referenceMV(q, leger), 'は ', OOKI, 'きい けど ', KARU, 'いね。 '] : [];
-    if (q.type === 'devine' && balanceNumerique()) {
+    if (balanceNumerique()) {
       return q.demande === 'plus'
         ? ['はかりの ', SUJI, 'が ', OOKI, 'きい ほうが ', OMO, 'い。 ', ...mesures, ...piege, 'だから ', referenceMV(q, q.bonne), 'の ほうが ', OMO, 'い。']
         : ['はかりの ', SUJI, 'が ', CHIISA, 'さい ほうが ', KARU, 'い。 ', ...mesures, ...piege, 'だから ', referenceMV(q, q.bonne), 'の ほうが ', KARU, 'い。'];
@@ -414,7 +414,7 @@ export function messageErreurMV(q) {
     return q.essais.size <= 1 ? [...tp('mv.devine'), ' ', ...regle] : ['おしい！ ', ...regle];
   }
   if (q.type === 'balance') return ['おしい！ ', ...regleBalance(q.demande)];
-  if (q.type === 'hakari') return tp(balanceNumerique({ aiguille: q.simple }) ? 'mv.hakariNum' : 'mv.hakari');
+  if (q.type === 'hakari') return tp(balanceNumerique() ? 'mv.hakariNum' : 'mv.hakari');
   if (q.type === 'lecture') return indiceLecture(q.bonne, [...q.essais].pop());
   if (q.type === 'transvaser' && q.versePourErreur) {
     q.versePourErreur = false;
@@ -563,8 +563,8 @@ function rendreHakariQ(q, scene, W, H) {
     plateau.className = 'hakari-plateau';
     plateau.style.width = `${D * 1.02}px`;
     // Pour débuter : pas de nombres, on compare seulement de combien l'aiguille a tourné.
-    // はりで くらべる : l'aiguille, toujours (c'est ce qu'on compare) ; 見た目と ちがう suit le réglage.
-    const corps = creerHakari(D, q.max, { nombres: !q.simple, aiguille: q.type === 'hakari' && q.simple });
+    // Suit le réglage : à aiguille (はりで くらべる, sans nombres) ou numérique (すうじで くらべる).
+    const corps = creerHakari(D, q.max, { nombres: !q.simple });
     if (q.simple && q.preuve) corps.querySelector('svg').classList.add('avec-secteur');
     cadrans.push(corps.querySelector('svg'));
     col.append(charge, plateau, corps, nomMV(o));

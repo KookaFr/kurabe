@@ -131,7 +131,7 @@ Une carte illustrée, lue à voix haute, en 4 étapes : une はかり (ou une �
 
 ## はかり : à aiguille ou numérique
 
-Dans l'espace parents, on choisit la balance de cuisine : **à aiguille** (au départ) ou **numérique** (un écran à chiffres, comme les balances actuelles ; les chiffres défilent jusqu'au poids). Le réglage vaut pour 「見た目と ちがう」, 「いちばん おもいのは？」, l'aide de 「g で くらべる」 et 「kg と g」, et les leçons 「g と kg」 et 「はかって みよう」, dont les phrases parlent alors des chiffres (「はかりの すうじが 300 g に なる ように…」). 「はりで くらべる」, 「はかりを よもう」 et 「はかりの よみかた」 gardent toujours l'aiguille : on y apprend à la lire.
+Dans l'espace parents, on choisit la balance de cuisine : **à aiguille** (au départ) ou **numérique** (un écran à chiffres, comme les balances actuelles ; les chiffres défilent jusqu'au poids). 「はりで くらべる」 devient alors 「すうじで くらべる」 (deux balances à chiffres : on compare les nombres affichés). Le réglage vaut aussi pour 「見た目と ちがう」, 「いちばん おもいのは？」, l'aide de 「g で くらべる」 et 「kg と g」, et les leçons 「g と kg」 et 「はかって みよう」, dont les phrases parlent alors des chiffres (「はかりの すうじが 300 g に なる ように…」). 「はかりを よもう」 et 「はかりの よみかた」 gardent toujours l'aiguille : on y apprend à la lire.
 
 ## Textes des aides modifiables (parents, enseignants)
 

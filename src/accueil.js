@@ -2,6 +2,7 @@
    Accueil : les onglets (かず・ながさ・おもさ・かさ), la liste des activités et leurs cartes
    ====================================================================== */
 
+import { balanceNumerique } from './dessins.js';
 import { demarrerEtude } from './etude/etude.js';
 import { $ } from './outils.js';
 import { demarrer } from './questions/session.js';
@@ -58,7 +59,14 @@ export const ACTIVITES = [
   { n: 45, theme: 'kazu', etude: 'lecon-oto', titre: ['おとが かわる かぞえかた'], sous: ['いっぽん、 さんぼん、 ろっぽん'], fr: 'べんきょう : les compteurs dont le son change (1, 3, 6, 8, 10 : いっぽん, さんぼん, ろっぽん…), à retenir ; pour les grands nombres, le dernier chiffre décide', barres: 'k-oto' },
   { n: 32, groupe: 'culture', etude: 'lecon-corps', titre: ['からだで はかる'], sous: ['あた・ひろ'], fr: 'ね、しっていた？ Mesurer avec le corps (あた, ひろ), et pourquoi le cm', barres: 'lecon-corps' },
   { n: 33, groupe: 'culture', etude: 'lecon-shaku', titre: ['しゃくと すん'], sous: ['いっすんぼうしは なん cm？'], fr: 'ね、しっていた？ 尺 et 寸 : 1 寸 ≈ 3 cm, 1 尺 ≈ 30 cm', barres: 'lecon-shaku' },
-  { n: 25, theme: 'omosa', titre: ['はりで くらべる'], sous: ['はかりの はりが たくさん まわった ほう'], fr: 'Balances de cuisine sans nombres : l’aiguille qui a le plus tourné', barres: 'hakari-simple' },
+  // Avec la はかり numérique (réglage des parents), « はりで くらべる » devient « すうじで くらべる » :
+  // les deux objets sur deux balances à chiffres, on compare les nombres affichés.
+  {
+    n: 25, theme: 'omosa', barres: 'hakari-simple',
+    get titre() { return balanceNumerique() ? [SUJI, 'で くらべる'] : ['はりで くらべる']; },
+    get sous() { return balanceNumerique() ? ['はかりの ', SUJI, 'が ', OOKI, 'きい ほう'] : ['はかりの はりが たくさん まわった ほう']; },
+    get fr() { return balanceNumerique() ? 'Balances de cuisine numériques : le nombre le plus grand' : 'Balances de cuisine sans nombres : l’aiguille qui a le plus tourné'; },
+  },
   { n: 14, theme: 'omosa', titre: [MI, 'た', ME, 'と ちがう'], sous: ['よそうして、 はかりで たしかめる'], fr: 'Gros mais léger : deviner, puis vérifier sur les balances de cuisine', barres: 'devine' },
   { n: 15, theme: 'omosa', titre: [ICHIBAN, ' ', OMO, 'いのは？'], sous: ['はかりで くらべる'], fr: 'Le plus lourd parmi trois (balances de cuisine)', barres: 'hakari' },
   { n: 29, theme: 'omosa', titre: ['はかりを よもう'], sous: ['はりが さす ', SUJI, 'を よむ'], fr: 'Lire une balance de cuisine (trois nombres au choix)', barres: 'lecture-hakari' },
@@ -119,6 +127,11 @@ function contenuActiviteMV(code) {
     + `<rect x="${x + 2}" y="${60 - h}" width="${w - 4}" height="${h}" style="fill:${c}"/>`;
   const cadran = (x, a) => `<circle cx="${x}" cy="34" r="22" style="${trait};stroke-width:3"/>`
     + `<line x1="${x}" y1="34" x2="${x + 16 * Math.sin(a)}" y2="${34 - 16 * Math.cos(a)}" style="stroke:var(--o1);stroke-width:4;stroke-linecap:round"/>`;
+  // Une petite はかり numérique (réglage des parents) : un écran à chiffres.
+  const ecranCarte = (x, v) => `<rect x="${x - 34}" y="8" width="68" height="48" rx="8" style="fill:var(--o2)"/>`
+    + `<rect x="${x - 27}" y="17" width="54" height="26" rx="3" style="fill:#c7d5b4"/>`
+    + `<text x="${x + 18}" y="38" style="fill:#1f2a1c;font-size:18px;font-weight:800;text-anchor:end">${v}</text>`
+    + `<text x="${x + 21}" y="38" style="fill:#1f2a1c;font-size:10px;font-weight:800">g</text>`;
   switch (code) {
     case 'balance':
       return `<path d="M128 30v28M104 60h48" style="${trait}"/><g transform="rotate(9 128 30)"><path d="M48 30h160M30 22h36M190 22h36" style="${trait}"/>`
@@ -128,8 +141,11 @@ function contenuActiviteMV(code) {
         + '<circle cx="200" cy="46" r="13" style="fill:var(--encre-douce)"/>'
         + '<text x="116" y="44" style="fill:var(--action);font-size:30px;font-weight:700">？</text>';
     case 'hakari':
+      if (balanceNumerique()) return ecranCarte(48, 150) + ecranCarte(128, 700) + ecranCarte(208, 430);
       return cadran(48, 1.2) + cadran(128, 3.4) + cadran(208, 2.1);
     case 'hakari-simple':
+      // Numérique : deux petits écrans à chiffres ; à aiguille : deux cadrans, l'un a plus tourné.
+      if (balanceNumerique()) return ecranCarte(70, 300) + ecranCarte(170, 20);
       return `<path d="M70 34L70 12A22 22 0 0 1 88 47Z" style="fill:var(--o5);opacity:.45"/>${cadran(70, 2.2)}`
         + `<path d="M170 34L170 12A22 22 0 0 1 182 16Z" style="fill:var(--o5);opacity:.45"/>${cadran(170, 0.6)}`;
     case 'lecon-balance':

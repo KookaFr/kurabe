@@ -402,7 +402,7 @@ export function messageErreurMV(q) {
   }
   if (q.type === 'balance') return ['おしい！ ', ...regleBalance(q.demande)];
   if (q.type === 'hakari') return ['おしい！ はりを よく ', MI, 'てね。'];
-  if (q.type === 'lecture') return ['おしい！ はりの さきを よく ', MI, 'てね。 ', OOKI, 'きい ', MEMORI, 'から かぞえよう。'];
+  if (q.type === 'lecture') return indiceLecture(q.bonne, [...q.essais].pop());
   if (q.type === 'transvaser' && q.versePourErreur) {
     q.versePourErreur = false;
     return ['おしい！ ', ...ouVerser(q), ' うつして くらべよう。 うつしても かさは かわらないよ。'];
@@ -974,6 +974,20 @@ function rendreMesuresQ(q, scene, W, H) {
 }
 
 /* ----- Lire la はかり (questions et leçons) ----- */
+
+// Lire la はかり, après une erreur : ce qui est déjà juste, puis ce qu'il faut regarder.
+// - les centaines fausses → les grands 目もり ;
+// - les centaines justes, les dizaines fausses → les petits 目もり, comptés à partir de la centaine.
+export function indiceLecture(bonne, choisi) {
+  const c = Math.floor(bonne / 100) * 100;
+  const memeCentaine = typeof choisi === 'number' && Math.floor(choisi / 100) === c / 100;
+  if (!memeCentaine) {
+    return ['おしい！ はりの さきを よく ', MI, 'てね。 まず ', OOKI, 'きい ', MEMORI, 'を ', MI, 'よう。 はりの すぐ まえの ', OOKI, 'きい ', MEMORI, 'は いくつ？'];
+  }
+  if (bonne === c) return ['おしい！ はりは ちょうど ', OOKI, 'きい ', MEMORI, 'の ', String(c), 'を さして いるよ。'];
+  if (!c) return ['おしい！ ちいさい ', MEMORI, 'を 0から ひとつずつ かぞえよう。 1つで ', segU(10, 'g'), '。'];
+  return ['おしい！ ', String(c), 'は あって いるよ。 そこから ちいさい ', MEMORI, 'を ひとつずつ かぞえよう。 1つで ', segU(10, 'g'), '。'];
+}
 
 // Lire la はかり : grandes graduations (100 g) et petites (10 g).
 export function lectureHakari(v) {

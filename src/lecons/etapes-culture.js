@@ -47,7 +47,7 @@ export function etapesShaku() {
       scene: 'shaku', surligne: 'sun',
     },
     {
-      dire: ['むかしばなしの 「いっすんぼうし」。 せの たかさは 1すん。 ', segU('なん', 'cm'), ' くらい？'],
+      dire: ['むかしばなしの 「いっすんぼうし」は、 せの たかさが 1すん。 ものさしに ねて もらったよ。 ', segU('なん', 'cm'), ' くらい？'],
       scene: 'shaku', surligne: 'sun', boushi: true,
       choix: { options: [3, 30, 100], bonne: 3, unite: 'cm', indice: ['おしい！ 1すんは だいたい ', segU(3, 'cm'), '。 ものさしを ', MI, 'てね。'] },
       bravo: ['いっすんぼうしは だいたい ', segU(3, 'cm'), '。 とても ', CHIISA, 'さいね！'],
@@ -158,9 +158,17 @@ export function creerShakuLecon(W, H, et) {
   const L = 32;
   const SUN = 3.03;
   const ppc = (W - 2 * x0) / L;
-  const hBoushi = et.boushi ? Math.max(30, Math.min(110, SUN * ppc * 1.8, H - 170)) : 0;
-  const y = 44 + hBoushi;
-  const hR = 72;
+  // いっすんぼうし, couché sur la règle : les pieds à 0, la tête à 1 すん (à l'échelle de la règle).
+  // Sur un petit écran, 1 すん ne fait que quelques pixels : on le dessine agrandi au-dessus,
+  // avec deux pointillés vers 0 et 1 すん (comme à la loupe).
+  const aEchelle = SUN * ppc;
+  const zoom = et.boushi && aEchelle < 70;
+  const longBoushi = zoom ? 70 : aEchelle;
+  const epBoushi = longBoushi * 0.36;
+  const ecartBoushi = zoom ? 16 : 2;
+  const hBoushi = et.boushi ? epBoushi + ecartBoushi : 0;
+  const y = (et.boushi ? 8 : 44) + hBoushi;
+  const hR = H < 240 ? 58 : 72;
   // Texte un peu plus grand sur grand écran.
   el.style.setProperty('--t', `${Math.max(11, Math.min(17, ppc * 0.5))}px`);
   let t = `<rect class="bois" x="${x0}" y="${y}" width="${L * ppc}" height="${hR}" rx="4"/>`;
@@ -168,7 +176,9 @@ export function creerShakuLecon(W, H, et) {
     const fin = et.surligne === 'sun' ? SUN : SUN * 10;
     t += `<rect class="surligne" x="${x0}" y="${y}" width="${fin * ppc}" height="${hR}"/>`;
     const texte = et.surligne === 'sun' ? '1すん ≈ 3 cm' : '1しゃく ≈ 30 cm';
-    t += `<text class="titre-sun" x="${Math.max(x0 + 50, x0 + (fin * ppc) / 2)}" y="${y - 8 - hBoushi}">${texte}</text>`;
+    t += et.boushi
+      ? `<text class="titre-sun" style="text-anchor:start" x="${x0 + longBoushi + 12}" y="${y - ecartBoushi - epBoushi / 2 + 5}">${texte}</text>`
+      : `<text class="titre-sun" x="${Math.max(x0 + 50, x0 + (fin * ppc) / 2)}" y="${y - 8 - hBoushi}">${texte}</text>`;
   }
   for (let k = 0; k <= 10; k++) {
     const x = x0 + k * SUN * ppc;
@@ -184,15 +194,25 @@ export function creerShakuLecon(W, H, et) {
     if (grand) t += `<text x="${x}" y="${y + hR - 22}">${c}</text>`;
   }
   t += `<text class="unite-gauche" x="${x0 + L * ppc - 14}" y="${y + hR + 18}">cm</text>`;
-  el.innerHTML = `<svg width="${W}" height="${y + hR + 26}" aria-hidden="true">${t}</svg>`;
+  // Trop haut pour la place (petit téléphone) : tout le dessin rapetisse un peu, sans être coupé.
+  const hTotal = y + hR + 26;
+  const k = H > 0 && hTotal > H ? H / hTotal : 1;
+  el.innerHTML = `<svg width="${W * k}" height="${hTotal * k}" viewBox="0 0 ${W} ${hTotal}" aria-hidden="true">${t}</svg>`;
   if (et.boushi) {
-    const b = document.createElement('span');
-    b.className = 'boushi';
-    b.textContent = '🧒';
-    b.style.left = `${x0 + (SUN * ppc) / 2}px`;
-    b.style.top = `${y - 2}px`;
-    b.style.fontSize = `${hBoushi * 0.85}px`;
-    el.append(b);
+    // Dessiné couché (100 × 36 unités) : jambes, kimono, tête avec chignon, et son épée-aiguille.
+    const kb = longBoushi / 100;
+    const haut = y - ecartBoushi - epBoushi;
+    const loupe = zoom
+      ? `<path class="loupe-boushi" d="M${x0} ${haut + epBoushi}L${x0} ${y}M${x0 + longBoushi} ${haut + epBoushi}L${x0 + aEchelle} ${y}"/>`
+      : '';
+    const boushi = `<g class="boushi" transform="translate(${x0} ${haut}) scale(${kb.toFixed(3)})">`
+      + '<path class="jambe" d="M1 13H30M1 23H30"/>'
+      + '<path class="kimono" d="M27 3L68 6V30L27 33Z"/><path class="obi" d="M44 4.5V31.5"/>'
+      + '<path class="aiguille" d="M36 1.5H74"/><path class="tsuka" d="M30 1.5H37"/>'
+      + '<circle class="peau" cx="82" cy="18" r="14"/><path class="cheveux" d="M86 4.6A14 14 0 0 1 86 31.4"/>'
+      + '<ellipse class="cheveux" cx="98.5" cy="18" rx="3.5" ry="5"/>'
+      + '<circle class="oeil" cx="80" cy="13.5" r="1.6"/><circle class="oeil" cx="80" cy="22.5" r="1.6"/></g>';
+    el.querySelector('svg').insertAdjacentHTML('beforeend', loupe + boushi);
   }
   el.geo = { taille: 40, s: 26 };
   return el;

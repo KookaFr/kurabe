@@ -218,8 +218,7 @@ export function aideKazu(q) {
     const c = q.compteur;
     // Choisir : la règle de chaque compteur proposé. Lire : on compte ensemble jusqu'au nombre d'avant.
     if (q.sens === 'choisir') return [q.options.map((x) => COMPTEURS[x].indice).join('、 '), '。'];
-    if (v === 1) return ['1の ときは おとが かわるよ： ', sonsQuiChangent(c), '。'];
-    return ['いっしょに かぞえよう： ', COMPTEURS[c].yomi.slice(0, v - 1).join('、 '), '、 つぎは？'];
+    return indiceSon(q);
   }
   if (q.type === 'lire') {
     if (v < 10) return ['●を かぞえて みよう。 いち、 に、 さん…'];
@@ -238,6 +237,37 @@ export function aideKazu(q) {
   return Math.max(...q.valeurs) >= 10 ? ['◇10の まとまりの かずを くらべよう。'] : ['●の かずを くらべよう。'];
 }
 
+// かぞえかた, lire : l'erreur n'est pas de compter, c'est le son (さんびき, ろっぽん…), à retenir par cœur.
+// - une lecture d'un autre nombre (よんひき pour 3) : on le dit ;
+// - un nombre où le son change : on montre ce qui change (「ろく」→「ろっ」、 「ほん」→「ぽん」) ;
+// - un nombre où rien ne change : 「に」と 「ひき」で 「にひき」。
+const LECTURE_SIMPLE = (n) => YOMI_UN[n] || 'じゅう';
+export function indiceSon(q) {
+  const c = q.compteur;
+  const v = q.valeur;
+  const juste = compteur(v, c).y;
+  const choisi = [...q.essais].pop();
+  const autre = typeof choisi === 'string' ? COMPTEURS[c].yomi.indexOf(choisi) + 1 : 0;
+  if (autre && autre !== v) {
+    return ['おしい！ 「', choisi, '」は ', String(autre), 'の とき。 ここは ', String(v), 'だよ。'];
+  }
+  if (c === 'にん') {
+    if (v <= 2) return ['おしい！ ひとは 1で 「ひとり」、 2で 「ふたり」。 とくべつな いいかた だよ。 おぼえよう。'];
+    if (v === 4) return ['おしい！ 4の ときは 「よん」では なくて 「よ」： 「よにん」。 おぼえよう。'];
+  }
+  if (!COMPTEURS[c].change.includes(v)) {
+    return ['おしい！ ', String(v), 'の ときは おとが かわらないよ。 「', LECTURE_SIMPLE(v), '」と 「', c, '」で 「', juste, '」。'];
+  }
+  // Ce qui change : le nombre (いち → いっ) et/ou le compteur (ほん → ぼん).
+  const n = LECTURE_SIMPLE(v);
+  const debutJuste = juste.slice(0, juste.length - c.length);
+  const finJuste = juste.slice(juste.length - c.length);
+  const changes = [];
+  if (debutJuste !== n) changes.push(['「', n, '」が 「', debutJuste, '」に']);
+  if (finJuste !== c) changes.push(['「', c, '」が 「', finJuste, '」に']);
+  return ['おしい！ ', String(v), 'の ときは おとが かわるよ。 ', ...changes.flatMap((x, i) => (i ? ['、 ', ...x] : x)), ' かわって 「', juste, '」。 おぼえよう。'];
+}
+
 export function messageErreurKazu(q) {
   if (q.type === 'compter') return ['おしい！ ひとつずつ、 ゆびで さしながら かぞえよう。'];
   if (q.type === 'compteur') {
@@ -245,7 +275,7 @@ export function messageErreurKazu(q) {
     const questions = { 'こ': 'ちいさい もの？', 'ひき': 'いきもの？', 'ほん': 'ほそながい もの？', 'まい': 'うすい もの？', 'だい': 'のりもの？', 'にん': 'ひと？', 'さつ': 'ほんや ノート？' };
     return q.sens === 'choisir'
       ? ['おしい！ ', q.nom, 'は ', q.options.map((x) => questions[x]).join(' '), ' よく ', MI, 'てね。']
-      : ['おしい！ こえに だして かぞえて みよう。'];
+      : indiceSon(q);
   }
   if (q.type === 'lire') {
     if (q.sens === 'yomi') return ['おしい！ こえを よく きいてね。'];

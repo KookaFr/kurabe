@@ -60,7 +60,7 @@ export const ACTIVITES = [
   { n: 25, theme: 'omosa', titre: ['はりで くらべる'], sous: ['はかりの はりが たくさん まわった ほう'], fr: 'Balances de cuisine sans nombres : l’aiguille qui a le plus tourné', barres: 'hakari-simple' },
   { n: 14, theme: 'omosa', titre: [MI, 'た', ME, 'と ちがう'], sous: ['よそうして、 はかりで たしかめる'], fr: 'Gros mais léger : deviner, puis vérifier sur les balances de cuisine', barres: 'devine' },
   { n: 15, theme: 'omosa', titre: [ICHIBAN, ' ', OMO, 'いのは？'], sous: ['はかりで くらべる'], fr: 'Le plus lourd parmi trois (balances de cuisine)', barres: 'hakari' },
-  { n: 29, theme: 'omosa', titre: ['はかりを よもう'], sous: ['はりは なん g？'], fr: 'Lire une balance de cuisine (trois nombres au choix)', barres: 'lecture-hakari' },
+  { n: 29, theme: 'omosa', titre: ['はかりを よもう'], sous: ['はりが さす ', SUJI, 'を よむ'], fr: 'Lire une balance de cuisine (trois nombres au choix)', barres: 'lecture-hakari' },
   { n: 16, theme: 'omosa', titre: ['g で くらべる'], sous: ['300\u00a0g と 250\u00a0g'], fr: 'Nombres en g (300 g ou 250 g ?)', barres: 'g' },
   { n: 17, theme: 'omosa', titre: ['kg と g'], sous: ['1\u00a0kg ＝ 1000\u00a0g'], fr: 'Kilogrammes et grammes (1 kg ou 800 g ?)', barres: 'kgg' },
   { n: 28, theme: 'omosa', etude: 'lecon-hakari', titre: ['はかりの よみかた'], sous: ['はりの うごきと ', ME, 'もり'], fr: 'べんきょう : lire une balance de cuisine (l’aiguille, les graduations)', barres: 'lecon-hakari' },

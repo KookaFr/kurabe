@@ -32,12 +32,12 @@ import {
 } from './versement.js';
 import { $ } from '../outils.js';
 import { plateforme } from '../plateforme.js';
-import { chose, objetChose } from '../questions/mv.js';
+import { chose, indiceLecture, objetChose } from '../questions/mv.js';
 import { sansOshii } from '../questions/session.js';
 import { reglages } from '../reglages.js';
 import { activable } from '../tactile.js';
 import {
-  html, htmlMots, lecture, MEMORI, MI, nombreUnite, nombreYomi, nomDe, OMO, OOKI, PHRASES, segU, uniteHtml, yomiNombre,
+  html, htmlMots, lecture, nombreUnite, nombreYomi, nomDe, OMO, PHRASES, segU, uniteHtml, yomiNombre,
 } from '../texte.js';
 import { note, parler, sons } from '../voix.js';
 
@@ -715,7 +715,7 @@ function choisirLecon(v) {
   }
   e.essais.add(v);
   sons.oups();
-  let message = et.choix.indice || ['おしい！ はりの さきを よく ', MI, 'てね。 ', OOKI, 'きい ', MEMORI, 'から かぞえよう。'];
+  let message = et.choix.indice || indiceLecture(et.choix.bonne, v);
   // « おしい » seulement si c'est presque juste (17 pour 16, pas 71 pour 17).
   if (Math.abs(v - et.choix.bonne) > Math.max(1, Math.abs(et.choix.bonne) * 0.1)) message = ['もう いっかい！ ', ...sansOshii(message)];
   messageEtude(message);

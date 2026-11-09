@@ -101,7 +101,7 @@ export function etapesUnites() {
       bravo: [enG(100), 'が 10こで ', enG(1000), '。 ', enG(1000), 'を ', segU(1, 'kg'), 'と いうよ。'],
     },
     {
-      dire: ['おこめの ふくろを のせたよ。 はりは ', segU('なん', 'g'), '？'],
+      dire: ['おこめの ふくろを のせたよ。 はりは ', segU('なん', 'g'), 'を さして いる？'],
       hakari: [P('okome', 1000)], max: 2000, choix: { options: [1000, 100, 10], bonne: 1000 },
       bravo: ['はりは 1000を さして いる。 おこめは ', enG(1000), '、 つまり ', enKg(1), '。'], cache: true,
     },
@@ -202,7 +202,7 @@ export function etapesHakari() {
   const seconde = objetLecture(20, 480, 10, true);
   const cible = entier(5, 48) * 10;
   const etapeLecture = ({ c, v }) => ({
-    dire: [nomDe(c), 'を はかりに のせたよ。 はりは ', segU('なん', 'g'), '？'],
+    dire: [nomDe(c), 'を はかりに のせたよ。 はりは ', segU('なん', 'g'), 'を さして いる？'],
     hakari: [{ v: 'chose', c, m: v, n: 1 }], choix: { options: choixLecture(v), bonne: v },
     bravo: lectureHakari(v), cache: true,
   });
@@ -224,10 +224,10 @@ export function etapesHakari() {
     {
       dire: ['おもりを ぜんぶ のせて みよう。'],
       hakari: [P('g100', 100, 2)], reserve: [P('g100', 100, 3)], vers: 'plateau', fini: (e) => totalPlateau(e) === 500,
-      bravo: [enG(500), '。 はりが いちばん たくさん まわった。'],
+      bravo: ['ぜんぶで ', enG(500), '。 はりが さっきより もっと まわったね。'],
     },
     {
-      dire: ['こんどは おもりを さわって、 ぜんぶ おろそう。'],
+      dire: ['こんどは はかりに のって いる おもりを さわって、 ぜんぶ おろそう。'],
       hakari: [P('g100', 100, 5)], retirer: true, vers: 'plateau', fini: (e) => totalPlateau(e) === 0,
       bravo: ['はりが 0 に もどった。 ', KARU, 'く なると、 はりは もどる。'],
     },

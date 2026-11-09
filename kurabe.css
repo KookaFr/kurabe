@@ -1543,7 +1543,16 @@ h1:focus, h2:focus, .consigne:focus { outline: none; }
 .shaku-lecon text.unite-gauche { fill: var(--encre-douce); }
 .shaku-lecon text.titre-sun { font-size: calc(var(--t, 13px) * 1.3); fill: var(--action); }
 .shaku-lecon .surligne { fill: var(--o5); opacity: .4; }
-.boushi { position: absolute; line-height: 1; transform: translate(-50%, -100%); }
+.boushi .jambe { stroke: #3b3b3b; stroke-width: 6; stroke-linecap: round; fill: none; }
+.boushi .kimono { fill: var(--o2); }
+.boushi .obi { stroke: var(--o5); stroke-width: 5; }
+.boushi .aiguille { stroke: #9aa3a7; stroke-width: 2.4; stroke-linecap: round; }
+.boushi .tsuka { stroke: var(--o1); stroke-width: 3.6; stroke-linecap: round; }
+.boushi .peau { fill: #f3c9a2; stroke: #c8946a; stroke-width: 1; }
+.boushi .cheveux { fill: #2b2420; stroke: #2b2420; stroke-width: 5; }
+.boushi path.cheveux { fill: none; }
+.boushi .oeil { fill: #2b2420; }
+.loupe-boushi { stroke: var(--action); stroke-width: 1.6; stroke-dasharray: 4 3; fill: none; }
 
 .hiro-lecon svg { display: block; max-width: 100%; }
 .hiro-lecon .fleche { fill: none; stroke: var(--action); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }

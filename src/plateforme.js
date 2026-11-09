@@ -84,7 +84,16 @@ const stockage = (() => {
 
 /* ----- Fichiers : enregistrer un fichier sur l'appareil (textes des aides, au format tableur) ----- */
 const fichiers = {
-  enregistrer(nom, contenu, type = 'text/plain') {
+  async enregistrer(nom, contenu, type = 'text/plain') {
+    // Page de démonstration (Artifact claude.ai) : le cadre n'autorise pas les téléchargements directs ;
+    // le fichier passe par la fonction d'enregistrement de claude.ai (l'utilisateur confirme).
+    if (window.KURABE_ARTIFACT && window.claude && typeof window.claude.use === 'function') {
+      const telechargements = await window.claude.use('downloads');
+      if (telechargements) {
+        try { await telechargements.save({ filename: nom, data: contenu }); } catch { /* refusé ou indisponible */ }
+        return;
+      }
+    }
     const url = URL.createObjectURL(new Blob([contenu], { type }));
     const a = document.createElement('a');
     a.href = url;

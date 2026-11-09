@@ -567,6 +567,25 @@ function rendreHakariQ(q, scene, W, H) {
   q.vuAiguilles = true;
 }
 
+// Après avoir versé, chaque récipient porte SON nom : la copie s'appelle comme la référence (なべ),
+// le récipient vidé garde le sien (カップ). Une étiquette sous chaque récipient de la ligne, dans le même
+// ordre, à la largeur de son récipient (alignerNoms, une fois dans la page).
+const COPPU = { yomi: 'コップ', kanji: null };
+function nomsSous(objets) {
+  const r = document.createElement('span');
+  r.className = 'noms-cote';
+  objets.forEach((o) => r.append(nomMV(o)));
+  return r;
+}
+function alignerNoms(scene) {
+  scene.querySelectorAll('.verre-col').forEach((col) => {
+    const ligne = col.querySelector(':scope > .verre-ligne:not(.pile)');
+    const noms = col.querySelector(':scope > .noms-cote');
+    if (!ligne || !noms) return;
+    [...noms.children].forEach((n, i) => { if (ligne.children[i]) n.style.width = `${ligne.children[i].offsetWidth}px`; });
+  });
+}
+
 // Verres identiques (aussi après avoir versé, activité 21). « avant » : petits récipients vides à côté.
 function rendreVerresQ(q, scene, W, H, objets, avant) {
   const n = objets.length;
@@ -650,12 +669,13 @@ function rendreVerresQ(q, scene, W, H, objets, avant) {
       }
     }
     ligne.append(v);
-    col.append(pill, ligne, nomMV(o));
+    col.append(pill, ligne, avant ? nomsSous([o, COPPU]) : nomMV(o));
     cible(col, k, `${POSITIONS_MV[n]?.[k] || ''} ${o.yomi}`);
     rangee.append(col);
   });
   q.vuVerres = true;
   scene.append(rangee);
+  if (avant) alignerNoms(scene);
   if (q.preuve) preuveVerres(q, scene, objets);
 }
 
@@ -805,13 +825,16 @@ function rendreTransvaserApres(q, scene, W, H) {
       if (sansVide) {
         penche = null;
         ligne.append(copie);
-        col.append(pill, ligne, nomMV(obj));
+        col.append(pill, ligne, nomMV(refC));
       } else if (q.empile) {
         // Il verse par le coin du côté de sa colonne et s'allonge vers la référence.
+        // Son nom (カップ) juste sous lui ; sous la copie, celui de la référence (なべ).
         penche.pivotGauche = aGauche;
         ligne.classList.add('pile');
-        ligne.append(mini, pill, copie);
-        col.append(ligne, nomMV(obj));
+        const nomVide = nomMV(obj);
+        nomVide.classList.add('nom-vide');
+        ligne.append(mini, nomVide, pill, copie);
+        col.append(ligne, nomMV(refC));
       } else {
         // Son bord monte au-dessus de la copie ; en tournant, l'autre bord remonte (0,88 × sa largeur)
         // et le fond part sur le côté (0,88 × sa hauteur).
@@ -822,7 +845,7 @@ function rendreTransvaserApres(q, scene, W, H) {
         if (aGauche) ligne.append(mini, copie); else ligne.append(copie, mini);
         // L'étiquette (mL) au-dessus de la copie, pas au milieu de la colonne.
         pill.style.transform = `translateX(${(aGauche ? 1 : -1) * (wMini + ECART) / 2}px)`;
-        col.append(pill, ligne, nomMV(obj));
+        col.append(pill, ligne, nomsSous(aGauche ? [obj, refC] : [refC, obj]));
       }
       if (penche) filet.classList.toggle('droite', q.empile ? !penche.pivotGauche : !aGauche);
       if (penche && verser) {
@@ -837,6 +860,7 @@ function rendreTransvaserApres(q, scene, W, H) {
   });
   q.vuVerres = true;
   scene.append(rangee);
+  alignerNoms(scene);
   if (penche && penche.verser) placerVersement(scene, rangee, penche, ECART);
   if (q.preuve) preuveVerres(q, scene, t, '.a-comparer', capacite(refC));
 }

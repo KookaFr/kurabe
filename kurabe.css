@@ -1218,6 +1218,10 @@ button.ligne { cursor: pointer; }
 .verre-ligne { display: flex; align-items: flex-end; gap: 10px; }
 /* うつして くらべよう, écran haut : le récipient vidé au-dessus de sa copie (positions mesurées dans la pile). */
 .verre-ligne.pile { position: relative; flex-direction: column; align-items: center; gap: 6px; }
+/* Après avoir versé : un nom sous chaque récipient (カップ vidée, なべ qui a reçu le liquide). */
+.noms-cote { display: flex; justify-content: center; gap: 10px; }
+.noms-cote .nom-mv { flex: none; white-space: nowrap; }
+.nom-mv.nom-vide { color: var(--encre-douce); font-size: .95rem; margin-top: -2px; }
 
 .verre {
   position: relative;

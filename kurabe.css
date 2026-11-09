@@ -1650,7 +1650,7 @@ body.mode-lecture button:not(.btn-lire):not([hidden]) {
 .choix-comparer .nb { font-size: clamp(3rem, 10vw, 5rem); }
 .choix-comparer.juste { border-color: var(--bon); background: var(--bon-fond); }
 .choix-comparer.essaye { opacity: .6; text-decoration: line-through; }
-@media (max-width: 560px) { .choix-comparer { padding-inline: 2px; min-width: 0; } .choix-comparer .nb { font-size: clamp(2.2rem, 8.5vw, 4rem); } }
+@media (max-width: 560px) { .choix-comparer { padding-inline: 2px; } .choix-comparer .nb { font-size: clamp(2.4rem, 9vw, 4rem); } }
 
 /* Cadre de 10 (2 rangées de 5), barre de 10, plaque de 100. */
 .blocs { display: flex; flex-direction: column; align-items: center; gap: 8px; }

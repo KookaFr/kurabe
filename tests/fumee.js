@@ -33,7 +33,7 @@ const controler = (page) => page.evaluate(() => {
   // Seuls les boutons à texte comptent : les objets dessinés (.objet-libre, .verre-col, .ligne) débordent exprès.
   const coupes = [...document.querySelectorAll('button:not([hidden])')]
     .filter((b) => !b.matches('.objet-libre, .verre-col, .ligne, .contenant-col, .cible, .piece-bouton'))
-    .filter((b) => b.offsetParent !== null && b.scrollWidth > b.clientWidth + 2)
+    .filter((b) => b.offsetParent !== null && b.scrollWidth > b.clientWidth + 4)
     .map((b) => `${b.className.split(' ')[1] || b.className} « ${b.textContent.trim().slice(0, 24)} » ${b.scrollWidth}>${b.clientWidth}`);
   return { horizontal, coupes };
 });

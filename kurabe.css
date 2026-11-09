@@ -2164,3 +2164,55 @@ html[data-motion="reduce"] .dessin-memori *, html[data-motion="reduce"] .btn-mem
 .fin .btn-lien svg { width: 32px; height: 32px; }
 .btn-lien .lien-texte { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.25; text-align: left; }
 .btn-lien .lien-texte small { font-size: .75rem; color: var(--encre-douce); }
+
+/* ---------- べんきょう : おとが かわる かぞえかた (etapes-oto.js) ---------- */
+.oto-lecon { flex: 1; align-self: stretch; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-height: 0; padding: 4px; }
+.oto-entete { font-size: 1.15rem; font-weight: 700; }
+.oto-entete span { font-size: 1.4em; vertical-align: -.1em; }
+.oto-grille { display: grid; grid-template-columns: repeat(var(--colonnes, 5), minmax(0, 1fr)); gap: 8px; width: min(100%, 720px); }
+.case-oto {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  min-height: 64px; padding: 6px 2px; border: 3px solid var(--bord); border-radius: 14px; background: var(--surface);
+  touch-action: manipulation; cursor: pointer;
+  animation: apparaitre .3s ease both; animation-delay: calc(var(--i, 0) * 60ms);
+}
+.case-oto .oto-nombre { font-size: 1.6rem; font-weight: 800; line-height: 1.1; }
+.case-oto .oto-yomi { font-size: 1rem; line-height: 1.2; white-space: nowrap; }
+.case-oto .oto-yomi b { color: var(--o5); font-weight: 800; }
+.case-oto.change { border-color: var(--o5); background: color-mix(in srgb, var(--o5) 12%, var(--surface)); }
+.case-oto.en-appui { transform: scale(.96); }
+.case-oto.petite { min-height: 52px; min-width: 76px; }
+.case-oto.petite .oto-nombre { font-size: 1.2rem; }
+.oto-question .oto-tas { display: grid; grid-template-columns: repeat(var(--n, 5), auto); gap: 2px 6px; font-size: clamp(1.6rem, 6vw, 2.6rem); line-height: 1.15; letter-spacing: 0; }
+.oto-question .case-oto { min-width: 120px; min-height: 96px; cursor: default; }
+.oto-question .case-oto .oto-nombre { font-size: 2.6rem; }
+.oto-question .case-oto .oto-yomi { font-size: 1.6rem; color: var(--action); }
+.oto-resume { gap: 10px; }
+.oto-ligne { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; }
+.oto-chose { font-size: 1.6rem; }
+.oto-compteur { min-width: 2.6em; font-weight: 800; font-size: 1.1rem; }
+/* Téléphone debout : deux colonnes (1 à 5, puis 6 à 10), le nombre à gauche de sa lecture. */
+@media (max-width: 480px) {
+  .oto-tableau .oto-grille { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(var(--lignes, 5), auto); grid-auto-flow: column; gap: 6px; }
+  .oto-tableau .case-oto { flex-direction: row; justify-content: flex-start; gap: 6px; min-height: 44px; padding: 4px 6px; border-width: 2px; border-radius: 10px; }
+  .oto-tableau .case-oto .oto-nombre { min-width: 1.3em; text-align: right; font-size: 1.2rem; }
+  .oto-tableau .case-oto .oto-yomi { font-size: .92rem; }
+  /* Le résumé : le compteur sur sa ligne, puis ses nombres côte à côte. */
+  .oto-ligne { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); width: 100%; gap: 4px; }
+  .oto-ligne .oto-chose, .oto-ligne .oto-compteur { grid-column: span 5; display: none; }
+  .oto-ligne .oto-compteur { display: block; text-align: left; font-size: 1rem; }
+  .oto-ligne .oto-compteur::before { content: attr(data-emoji) " "; }
+  .case-oto.petite { min-width: 0; min-height: 46px; padding: 2px 1px; border-width: 2px; border-radius: 10px; }
+  .case-oto.petite .oto-nombre { font-size: 1.05rem; }
+  .case-oto.petite .oto-yomi { font-size: .64rem; letter-spacing: -.02em; }
+}
+@media (orientation: landscape) and (max-height: 520px) {
+  .oto-lecon { gap: 6px; }
+  .case-oto .oto-yomi { font-size: .82rem; }
+  .case-oto { min-height: 48px; padding: 2px; }
+  .case-oto .oto-nombre { font-size: 1.15rem; }
+  .oto-question .oto-tas { font-size: 1.5rem; }
+  .oto-question .case-oto { min-height: 70px; }
+  .oto-question .case-oto .oto-nombre { font-size: 1.8rem; }
+  .oto-question .case-oto .oto-yomi { font-size: 1.2rem; }
+}

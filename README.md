@@ -14,7 +14,7 @@ Le premier onglet : compter et lire les nombres (programme « 数の学習 »). 
 2. よみかた: un chiffre → choisir sa lecture en hiragana, puis l'inverse (「にじゅうさん」 → 23) ; 1 à 10, puis 11 à 20, puis jusqu'à 99 (pièges : 13 / 31) ; les autres lectures sont rappelées (4 し, 7 しち, 9 く). L'aide **décompose** le nombre : 16 ＝ 10 と 6, 「じゅう」 et 「ろく」 (ou 「じゅうろく」 ＝ 「じゅう」 ＋ 「ろく」 ＝ 10 et 6), avec les cadres et une légende sous chaque partie
 3. 10の まとまり: des jetons rangés dans des cadres de 10 (2 rangées de 5) ; compter les dizaines puis le reste. Avant la 1re question, un **exemple guidé** (« れい ») relie la consigne au dessin : un cadre plein, c'est 10 (les ● se numérotent 1 à 10 pendant que la voix compte) ; on compte les cadres 10, 20 ; puis les « ばら » 21, 22, 23 ; ぜんぶで 23. つぎへ avance, とばす saute l'exemple (réglable dans l'espace parents). L'aide apprend à compter par 10 : sous chaque cadre plein s'écrit 10, 20, 30… et la voix dit « じゅう、にじゅう、さんじゅう… », puis « ばら » pour le reste
 4. どっちが 大きい？: comparer deux nombres (1 à 10, puis jusqu'à 100 avec 12 / 21, 39 / 41) ; l'aide et la preuve montrent les dizaines et les ばら de chaque nombre
-5. かぞえかた (les compteurs, 助数詞) : d'abord « いぬは どう かぞえる？ » — choisir entre 2ひき, 2ほん, 2こ… (いきもの → ひき, ほそながい もの → ほん, ちいさい もの → こ, うすい もの → まい, のりもの → だい, ひと → にん, ほん・ノート → さつ) ; ensuite la bonne lecture quand le son change : « えんぴつは なんぼん？ » → いっぽん / いちほん / いちぽん, さんぼん, ろっぽん, はっぽん, じゅっぽん ; いっぴき, さんびき ; いっこ, はっこ ; ひとり, ふたり, よにん. Les fausses lectures proposées sont les confusions courantes (さんほん, はちほん). L'aide rappelle la règle de chaque compteur proposé, ou fait compter ensemble (いっぽん、にほん…、つぎは？). Dans l'espace parents, on choisit les compteurs travaillés (こ, ひき, ほん au départ ; まい, だい, にん, さつ en plus) ; « いくつ？ » n'utilise alors que des choses comptées avec eux.
+5. かぞえかた (les compteurs, 助数詞) : d'abord « いぬは どう かぞえる？ » — choisir entre 2ひき, 2ほん, 2こ… (いきもの → ひき, ほそながい もの → ほん, ちいさい もの → こ, うすい もの → まい, のりもの → だい, ひと → にん, ほん・ノート → さつ) ; ensuite la bonne lecture quand le son change : « えんぴつは なんぼん？ » → いっぽん / いちほん / いちぽん, さんぼん, ろっぽん, はっぽん, じゅっぽん ; いっぴき, さんびき ; いっこ, はっこ ; ひとり, ふたり, よにん. Les fausses lectures proposées sont les confusions courantes (さんほん, はちほん). Après une erreur de lecture, l'aide ne fait pas recompter : c'est un son à retenir par cœur, elle dit ce qui change (« 6の ときは おとが かわるよ。 「ろく」が 「ろっ」に、 「ほん」が 「ぽん」に かわって 「ろっぽん」 »), ou que rien ne change (« 「に」と 「ひき」で 「にひき」 »), ou que la lecture choisie est celle d'un autre nombre. Dans l'espace parents, on choisit les compteurs travaillés (こ, ひき, ほん au départ ; まい, だい, にん, さつ en plus) ; « いくつ？ » n'utilise alors que des choses comptées avec eux.
 
 Les dizaines sont partout des **cadres de 10 pleins** (« 10の まとまり »), les mêmes que les unités : on voit que 10, c'est un cadre rempli. **Un code couleur** relie les chiffres aux groupes : les 100 sont violets (100の いた, faite de 100 ronds violets, 10 × 10, séparés en 5 | 5), les 10の まとまり bleu clair (みずいろ), les ばら orange ; dans les explications, une pastille de la même couleur précède chaque groupe (●100が 2つ、●10が 3つ、●が 5つ ; la voix ne la lit pas) ; chaque chiffre d'un nombre est souligné de la couleur de son groupe (232 : 2 violet, 3 bleu, 2 orange), et la légende aussi. Dans les leçons, c'est toujours affiché ; dans les questions, c'est un indice qui apparaît avec l'aide (et dans la preuve). Sous les groupes, une légende : « 10の まとまり 4つ — 40 よんじゅう », « ばら 4つ — 4 よん ». Les points sont aussi gros que la place le permet ; sur un petit téléphone, s'ils devenaient trop petits, seule la légende reste. Les réponses s'affichent l'une sous l'autre, le chiffre et sa lecture en grand.
 
@@ -25,6 +25,7 @@ Les dizaines sont partout des **cadres de 10 pleins** (« 10の まとまり »)
 6. 1から 10まで: le cadre de 10 ; poser les jetons un par un jusqu'à 10 ; 5 ご, la rangée du haut ; 4 よん / し, 7 なな / しち, 9 きゅう / く ; tout enlever → 0 ぜろ ; 「いくつ？」 (après une erreur, la rangée du haut descend sous le cadre, en gros, et se compte 1 à 5 : « 5の まとまり ＋ ？ » ; une fois trouvé, 6, 7) ; poser 8 jetons
 7. 10より 大きい かず: le cadre plein, c'est « 10の まとまり » ; 10 et 3 → 13 ; 17 ; compter de 10 en 10 jusqu'à 100 (10, 20, 30… sous les cadres) ; fabriquer 34 avec des 10の まとまり et des jetons ; lire 52
 8. 100より 大きい かず: 10 « 10の まとまり » → une plaque de 100 ; compter de 100 en 100 jusqu'à 900 (さんびゃく, ろっぴゃく, はっぴゃく) ; fabriquer 235 ; lire 408 (le 0 des dizaines) ; 10 plaques → 1000 せん
+9. おとが かわる かぞえかた: les compteurs dont le son change (ceux choisis par les parents : ほん, ひき, こ, さつ, にん). Pour chacun, le tableau de 1 à 10 (les nombres qui changent en orange, la partie qui change en gras ; chaque case se touche pour l'entendre, la voix lit tout le tableau), puis deux lectures à choisir. Ensuite, les grands nombres : c'est le **dernier chiffre** qui décide (じゅういっぽん, じゅうさんぼん, にじゅっぽん), et une lecture à choisir. Pour finir, le résumé des sons qui changent. À la fin de 「かぞえかた」, un bouton mène à cette leçon (et inversement).
 
 ## ながさ / Longueurs
 
@@ -68,7 +69,7 @@ La limite des nombres (〜10, 〜20, 〜50, 〜100, 〜1000) se choisit en haut 
 ### ね、しっていた？（むかしは…）
 
 - からだで はかる: autrefois on mesurait avec le corps ; l'empan (あた) d'un enfant et celui d'un adulte sur le même bureau (6 contre 4) : c'est pour ça qu'on a inventé le cm ; 「ひろ」, les bras écartés, à peu près la taille
-- しゃくと すん: 1 寸 ≈ 3 cm (一寸法師 mesure 1 寸 : 「なん cm くらい？」), 10 寸 ＝ 1 尺 ≈ 30 cm (une règle de 30 cm) ; les charpentiers les utilisent encore
+- しゃくと すん: 1 寸 ≈ 3 cm (いっすんぼうし, le petit garçon du conte, mesure 1 寸 : on le voit couché sur la règle de 0 à 1 寸 — agrandi, avec deux pointillés, sur un petit écran — 「なん cm くらい？」), 10 寸 ＝ 1 尺 ≈ 30 cm (une règle de 30 cm) ; les charpentiers les utilisent encore
 
 ## おもさ / Masses
 
@@ -85,7 +86,7 @@ Les activités sont numérotées 1, 2, 3… dans chaque onglet. L'instrument pri
 
 べんきょう (leçons guidées : une consigne lue, l'élève touche les objets pour les poser ou les enlever, puis la voix explique ; つぎへ passe à l'étape suivante) :
 
-7. はかりの よみかた: une balance de cuisine de 500 g ; on pose des poids de 100 g un par un et l'aiguille tourne de plus en plus ; on les enlève et elle revient à 0 ; les petites graduations (10 g) — 「ちいさい 目もり」, écrit 目もり comme dans les manuels ; lire 「はりは なん g？」 ; puis poser les poids pour que l'aiguille montre une masse donnée
+7. はかりの よみかた: une balance de cuisine de 500 g ; on pose des poids de 100 g un par un et l'aiguille tourne de plus en plus ; on les enlève et elle revient à 0 ; une étape 「目もりを 見る」 ouvre l'explication illustrée ; les petites graduations (10 g) — 「ちいさい 目もり」, écrit 目もり comme dans les manuels ; lire 「はりは なん g を さして いる？」 (après une erreur, l'indice dit ce qui est juste : « 200は あって いるよ。 そこから ちいさい 目もりを ひとつずつ かぞえよう ») ; puis poser les poids pour que l'aiguille montre une masse donnée
 8. g と kg: sur la balance de cuisine : un 1円玉 (1 g) fait à peine bouger l'aiguille ; dix 1円玉 ＝ 10 g ; dix 10 g ＝ 100 g ; cinq 100 g ＝ 500 g ; sur une balance de 2 kg, dix 100 g ＝ 1000 g ＝ 1 kg ; un sac de riz de 1 kg
 9. はかって みよう: entraînement — poser des poids de 100 g et 10 g pour que l'aiguille montre la masse demandée (« あと 30 g »). Trop lourd : on dit **quel** poids enlever (« 100g の おもりが おおいよ。 1こ おろそう », la main le montre), puis, une fois enlevé, quoi poser (« 100g の おもりは これで いいね。 こんどは 10g の おもりを のせよう », et le bouton 10g clignote). Pour 190 g, on enlève un 100 g et on pose des 10 g, guidé pas à pas. Les poids sont grands, avec « 100g » / « 10g » bien lisible
 
@@ -117,6 +118,18 @@ Les poids posés s'alignent par rangées de 5 (10 ＝ 5 ＋ 5), une rangée par 
 Comme pour les longueurs, chaque bonne réponse est suivie d'une preuve (masses en g, niveau le plus bas tracé sur les verres avec la quantité en plus) et de la règle : « 重いのは 数字が 大きい ほう », « 少ないのは 数字が 小さい ほう ». On parle de 「すうじ」 (le nombre qu'on lit sur la règle, la balance ou l'étiquette) plutôt que de 「かず」, qui évoque d'abord le nombre d'objets qu'on compte ; quand les unités sont différentes (1 kg et 900 g), le rappel précise 「おなじ たんいなら」.
 
 Les unités ont leur lecture en petit au-dessus, comme des furigana : グラム sur g, キログラム sur kg, ミリリットル sur mL, リットル sur L, センチ sur cm, メートル sur m (réglable dans l'espace parents).
+
+## 「目もりって なに？」 / Les graduations expliquées
+
+Une carte illustrée, lue à voix haute, en 4 étapes : une はかり (ou une カップ) agrandie ; 1. les traits sont les 目もり ; 2. les grands 目もり portent des nombres ; 3. les petits 目もり, comptés un par un à partir de 100 (110, 120, 130) ; 4. une lecture complète (l'aiguille ou l'eau arrive sur 130 : « 100と、 ちいさい 目もり 3つ »). On l'ouvre par le bouton 🔍「目もり？」 dans le coin de la scène (はかりを よもう, はかりの よみかた, はかって みよう, はかって いれよう), en touchant le mot 目もり (souligné, avec un « ? ») dans une consigne ou une aide, et elle s'ouvre toute seule la première fois qu'on lance 「はかりを よもう」 ou 「はかって いれよう」.
+
+## Liens もんだい ↔ べんきょう
+
+À la fin d'une série, un bouton propose l'activité liée : après 「はかりを よもう」, la leçon 「はかりの よみかた」 ; après la leçon, les questions ; de même pour g と kg, mL, cm, les nombres et les compteurs.
+
+## Zoom
+
+On peut agrandir l'écran à deux doigts pour lire, sauf quand les doigts sont dans une scène qu'on manipule (verser, balance, réserve de poids, ruban, はかり) : là, un deuxième doigt est presque toujours un accident.
 
 ## よむ / Lire ce qu'on touche
 

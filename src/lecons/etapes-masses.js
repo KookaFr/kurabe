@@ -31,7 +31,8 @@ export function etapesBalance() {
     {
       dire: ['こんどは いちごを、 みぎの さらに のせよう。'],
       balance: [[P('ringo', 300)], []], reserve: [P('ichigo', 20)], vers: 1, fini: unePose,
-      bravo: ['りんごの ほうが ', SAGA, 'がった。 ', SAGA, 'がった ほうが ', OMO, 'い。 いちごの ほうは ', AGA, 'がった。 ', AGA, 'がった ほうが ', KARU, 'い。'],
+      // La pomme était déjà en bas : on dit où sont les plateaux (さがって いる), pas qu'ils ont bougé.
+      bravo: ['いちごを のせても、 りんごの ほうが ', SAGA, 'がって いる。 ', SAGA, 'がって いる ほうが ', OMO, 'い。 いちごの ほうは ', AGA, 'がって いる。 ', AGA, 'がって いる ほうが ', KARU, 'い。'],
     },
     {
       dire: ['ひだりと みぎを いれかえて みよう。 りんごを みぎの さらに のせよう。'],

@@ -55,6 +55,7 @@ export const ACTIVITES = [
   { n: 39, theme: 'kazu', etude: 'lecon-kazu1', titre: ['1から 10まで'], sous: ['いち、 に、 さん…'], fr: 'べんきょう : compter jusqu’à 10 avec le cadre de 10 (et la lecture en hiragana)', barres: 'k-lecon1' },
   { n: 40, theme: 'kazu', etude: 'lecon-kazu2', titre: ['10より ', OOKI, 'きい かず'], sous: ['10の まとまりで 100まで'], fr: 'べんきょう : de 11 à 100 avec les « 10の まとまり » (cadres de 10 pleins), comptés par 10', barres: 'k-lecon2' },
   { n: 41, theme: 'kazu', etude: 'lecon-kazu3', titre: ['100より ', OOKI, 'きい かず'], sous: ['ひゃく、 せん'], fr: 'べんきょう : les centaines jusqu’à 1000 (さんびゃく, ろっぴゃく…)', barres: 'k-lecon3' },
+  { n: 45, theme: 'kazu', etude: 'lecon-oto', titre: ['おとが かわる かぞえかた'], sous: ['いっぽん、 さんぼん、 ろっぽん'], fr: 'べんきょう : les compteurs dont le son change (1, 3, 6, 8, 10 : いっぽん, さんぼん, ろっぽん…), à retenir ; pour les grands nombres, le dernier chiffre décide', barres: 'k-oto' },
   { n: 32, groupe: 'culture', etude: 'lecon-corps', titre: ['からだで はかる'], sous: ['あた・ひろ'], fr: 'ね、しっていた？ Mesurer avec le corps (あた, ひろ), et pourquoi le cm', barres: 'lecon-corps' },
   { n: 33, groupe: 'culture', etude: 'lecon-shaku', titre: ['しゃくと すん'], sous: ['いっすんぼうしは なん cm？'], fr: 'ね、しっていた？ 尺 et 寸 : 1 寸 ≈ 3 cm, 1 尺 ≈ 30 cm', barres: 'lecon-shaku' },
   { n: 25, theme: 'omosa', titre: ['はりで くらべる'], sous: ['はかりの はりが たくさん まわった ほう'], fr: 'Balances de cuisine sans nombres : l’aiguille qui a le plus tourné', barres: 'hakari-simple' },
@@ -86,12 +87,12 @@ export const themeDe = (a) => a.theme || 'nagasa';
 // (après はかりを よもう → la leçon はかりの よみかた ; après la leçon → les questions).
 export const LIENS = {
   // もんだい → べんきょう
-  35: 39, 36: 39, 37: 40, 38: 40,
+  35: 39, 36: 39, 37: 40, 38: 40, 42: 45,
   6: 10, 7: 10,
   25: 28, 14: 28, 15: 28, 29: 28, 16: 27, 17: 27, 13: 26,
   22: 24, 23: 24,
   // べんきょう → もんだい
-  39: 35, 40: 37, 41: 36,
+  39: 35, 40: 37, 41: 36, 45: 42,
   10: 6, 11: 6, 12: 6,
   28: 29, 27: 16, 30: 29, 26: 13,
   24: 22,
@@ -155,6 +156,9 @@ function contenuActiviteMV(code) {
     case 'k-compteur':
       return [0, 1, 2].map((k) => `<text x="${8 + k * 30}" y="44" style="font-size:24px">🐟</text>`).join('')
         + `<text x="104" y="44" style="${texte};font-size:26px">3びき</text>`;
+    case 'k-oto':
+      return `<text x="8" y="44" style="font-size:24px">✏️</text><text x="40" y="30" style="${texte};font-size:18px">1 3 6 8 10</text>`
+        + `<text x="40" y="56" style="fill:var(--o5);font-size:20px;font-weight:700">っぽん ぼん</text>`;
     case 'k-comparer':
       return `<text x="20" y="46" style="${texte};font-size:32px">21</text><text x="88" y="46" style="${texte};font-size:30px">12</text>${question}`;
     case 'k-lecon1':

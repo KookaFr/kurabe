@@ -134,14 +134,16 @@ export function texteParle(el) {
   return versParole(copie.textContent);
 }
 
-// « N こ » quand la lecture change (1, 6, 8, 10, 20…) ; sinon null (la voix lit bien にこ, さんこ).
-function lectureKo(n) {
+// « N + compteur » quand le son devient « っ » : いっこ, ろっこ, はっかい, じゅっすん, にじゅっこ…
+// (les chiffres qui changent dépendent du compteur) ; sinon null : la voix lit bien にこ, さんかい, ろくしょう.
+const SOKUON = { 'こ': [1, 6, 8, 10], 'かい': [1, 6, 8, 10], 'しょう': [1, 8, 10], 'すん': [1, 8, 10], 'しゃく': [1, 8, 10], 'さつ': [1, 8, 10] };
+function lectureSokuon(n, c) {
   if (!(n > 0 && n < 100)) return null;
   const d = Math.floor(n / 10);
   const u = n % 10;
-  if (u === 0) return `${YOMI_DIX[d].replace(/じゅう$/, 'じゅっ')}こ`;
-  const sokuon = { 1: 'いっ', 6: 'ろっ', 8: 'はっ' }[u];
-  return sokuon ? `${YOMI_DIX[d]}${sokuon}こ` : null;
+  if (!SOKUON[c].includes(u || 10)) return null;
+  if (u === 0) return `${YOMI_DIX[d].replace(/じゅう$/, 'じゅっ')}${c}`;
+  return `${YOMI_DIX[d]}${{ 1: 'いっ', 6: 'ろっ', 8: 'はっ' }[u]}${c}`;
 }
 
 // Les symboles en mots : 100 g → 100グラム, « m と cm » → メートルと センチ, ＋ → たす…
@@ -155,8 +157,8 @@ export function versParole(texte) {
     .replace(/×/g, ' かける ')
     // « 2 は 200 » : la voix avalait le は ; collé au nombre et suivi d'une pause, il s'entend (かける 2は、 200)。
     .replace(/\s*＝\s*/g, 'は、 ')
-    // 1こ → いっこ (la voix disait « いちこ »), 6こ → ろっこ, 8こ → はっこ, 10こ → じゅっこ.
-    .replace(/(\d+)\s*こ/g, (m, n) => lectureKo(Number(n)) || m)
+    // 1こ → いっこ (la voix disait « いちこ »), 1かい → いっかい, 1しょう → いっしょう, 1すん → いっすん…
+    .replace(/(\d+)\s*(こ|かい|しょう|すん|しゃく|さつ)/g, (m, n, c) => lectureSokuon(Number(n), c) || m)
     .replace(/→/g, ' で ')
     .replace(/●/g, 'まる')
     .replace(/\s+/g, ' ')

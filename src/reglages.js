@@ -4,7 +4,7 @@
 
 const CLE_REGLAGES = 'kurabe.reglages';
 const DEFAUT = {
-  activites: Array.from({ length: 44 }, (_, i) => i + 1),
+  activites: Array.from({ length: 45 }, (_, i) => i + 1),
   compteurs: ['こ', 'ひき', 'ほん'],
   exemple: true,          // un exemple guidé (れい) avant la 1re question, quand l'activité en a un   // かぞえかた : les compteurs travaillés (いくつ？ n'utilise que ceux-là)
   theme: 'nagasa',        // onglet de l'accueil : ながさ | おもさ | かさ
@@ -27,7 +27,7 @@ const DEFAUT = {
   lireUnites: true,       // la lecture des unités au-dessus des symboles (グラム sur g)
   toucherLire: true,      // toucher une phrase la fait lire ; bouton 👆 : lire les boutons au lieu de les activer
   volumeMax: 500,         // べんきょう かさ : verre doseur de 200, 500 ou 1000 mL
-  version: 9,
+  version: 10,
   langue: (navigator.language || '').toLowerCase().startsWith('ja') ? 'ja' : 'fr',
 };
 
@@ -64,6 +64,10 @@ function lireReglages() {
     // Version 9 : はんぶんこ et まぜて みよう (43, 44).
     if (stocke.activites && (stocke.version || 1) < 9) {
       stocke.activites = [...new Set([...stocke.activites, 43, 44])];
+    }
+    // Version 10 : おとが かわる かぞえかた (45).
+    if (stocke.activites && (stocke.version || 1) < 10) {
+      stocke.activites = [...new Set([...stocke.activites, 45])];
     }
     // Une liste d'activités vide (réglage abîmé) donnerait un accueil sans rien : on reprend tout.
     if (Array.isArray(stocke.activites) && stocke.activites.length === 0) delete stocke.activites;

@@ -107,7 +107,7 @@ export function genererQuestionKazu(niveau, derniere, i, n) {
 const motKazu = (sens) => (sens === 'plus' ? [OOKI, 'きい'] : [CHIISA, 'さい']);
 
 // Deux lectures fausses mais plausibles : さんほん, さんぽん pour さんぼん ; いちほん pour いっぽん…
-function fautesLecture(n, c) {
+export function fautesLecture(n, c) {
   const juste = compteur(n, c).y;
   // Le petit っ (いっ, ろっ…) n'est une confusion plausible que pour les compteurs où il existe (こ, ひき, ほん, さつ).
   const avecSokuon = COMPTEURS[c].change.some((k) => [1, 6, 8, 10].includes(k));
@@ -242,11 +242,9 @@ export function aideKazu(q) {
 // - un nombre où le son change : on montre ce qui change (「ろく」→「ろっ」、 「ほん」→「ぽん」) ;
 // - un nombre où rien ne change : 「に」と 「ひき」で 「にひき」。
 const LECTURE_SIMPLE = (n) => YOMI_UN[n] || 'じゅう';
-export function indiceSon(q) {
-  const c = q.compteur;
-  const v = q.valeur;
+export const indiceSon = (q) => explicationSon(q.compteur, q.valeur, [...q.essais].pop());
+export function explicationSon(c, v, choisi) {
   const juste = compteur(v, c).y;
-  const choisi = [...q.essais].pop();
   const autre = typeof choisi === 'string' ? COMPTEURS[c].yomi.indexOf(choisi) + 1 : 0;
   if (autre && autre !== v) {
     return ['おしい！ 「', choisi, '」は ', String(autre), 'の とき。 ここは ', String(v), 'だよ。'];

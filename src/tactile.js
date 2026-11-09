@@ -83,3 +83,16 @@ export function activable(el, action, { duree = null, garde = true, lire = true 
     });
   }
 }
+
+/* ----- Pince-zoom : permis sur l'écran (pour lire), mais pas dans une scène qu'on manipule -----
+   En versant, sur la balance, sur le ruban ou dans la réserve, un 2e doigt est presque toujours
+   un accident : la page ne doit pas s'agrandir sous la main de l'élève. */
+const SCENES = '#etude-plan, #etabli, #lecon-choix, .explication-dessin';
+export function installerAntiZoomScenes() {
+  const dansScene = (ev) => ev.target instanceof Element && ev.target.closest(SCENES);
+  const bloquer = (ev) => { if (ev.touches.length > 1 && dansScene(ev)) ev.preventDefault(); };
+  document.addEventListener('touchstart', bloquer, { passive: false });
+  document.addEventListener('touchmove', bloquer, { passive: false });
+  // Safari (iPad) : le geste de zoom a son propre événement.
+  document.addEventListener('gesturestart', (ev) => { if (dansScene(ev)) ev.preventDefault(); });
+}

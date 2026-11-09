@@ -29,7 +29,7 @@ import { plateforme } from './plateforme.js';
 import {
   avancerAide, debutAffichage, demarrer, nePasSavoir, parlerConsigne, rendreQuestion, session, suivant,
 } from './questions/session.js';
-import { activable } from './tactile.js';
+import { activable, installerAntiZoomScenes } from './tactile.js';
 import { installerBoutonsLire, installerLectureAuToucher, parler } from './voix.js';
 
 /* ----- Boutons des écrans ----- */
@@ -67,6 +67,7 @@ installerBoutonsLire();
 installerLectureAuToucher();
 installerPhotos();
 installerMotsAide();
+installerAntiZoomScenes();
 
 // Les voix arrivent parfois après le démarrage : la liste de l'espace parents se met à jour.
 plateforme.voix.surChangementVoix(() => { if (ecranActuel === 'parents') rendreParents(); });

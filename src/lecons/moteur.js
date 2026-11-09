@@ -24,6 +24,7 @@ import {
   creerCorpsLecon, creerHiroLecon, creerShakuLecon, etapesCorps, etapesGou, etapesShaku, majCorpsLecon,
 } from './etapes-culture.js';
 import { creerCompteLecon, etapesKazu1, etapesKazu2, etapesKazu3, majCompteLecon } from './etapes-kazu.js';
+import { creerOtoLecon, etapesOto } from './etapes-oto.js';
 import {
   etapesBalance, etapesHakari, etapesMonme, etapesPratique, etapesTsuriawase, etapesUnites,
 } from './etapes-masses.js';
@@ -133,6 +134,7 @@ export const LECONS = {
   'lecon-kazu3': etapesKazu3,
   'lecon-hanbun': etapesHanbun,
   'lecon-maze': etapesMaze,
+  'lecon-oto': etapesOto,
 };
 export const estLecon = () => Boolean(etude && LECONS[etude.mode]);
 
@@ -237,7 +239,8 @@ export function rendreLecon() {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'btn btn-choix-lecon';
-      b.innerHTML = et.choix.unite === '' ? nombreYomi(v, true) : nombreUnite(v, ({ mL: 'ml', cm: 'cm', g: 'g' })[et.choix.unite || 'g']);
+      if (et.choix.texte) b.textContent = v;   // des lectures (ろっぽん, ろくほん…)
+      else b.innerHTML = et.choix.unite === '' ? nombreYomi(v, true) : nombreUnite(v, ({ mL: 'ml', cm: 'cm', g: 'g' })[et.choix.unite || 'g']);
       if (e.essais.has(v)) b.classList.add('essaye');
       if (e.resolu && v === et.choix.bonne) b.classList.add('juste');
       activable(b, () => choisirLecon(v));
@@ -279,6 +282,7 @@ export function rendreLecon() {
   else if (scene === 'shaku') instrument = creerShakuLecon(W, H - hReserve, et);
   else if (scene === 'hiro') instrument = creerHiroLecon(W, H - hReserve);
   else if (scene === 'compte') instrument = creerCompteLecon(W, H - hReserve);
+  else if (scene === 'oto') instrument = creerOtoLecon(W, H - hReserve, et);
   else if (scene === 'versement') instrument = creerVersementLecon(W, H - hReserve, et);
   else {
     // Bacs : plateaux plus larges ; sur un écran bas, sans les noms (l'égalité dit déjà ce qu'il y a).
@@ -715,7 +719,7 @@ function choisirLecon(v) {
   }
   e.essais.add(v);
   sons.oups();
-  let message = et.choix.indice || indiceLecture(et.choix.bonne, v);
+  let message = typeof et.choix.indice === 'function' ? et.choix.indice(v) : et.choix.indice || indiceLecture(et.choix.bonne, v);
   // « おしい » seulement si c'est presque juste (17 pour 16, pas 71 pour 17).
   if (Math.abs(v - et.choix.bonne) > Math.max(1, Math.abs(et.choix.bonne) * 0.1)) message = ['もう いっかい！ ', ...sansOshii(message)];
   messageEtude(message);

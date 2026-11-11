@@ -201,10 +201,8 @@ function preparerMot(el) {
   el.setAttribute('role', 'button');
   el.tabIndex = 0;
   el.setAttribute('aria-label', 'めもりって なに？');
+  // Entrée et Espace : activable s'en charge déjà pour un élément qui n'est pas un bouton.
   activable(el, () => ouvrirExplication(contexteCourant()), { garde: false });
-  el.addEventListener('keydown', (ev) => {
-    if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); ouvrirExplication(contexteCourant()); }
-  });
 }
 
 export function installerMotsAide() {

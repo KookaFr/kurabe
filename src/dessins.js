@@ -261,7 +261,7 @@ export function tournerAiguille(svg, val, max) {
 
 /* ----- はかり numérique : un écran à cristaux liquides, chiffres à 7 segments -----
    Réglage des parents (« balance : à aiguille / numérique »). Les activités où l'on apprend à LIRE
-   l'aiguille la gardent toujours (options.aiguille) : はりで くらべる, はかりを よもう, はかりの よみかた. */
+   l'aiguille la gardent toujours (options.aiguille) : はかりを よもう, はかりの よみかた. */
 export const balanceNumerique = (options = {}) => reglages.balance === 'numerique' && !options.aiguille;
 
 // Les 7 segments (a en haut, puis b, c à droite, d en bas, e, f à gauche, g au milieu) d'un chiffre 14 × 24.

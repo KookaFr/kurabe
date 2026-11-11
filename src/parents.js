@@ -55,6 +55,7 @@ const TEXTES = {
     modifies: '{n} modifié(s)',
     importOk: '{n} texte(s) importé(s).',
     importRien: 'Aucun texte reconnu dans ce fichier (il faut les colonnes キー et 新しい文).',
+    importEchec: 'Les textes sont lus, mais l’appareil a refusé de les enregistrer (stockage plein ou navigation privée) : ils seront perdus à la fermeture.',
     balance: 'Balance de cuisine (はかり)',
     balanceAiguille: 'À aiguille',
     balanceNumerique: 'Numérique (chiffres)',
@@ -169,6 +170,7 @@ const TEXTES = {
     modifies: '{n}件変更',
     importOk: '{n}件の文を読み込みました。',
     importRien: '読み込める文がありません（「キー」と「新しい文」の列が必要です）。',
+    importEchec: '文は読み込みましたが、この端末に保存できませんでした（空き容量不足、またはプライベートブラウズ）。ページを閉じると消えます。',
     balance: 'はかりの種類',
     balanceAiguille: '針（アナログ）',
     balanceNumerique: '数字（デジタル）',
@@ -438,11 +440,11 @@ function blocTextes() {
     try { texte = new TextDecoder('utf-8', { fatal: true }).decode(octets); } catch {
       try { texte = new TextDecoder('shift_jis', { fatal: true }).decode(octets); } catch { texte = ''; }
     }
-    const { lus } = importerCSV(texte);
+    const { lus, enregistre } = importerCSV(texte);
     fichier.value = '';
     rendreParents();
     const s = $('parents').querySelector('.statut-textes');
-    if (s) s.textContent = lus ? t('importOk').replace('{n}', lus) : t('importRien');
+    if (s) s.textContent = !lus ? t('importRien') : enregistre === false ? t('importEchec') : t('importOk').replace('{n}', lus);
   });
   actions.append(
     bouton(t('exporter'), () => plateforme.fichiers.enregistrer('kurabe-textes.csv', exporterCSV(reglages.langue), 'text/csv')),

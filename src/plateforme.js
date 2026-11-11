@@ -94,6 +94,17 @@ const fichiers = {
         return;
       }
     }
+    // Tablette, téléphone : la feuille de partage (« Enregistrer dans Fichiers », AirDrop, e-mail). Dans une app
+    // installée sur iPad, un lien de téléchargement ne fait rien.
+    try {
+      const fichier = new File([contenu], nom, { type });
+      if (window.matchMedia('(pointer: coarse)').matches && navigator.canShare && navigator.canShare({ files: [fichier] })) {
+        await navigator.share({ files: [fichier], title: nom });
+        return;
+      }
+    } catch (e) {
+      if (e && e.name === 'AbortError') return;   // l'adulte a fermé la feuille de partage
+    }
     const url = URL.createObjectURL(new Blob([contenu], { type }));
     const a = document.createElement('a');
     a.href = url;

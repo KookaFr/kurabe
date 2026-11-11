@@ -70,7 +70,11 @@ installerMotsAide();
 installerAntiZoomScenes();
 
 // Les voix arrivent parfois après le démarrage : la liste de l'espace parents se met à jour.
-plateforme.voix.surChangementVoix(() => { if (ecranActuel === 'parents') rendreParents(); });
+// (pas pendant qu'un adulte écrit dans un champ : la reconstruction effacerait sa saisie)
+plateforme.voix.surChangementVoix(() => {
+  const actif = document.activeElement;
+  if (ecranActuel === 'parents' && !(actif && actif.matches('input[type="text"], input[type="number"], textarea'))) rendreParents();
+});
 
 /* ----- Changements de taille de l'écran ----- */
 

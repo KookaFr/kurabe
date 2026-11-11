@@ -65,7 +65,7 @@ export const TEXTES_PERSO = [
   { cle: 'mv.aidePoids', groupe: 'mv', defaut: 'はかりで くらべて 見《み》よう。', fr: 'g で くらべる : aide', ja: '「g で くらべる」ヒント' },
   { cle: 'mv.aideLiquide', groupe: 'mv', defaut: 'カップで くらべて 見《み》よう。', fr: 'mL で くらべる : aide', ja: '「mL で くらべる」ヒント' },
   { cle: 'lecture.grands', groupe: 'mv', defaut: 'おしい！ はりの さきを よく 見《み》てね。 まず 大《おお》きい 目《め》もりを 見《み》よう。 はりの すぐ まえの 大《おお》きい 目《め》もりは いくつ？', fr: 'はかりを よもう : les centaines sont fausses', ja: '「はかりを よもう」100の位の間違い' },
-  { cle: 'lecture.juste', groupe: 'mv', defaut: 'おしい！ はりは ちょうど 大《おお》きい 目《め》もりの {数}を さして いるよ。', vars: { 数: 300 }, fr: 'はかりを よもう : l’aiguille est sur un grand trait', ja: '「はかりを よもう」針が大きい目もりの上' },
+  { cle: 'lecture.juste', groupe: 'mv', defaut: 'おしい！ はりは ちょうど 大《おお》きい 目《め》もりを さして いるよ。 その すうじを よもう。', vars: { 数: 300 }, fr: 'はかりを よもう : l’aiguille est sur un grand trait', ja: '「はかりを よもう」針が大きい目もりの上' },
   { cle: 'lecture.petits', groupe: 'mv', defaut: 'おしい！ {数}は あって いるよ。 そこから ちいさい 目《め》もりを ひとつずつ かぞえよう。 1つで 10 g。', vars: { 数: 200 }, fr: 'はかりを よもう : les dizaines sont fausses', ja: '「はかりを よもう」10の位の間違い' },
   { cle: 'lecture.petitsZero', groupe: 'mv', defaut: 'おしい！ ちいさい 目《め》もりを 0から ひとつずつ かぞえよう。 1つで 10 g。', fr: 'はかりを よもう : moins de 100 g', ja: '「はかりを よもう」100 gより少ない' },
   { cle: 'regle.omosa.plus', groupe: 'mv', defaut: '重《おも》い ＝ 数字《すうじ》が 大《おお》きい', fr: 'Règle rappelée : le plus lourd', ja: 'きまり：重い' },
@@ -82,8 +82,9 @@ function lireStockage() {
   try { return JSON.parse(localStorage.getItem(CLE_STOCKAGE)) || {}; } catch { return {}; }
 }
 let perso = lireStockage();
+// Rend false si l'appareil refuse l'écriture (stockage plein ou navigation privée) : l'appelant le dit.
 function ecrireStockage() {
-  try { localStorage.setItem(CLE_STOCKAGE, JSON.stringify(perso)); } catch { /* stockage indisponible */ }
+  try { localStorage.setItem(CLE_STOCKAGE, JSON.stringify(perso)); return true; } catch { return false; }
 }
 export const textePerso = (cle) => perso[cle] ?? null;
 export const texteActuel = (cle) => perso[cle] ?? PAR_CLE[cle]?.defaut ?? '';
@@ -106,6 +107,9 @@ export function toutRetablir() {
 const UNITES = { kg: 'kg', mL: 'ml', cm: 'cm', g: 'g', L: 'l', m: 'm' };
 const MOTIF = /\{([^}]+)\}|｜([^《｜]+)《([^》]+)》|([\u3400-\u9FFF々〆]+)《([^》]+)》|(\d+(?:\.\d+)?)[ \u00a0]?(kg|mL|cm|g|L|m)(?![A-Za-z])/g;
 
+// Dans un groupe à furigana (｜大きな 木《おおきな き》), l'espace devient insécable : htmlMots coupe aux espaces.
+const insecable = (s) => s.replace(/[ \u3000]/g, '\u00a0');
+
 export function analyserTexte(texte, vars = {}) {
   const segs = [];
   const ajouter = (v) => {
@@ -119,8 +123,8 @@ export function analyserTexte(texte, vars = {}) {
     ajouter(texte.slice(fin, m.index));
     fin = m.index + m[0].length;
     if (m[1] !== undefined) ajouter(m[1] in vars ? vars[m[1]] : m[0]);
-    else if (m[2] !== undefined) ajouter(K(m[2], m[3]));
-    else if (m[4] !== undefined) ajouter(K(m[4], m[5]));
+    else if (m[2] !== undefined) ajouter(K(insecable(m[2]), insecable(m[3])));
+    else if (m[4] !== undefined) ajouter(K(m[4], insecable(m[5])));
     else ajouter(segU(m[6], UNITES[m[7]]));
   }
   ajouter(texte.slice(fin));
@@ -208,6 +212,6 @@ export function importerCSV(texte) {
     if (nouveau === PAR_CLE[cle].defaut) delete perso[cle];
     lus += 1;
   });
-  ecrireStockage();
-  return { lus, inconnus };
+  const enregistre = ecrireStockage();
+  return { lus, inconnus, enregistre };
 }

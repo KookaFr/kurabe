@@ -3,8 +3,15 @@
    puis les objets alignés sur une ligne de départ jaune (comme le zéro d'un mètre ruban). */
 
 /* Police UD (universal design) embarquée : lisible, et disponible hors ligne sans appel à un serveur tiers. */
-@font-face { font-family: "BIZ UDPGothic"; font-style: normal; font-weight: 400; font-display: swap; src: url("polices/BIZUDPGothic-Regular.woff2") format("woff2"); }
-@font-face { font-family: "BIZ UDPGothic"; font-style: normal; font-weight: 700; font-display: swap; src: url("polices/BIZUDPGothic-Bold.woff2") format("woff2"); }
+/* Deux jeux : la police réduite aux caractères de l'app (~0,3 Mo, toujours chargée, mise en cache), et la police
+   complète (2,2 Mo par graisse), téléchargée seulement si un kanji hors de l'app apparaît : nom d'une photo ou
+   texte d'aide écrit par les parents. Le bloc ci-dessous est écrit par outils/police.py (ne pas le modifier à la main). */
+/* police:debut */
+@font-face { font-family: "BIZ UDPGothic"; font-style: normal; font-weight: 400; font-display: swap; src: url("polices/complet/BIZUDPGothic-Regular.woff2") format("woff2"); unicode-range: U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF; }
+@font-face { font-family: "BIZ UDPGothic"; font-style: normal; font-weight: 400; font-display: swap; src: url("polices/BIZUDPGothic-Regular.woff2") format("woff2"); unicode-range: U+20-7E, U+A0-FF, U+153, U+2010, U+2013-2016, U+2018-201A, U+201C-201E, U+2020-2022, U+2025-2026, U+2039-203A, U+2190-2194, U+2196-2199, U+21C4, U+21D2, U+21D4, U+21E6-21E9, U+2212, U+221D, U+2248, U+2264-2265, U+2460-2490, U+249C-24B5, U+24D0-24FE, U+25A0-25A1, U+25B1-25B3, U+25B6-25B7, U+25BC-25BD, U+25C0-25C1, U+25C6-25C7, U+25C9-25CB, U+25CE-25D3, U+25E6, U+25EF, U+2600-2603, U+2605-2606, U+260E, U+2616-2617, U+261C-261F, U+2640, U+2642, U+2660-266F, U+3000-3019, U+301C-301D, U+301F-3020, U+3033-3036, U+303B-303D, U+3041-3096, U+3099-30FF, U+4E00, U+4E0A-4E0B, U+4E0D, U+4E26, U+4E2D, U+4E73, U+4E88, U+4EBA, U+4ECA, U+4ED6, U+4EE5, U+4EF6, U+4F4D-4F4E, U+4F53, U+4F5C, U+4F7F, U+4F8B, U+4FDD, U+4FE1, U+500B, U+5099, U+5143, U+5165, U+5168, U+5171, U+5186, U+5199, U+51FA, U+5206, U+5217, U+521D, U+5225, U+524A, U+524D, U+52A0, U+52A9, U+52B9, U+52C9, U+52D5, U+5301, U+5347, U+5358, U+5375, U+53D6, U+53F0, U+53F7, U+5408, U+540C-540D, U+5411, U+554F, U+5668, U+56DE, U+56F2, U+56FA, U+5730, U+5834, U+5883, U+5897, U+58F0, U+5909, U+591A, U+5927, U+5973, U+59CB, U+5B57-5B58, U+5B66, U+5B9A, U+5B9F, U+5BB6, U+5BB9, U+5BF8, U+5C0F, U+5C11, U+5C3A, U+5E2B, U+5E45, U+5F15, U+5F35, U+5F37, U+5FC3, U+5FC5, U+6027, U+60DC, U+60F3, U+623B, U+6240, U+624B, U+62BC, U+6307, U+64AE, U+6570, U+6587, U+65B0, U+65B9, U+65E5, U+660E, U+6642, U+66F4, U+66F8, U+6700, U+6709, U+6728, U+672B-672C, U+677F, U+679A, U+679C, U+67A0, U+6821, U+68D2, U+6A2A, U+6B21, U+6B63, U+6B7B, U+6B8B, U+6BD4, U+6C34, U+6C7A, U+6CD5, U+6CE8, U+6D3B, U+6D88, U+6DF7, U+6E2C, U+6E96, U+6F22, U+7121, U+725B, U+7269, U+7389, U+7406, U+74B0, U+7537, U+753B, U+756A, U+76BF, U+76EE, U+76F4, U+771F, U+77ED, U+77F3, U+78BA, U+793A, U+79D2, U+79FB, U+7A2E, U+7A7A, U+7AEF, U+7B54, U+7BA1, U+7BB1, U+7BC4, U+7D19, U+7D30, U+7D42, U+7D9A, U+7DF4, U+7F6E, U+7FBD, U+7FD2, U+8005, U+805E, U+81EA, U+822C, U+8239, U+8336, U+8868, U+8981, U+898B, U+898F, U+8996, U+899A, U+89E3, U+89E6, U+8A00, U+8A08, U+8A2D, U+8A5E, U+8A66, U+8A71, U+8A9E, U+8AAC-8AAD, U+8B77, U+8DB3, U+8EE2, U+8EFD, U+8F03, U+8FBC, U+8FFD, U+9001, U+901F, U+9023, U+9055, U+9078, U+90E8, U+91CD, U+91CF, U+91DD, U+9285, U+9577, U+9589, U+9593, U+9664, U+969B, U+9752, U+9762, U+9774, U+97F3, U+9808, U+984C, U+985E, U+98A8, U+FF01-FF9F, U+FFE0-FFE5; }
+@font-face { font-family: "BIZ UDPGothic"; font-style: normal; font-weight: 700; font-display: swap; src: url("polices/complet/BIZUDPGothic-Bold.woff2") format("woff2"); unicode-range: U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF; }
+@font-face { font-family: "BIZ UDPGothic"; font-style: normal; font-weight: 700; font-display: swap; src: url("polices/BIZUDPGothic-Bold.woff2") format("woff2"); unicode-range: U+20-7E, U+A0-FF, U+153, U+2010, U+2013-2016, U+2018-201A, U+201C-201E, U+2020-2022, U+2025-2026, U+2039-203A, U+2190-2194, U+2196-2199, U+21C4, U+21D2, U+21D4, U+21E6-21E9, U+2212, U+221D, U+2248, U+2264-2265, U+2460-2490, U+249C-24B5, U+24D0-24FE, U+25A0-25A1, U+25B1-25B3, U+25B6-25B7, U+25BC-25BD, U+25C0-25C1, U+25C6-25C7, U+25C9-25CB, U+25CE-25D3, U+25E6, U+25EF, U+2600-2603, U+2605-2606, U+260E, U+2616-2617, U+261C-261F, U+2640, U+2642, U+2660-266F, U+3000-3019, U+301C-301D, U+301F-3020, U+3033-3036, U+303B-303D, U+3041-3096, U+3099-30FF, U+4E00, U+4E0A-4E0B, U+4E0D, U+4E26, U+4E2D, U+4E73, U+4E88, U+4EBA, U+4ECA, U+4ED6, U+4EE5, U+4EF6, U+4F4D-4F4E, U+4F53, U+4F5C, U+4F7F, U+4F8B, U+4FDD, U+4FE1, U+500B, U+5099, U+5143, U+5165, U+5168, U+5171, U+5186, U+5199, U+51FA, U+5206, U+5217, U+521D, U+5225, U+524A, U+524D, U+52A0, U+52A9, U+52B9, U+52C9, U+52D5, U+5301, U+5347, U+5358, U+5375, U+53D6, U+53F0, U+53F7, U+5408, U+540C-540D, U+5411, U+554F, U+5668, U+56DE, U+56F2, U+56FA, U+5730, U+5834, U+5883, U+5897, U+58F0, U+5909, U+591A, U+5927, U+5973, U+59CB, U+5B57-5B58, U+5B66, U+5B9A, U+5B9F, U+5BB6, U+5BB9, U+5BF8, U+5C0F, U+5C11, U+5C3A, U+5E2B, U+5E45, U+5F15, U+5F35, U+5F37, U+5FC3, U+5FC5, U+6027, U+60DC, U+60F3, U+623B, U+6240, U+624B, U+62BC, U+6307, U+64AE, U+6570, U+6587, U+65B0, U+65B9, U+65E5, U+660E, U+6642, U+66F4, U+66F8, U+6700, U+6709, U+6728, U+672B-672C, U+677F, U+679A, U+679C, U+67A0, U+6821, U+68D2, U+6A2A, U+6B21, U+6B63, U+6B7B, U+6B8B, U+6BD4, U+6C34, U+6C7A, U+6CD5, U+6CE8, U+6D3B, U+6D88, U+6DF7, U+6E2C, U+6E96, U+6F22, U+7121, U+725B, U+7269, U+7389, U+7406, U+74B0, U+7537, U+753B, U+756A, U+76BF, U+76EE, U+76F4, U+771F, U+77ED, U+77F3, U+78BA, U+793A, U+79D2, U+79FB, U+7A2E, U+7A7A, U+7AEF, U+7B54, U+7BA1, U+7BB1, U+7BC4, U+7D19, U+7D30, U+7D42, U+7D9A, U+7DF4, U+7F6E, U+7FBD, U+7FD2, U+8005, U+805E, U+81EA, U+822C, U+8239, U+8336, U+8868, U+8981, U+898B, U+898F, U+8996, U+899A, U+89E3, U+89E6, U+8A00, U+8A08, U+8A2D, U+8A5E, U+8A66, U+8A71, U+8A9E, U+8AAC-8AAD, U+8B77, U+8DB3, U+8EE2, U+8EFD, U+8F03, U+8FBC, U+8FFD, U+9001, U+901F, U+9023, U+9055, U+9078, U+90E8, U+91CD, U+91CF, U+91DD, U+9285, U+9577, U+9589, U+9593, U+9664, U+969B, U+9752, U+9762, U+9774, U+97F3, U+9808, U+984C, U+985E, U+98A8, U+FF01-FF9F, U+FFE0-FFE5; }
+/* police:fin */
 
 :root {
   --papier: #f6f7f2;
@@ -1231,7 +1238,7 @@ button.ligne { cursor: pointer; }
 /* Après avoir versé : un nom sous chaque récipient (カップ vidée, なべ qui a reçu le liquide). */
 .noms-cote { display: flex; justify-content: center; gap: 10px; }
 .noms-cote .nom-mv { flex: none; white-space: nowrap; }
-.nom-mv.nom-vide { color: var(--encre-douce); font-size: .95rem; margin-top: -2px; }
+.nom-mv.nom-vide { position: relative; z-index: 3; padding: 0 6px; border-radius: 6px; background: color-mix(in srgb, var(--surface) 85%, transparent); color: var(--encre-douce); font-size: .95rem; margin-top: -2px; }
 
 .verre {
   position: relative;
@@ -2028,6 +2035,7 @@ html[data-motion="reduce"] .appui-long::after { animation-duration: var(--duree,
 
 /* Le mot 目もり dans une consigne : souligné, avec un petit « ? » ; on le touche pour l'explication. */
 aide-memori {
+  position: relative;
   display: inline-block;
   padding: 0 .15em;
   margin: -.1em 0;
@@ -2240,7 +2248,7 @@ html[data-motion="reduce"] .dessin-memori *, html[data-motion="reduce"] .btn-mem
 }
 @media (orientation: landscape) and (max-height: 520px) {
   .oto-table { border-spacing: 3px 2px; }
-  .case-mini { min-height: 34px; padding: 1px; font-size: .9rem; }
+  .case-mini { min-height: 40px; padding: 1px; font-size: .9rem; }
   .oto-table tbody th { font-size: 1.05rem; }
 }
 /* Téléphone debout : deux colonnes (1 à 5, puis 6 à 10), le nombre à gauche de sa lecture. */
@@ -2277,3 +2285,6 @@ html[data-motion="reduce"] .dessin-memori *, html[data-motion="reduce"] .btn-mem
 .apercu-texte { margin: 0; padding: 6px 10px; border-radius: 8px; background: var(--papier); font-size: 1.1rem; }
 .original-texte, .vars-texte { margin: 0; font-size: .85rem; color: var(--encre-douce); }
 .boutons-texte { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Le mot 目もり touchable : une zone de toucher d'au moins 44 px de haut autour du mot. */
+aide-memori::before { content: ""; position: absolute; left: -4px; right: -4px; top: 50%; height: 44px; transform: translateY(-50%); }

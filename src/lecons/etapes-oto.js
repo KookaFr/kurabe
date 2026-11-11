@@ -68,7 +68,7 @@ function etapeChoix(c, n) {
         ? explicationSon(c, n, choisi)
         : ['おしい！ さいごの ', SUJI, 'は ', String(dernier(n)), '。 ', String(dernier(n)), 'の ときと おなじ： 「', COMPTEURS[c].yomi[dernier(n) - 1], '」。']),
     },
-    bravo: ['「', juste, '」。', change(n, c) ? ' おとが かわる かずだね。' : ' おとは かわらないね。'],
+    bravo: ['「', juste, '」。', c === 'にん' && n <= 2 ? ' とくべつな いいかただね。' : change(n, c) ? ' おとが かわる かずだね。' : ' おとは かわらないね。'],
   };
 }
 

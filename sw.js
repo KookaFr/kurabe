@@ -50,6 +50,10 @@ self.addEventListener('fetch', (ev) => {
   ev.respondWith(caches.open(VERSION).then(async (cache) => {
     const enCache = await cache.match(cle, { ignoreSearch: true });
     if (enCache) return enCache;
-    return fetch(requete).catch(() => Response.error());
+    // La police complète n'est pas préchargée (4,4 Mo) : elle n'est demandée que si un kanji hors de l'app
+    // apparaît, et on la garde alors pour le hors-ligne. Les autres fichiers ne sont jamais ajoutés ici.
+    const reponse = await fetch(requete).catch(() => Response.error());
+    if (reponse.ok && new URL(requete.url).pathname.includes('/polices/complet/')) cache.put(requete, reponse.clone());
+    return reponse;
   }));
 });

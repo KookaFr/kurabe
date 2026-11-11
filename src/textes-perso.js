@@ -188,17 +188,22 @@ function lireCSV(texte) {
 
 // Réimporter : la colonne 新しい文 remplace le texte (vide : on revient à l'original). Rend le nombre de textes lus.
 export function importerCSV(texte) {
-  const lignes = lireCSV(texte);
+  const lignes = lireCSV(String(texte || '').replace(/^\uFEFF/, ''));
   if (!lignes.length) return { lus: 0, inconnus: 0 };
   const entete = lignes[0].map((x) => x.trim());
-  const iCle = Math.max(0, entete.indexOf('キー'));
-  const iNouveau = entete.indexOf('新しい文') >= 0 ? entete.indexOf('新しい文') : 4;
+  // Sans les deux colonnes attendues (fichier mal encodé ou autre tableau), on n'importe rien :
+  // deviner la colonne enregistrait du charabia avec un message de succès.
+  if (!entete.includes('キー') || !entete.includes('新しい文')) return { lus: 0, inconnus: lignes.length };
+  const iCle = entete.indexOf('キー');
+  const iNouveau = entete.indexOf('新しい文');
   let lus = 0;
   let inconnus = 0;
   lignes.slice(entete.includes('キー') ? 1 : 0).forEach((l) => {
     const cle = (l[iCle] || '').trim();
     if (!PAR_CLE[cle]) { inconnus += 1; return; }
-    const nouveau = (l[iNouveau] || '').replace(/\r\n?/g, '\n').trim();
+    // Un texte d'aide reste court (300 caractères) et sans caractère de remplacement (fichier abîmé).
+    const nouveau = (l[iNouveau] || '').replace(/\r\n?/g, '\n').trim().slice(0, 300);
+    if (nouveau.includes('\uFFFD')) { inconnus += 1; return; }
     if (nouveau) perso[cle] = nouveau; else delete perso[cle];
     if (nouveau === PAR_CLE[cle].defaut) delete perso[cle];
     lus += 1;

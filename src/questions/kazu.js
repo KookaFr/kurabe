@@ -117,7 +117,8 @@ export function fautesLecture(n, c) {
     ? { 1: ['いちにん', 'ひとにん'], 2: ['ににん', 'ふたにん'], 4: ['よんにん', 'よんり'] }[n] || []
     : nombres.flatMap((x) => [...COMPTEURS[c].variantes, { 'こ': 'ご', 'さつ': 'ざつ', 'まい': 'ばい', 'だい': 'たい' }[c] || c].map((v) => x + v));
   // Pas de vrais mots qui embrouillent ou choquent (いちご, じゅうご, ごご, いったい 一体, しにん 死人).
-  fautes = melanger([...new Set(fautes)].filter((x) => x !== juste && !['いちご', 'じゅうご', 'ごご', 'いったい', 'しにん'].includes(x)));
+  // Ni les lectures admises de 8 (はちほん, はちひき, はちこ, はちさつ se disent aussi : pas une faute).
+  fautes = melanger([...new Set(fautes)].filter((x) => x !== juste && x !== `はち${c}` && !['いちご', 'じゅうご', 'ごご', 'いったい', 'しにん'].includes(x)));
   // Pas assez d'erreurs de son : le nombre d'à côté (よんさつ pour さんさつ).
   for (const k of [n - 1, n + 1, n + 2]) if (fautes.length < 2 && k >= 1 && k <= 10) fautes.push(compteur(k, c).y);
   return fautes.slice(0, 2);

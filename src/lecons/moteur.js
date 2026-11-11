@@ -723,7 +723,7 @@ function choisirLecon(v) {
   sons.oups();
   let message = typeof et.choix.indice === 'function' ? et.choix.indice(v) : et.choix.indice || indiceLecture(et.choix.bonne, v);
   // « おしい » seulement si c'est presque juste (17 pour 16, pas 71 pour 17).
-  if (Math.abs(v - et.choix.bonne) > Math.max(1, Math.abs(et.choix.bonne) * 0.1)) message = [...tp('encore'), ...sansOshii(message)];
+  if (Math.abs(v - et.choix.bonne) > Math.max(1, Math.abs(et.choix.bonne) * 0.1)) message = [...tp('encore'), ...sansOshii(message, true)];
   messageEtude(message);
   parler(message);
   rendreLecon();

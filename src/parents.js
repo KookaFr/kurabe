@@ -432,7 +432,13 @@ function blocTextes() {
   fichier.addEventListener('change', async () => {
     const f = fichier.files && fichier.files[0];
     if (!f) return;
-    const { lus } = importerCSV(await f.text());
+    // Excel au Japon enregistre le CSV en Shift_JIS : on essaie UTF-8 strict, puis Shift_JIS.
+    const octets = await f.arrayBuffer();
+    let texte;
+    try { texte = new TextDecoder('utf-8', { fatal: true }).decode(octets); } catch {
+      try { texte = new TextDecoder('shift_jis', { fatal: true }).decode(octets); } catch { texte = ''; }
+    }
+    const { lus } = importerCSV(texte);
     fichier.value = '';
     rendreParents();
     const s = $('parents').querySelector('.statut-textes');

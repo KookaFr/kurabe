@@ -105,7 +105,8 @@ export const LIENS = {
   28: 29, 27: 16, 30: 29, 26: 13,
   24: 22,
 };
-export const activiteLiee = (n) => ACTIVITES.find((a) => a.n === LIENS[n]) || null;
+// Jamais une activité que l'adulte a masquée dans l'espace parents.
+export const activiteLiee = (n) => ACTIVITES.find((a) => a.n === LIENS[n] && reglages.activites.includes(a.n)) || null;
 export const lancerActivite = (a) => (a.etude ? demarrerEtude(a.etude) : demarrer(a.n));
 // Numéro affiché : 1, 2, 3… dans chaque onglet (les もんだい, puis les べんきょう).
 // Trois groupes : もんだい, べんきょう, puis ね、しっていた？ (la culture : むかしは…).

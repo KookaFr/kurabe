@@ -362,7 +362,7 @@ function donnerAide(q, debut, erreur) {
   } else if (q.type === 'devine' || q.type === 'transvaser') {
     rendreQuestion();
   }
-  message = [...debut, ...sansOshii(message)];
+  message = [...debut, ...sansOshii(message, debut.length > 0)];
   $('retour').innerHTML = htmlMots(message);
   $('retour').classList.remove('ok');
   parlerPuisRelancer(message, q);
@@ -373,10 +373,14 @@ function donnerAide(q, debut, erreur) {
   majBoutonAide();
 }
 // Les conseils commencent souvent par « おしい！ » : on l'enlève (il est ajouté seulement après une erreur).
-export function sansOshii(m) {
+// tout : un autre préfixe prend sa place (« もう いっかい！ », « だいじょうぶ！ ») ; on retire alors aussi le premier mot
+// d'un texte personnalisé s'il finit par « ！ » (« ざんねん！ … »), pour ne pas dire « もう いっかい！ ざんねん！ ».
+export function sansOshii(m, tout = false) {
   const [premier, ...reste] = m;
-  if (typeof premier !== 'string' || !premier.startsWith('おしい！')) return m;
-  const suite = premier.slice('おしい！'.length).trimStart();
+  if (typeof premier !== 'string') return m;
+  const prefixe = premier.startsWith('おしい！') ? 'おしい！' : tout ? (premier.match(/^[^\s！。、？]{1,8}！/) || [''])[0] : '';
+  if (!prefixe) return m;
+  const suite = premier.slice(prefixe.length).trimStart();
   return suite ? [suite, ...reste] : reste;
 }
 

@@ -2265,3 +2265,6 @@ html[data-motion="reduce"] .dessin-memori *, html[data-motion="reduce"] .btn-mem
 .apercu-texte { margin: 0; padding: 6px 10px; border-radius: 8px; background: var(--papier); font-size: 1.1rem; }
 .original-texte, .vars-texte { margin: 0; font-size: .85rem; color: var(--encre-douce); }
 .boutons-texte { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Licence, en bas de l'espace parents */
+.mention-licence { margin: 24px 0 8px; text-align: center; font-size: .85em; color: var(--encre-douce); }

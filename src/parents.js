@@ -650,5 +650,12 @@ export function rendreParents() {
   const bIpad = bloc(t('ipad'), t('ipadAide'));
 
   zone.append(bLangue, bActivites, bPhotos, bVoix, bToucher, blocTextes(), bIpad);
+  // La licence : usage non commercial (LICENSE.md).
+  const mention = document.createElement('p');
+  mention.className = 'mention-licence';
+  mention.textContent = reglages.langue === 'ja'
+    ? '© 2026 KookaFr ・ 非営利の利用のみ（PolyForm Noncommercial 1.0.0）'
+    : '© 2026 KookaFr · Utilisation non commerciale seulement (licence PolyForm Noncommercial 1.0.0)';
+  zone.append(mention);
   zone.scrollTop = defilement;
 }

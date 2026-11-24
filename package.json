@@ -2,6 +2,7 @@
   "name": "kurabe",
   "version": "31.0.0",
   "private": true,
+  "license": "PolyForm-Noncommercial-1.0.0",
   "description": "くらべよう — compter et comparer des longueurs, des masses et des liquides",
   "scripts": {
     "test": "node tests/fumee.js",

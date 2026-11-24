@@ -7,6 +7,7 @@ import { appliquerAnimations } from './ecrans.js';
 import { $, echapper } from './outils.js';
 import { definirPhotos, photos, urlPhoto, urlsPhotos } from './photos.js';
 import { plateforme } from './plateforme.js';
+import { effacerProgres, nombreFaites } from './progres.js';
 import { A_COMPTER } from './questions/kazu.js';
 import { ecrireReglages, reglages } from './reglages.js';
 import { compteursActifs, htmlMots, lecture, PHRASES, TOUS_COMPTEURS } from './texte.js';
@@ -48,6 +49,9 @@ const TEXTES = {
     importer: 'Importer',
     toutRetablir: 'Tout rétablir',
     confirmerRetablir: 'Remettre tous les textes d’origine ?',
+    progres: 'Activités terminées par l’élève (cochées sur l’accueil) : {n}',
+    progresEffacer: 'Remettre la progression à zéro',
+    progresConfirmer: 'Enlever toutes les coches de l’accueil ?',
     retablir: 'Rétablir',
     ecouterTexte: 'Écouter',
     original: 'Texte d’origine :',
@@ -163,6 +167,9 @@ const TEXTES = {
     importer: '読み込む',
     toutRetablir: 'すべて元にもどす',
     confirmerRetablir: 'すべての文を元にもどしますか？',
+    progres: 'おわった問題（ホームに ✓ が つきます）：{n}',
+    progresEffacer: '✓ を すべて 消す',
+    progresConfirmer: 'ホームの ✓ を すべて 消しますか？',
     retablir: '元にもどす',
     ecouterTexte: '聞く',
     original: '元の文：',
@@ -556,6 +563,23 @@ export function rendreParents() {
     groupeChoix('court', t('court'), [[true, t('oui')], [false, t('non')]]),
     groupeChoix('aide', t('aide'), [[true, t('oui')], [false, t('non')]]),
   );
+  // La progression de l'élève (coches de l'accueil) : combien d'activités finies, et la remise à zéro.
+  const progres = document.createElement('p');
+  progres.className = 'ligne-progres';
+  const nbProgres = document.createElement('span');
+  nbProgres.textContent = t('progres').replace('{n}', nombreFaites());
+  const effacer = document.createElement('button');
+  effacer.type = 'button';
+  effacer.className = 'btn btn-petit';
+  effacer.textContent = t('progresEffacer');
+  effacer.addEventListener('click', () => {
+    if (!window.confirm(t('progresConfirmer'))) return;
+    effacerProgres();
+    rendreParents();
+  });
+  effacer.disabled = nombreFaites() === 0;
+  progres.append(nbProgres, effacer);
+  bActivites.append(progres);
   const aideAide = document.createElement('p');
   aideAide.textContent = t('aideAide');
   bActivites.append(

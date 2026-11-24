@@ -27,6 +27,7 @@ export function finir() {
 }
 
 export const estFaite = (n) => Number(faites[n]) > 0;
+export const nombreFaites = () => Object.keys(faites).filter((n) => estFaite(n)).length;
 
 export function effacerProgres() {
   faites = {};

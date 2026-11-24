@@ -46,6 +46,11 @@
   --the: #9cc265;
   --lait: #d9c184;
 
+  /* Couleur du thème en cours (onglet, cartes, progression) : voir [data-matiere] plus bas. */
+  --theme: var(--action);
+  --theme-texte: var(--action-texte);
+  --theme-fond: color-mix(in srgb, var(--theme) 12%, var(--surface));
+
   --police: "BIZ UDPGothic", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
   --rayon: 18px;
   --cible: 64px;
@@ -282,9 +287,8 @@ rt { font-size: max(.6em, 11px); letter-spacing: 0; }
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 10px;
   min-height: 170px;
-  padding: 16px 18px;
+  padding: 0;
   border: 3px solid var(--bord);
   border-radius: var(--rayon);
   background: var(--surface);
@@ -292,19 +296,81 @@ rt { font-size: max(.6em, 11px); letter-spacing: 0; }
   overflow: hidden;
 }
 
+/* Le petit dessin, sur un bandeau à la couleur du thème. */
+.vignette { display: block; padding: 10px 88px 10px 18px; background: var(--theme-fond); }   /* à droite : la place du numéro et de la coche */
+.vignette svg { display: block; width: 100%; height: 64px; }
+
 .activite .numero {
   position: absolute;
-  top: 12px;
-  right: 14px;
-  font-size: .85em;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+  border-radius: 9px;
+  background: var(--theme);
+  color: var(--theme-texte);
+  font-size: .95em;
   font-weight: 700;
-  color: var(--encre-douce);
   font-variant-numeric: tabular-nums;
 }
 
-.activite svg { width: 100%; height: 64px; }
-.activite strong { font-size: 1.45rem; line-height: 1.25; }
-.activite span.sous { color: var(--encre-douce); font-size: .95em; }
+/* Déjà fini : une coche à côté du numéro. */
+.activite .fait {
+  position: absolute;
+  top: 10px;
+  right: 48px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--bon) var(--coche) center / 18px no-repeat;
+}
+
+.activite strong { padding: 12px 18px 0; font-size: 1.45rem; line-height: 1.25; }
+.activite .pied { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; padding: 6px 18px 14px; }
+.activite span.sous { min-width: 0; color: var(--encre-douce); font-size: .95em; }
+
+/* Difficulté : 1 à 3 points pleins. */
+.niveau { flex: none; display: flex; gap: 5px; padding-bottom: 4px; }
+.niveau i { width: 12px; height: 12px; border: 2px solid var(--theme); border-radius: 50%; }
+.niveau i.plein { background: var(--theme); }
+
+/* Où il en est dans le thème, et la prochaine activité. */
+.avancement { grid-column: 1 / -1; display: flex; align-items: center; gap: 14px; margin: 2px; font-weight: 700; color: var(--theme); }
+.avancement-barre { flex: 1; height: 14px; border-radius: 7px; background: var(--grille); overflow: hidden; }
+.avancement-barre i { display: block; height: 100%; border-radius: 7px; background: var(--theme); }
+
+.reprise {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-height: 96px;
+  padding: 10px 16px;
+  border: 3px solid var(--theme);
+  border-radius: var(--rayon);
+  background: var(--theme-fond);
+  text-align: left;
+}
+.reprise .vignette { flex: none; width: 200px; padding: 6px 10px; border-radius: 12px; background: var(--surface); }
+.reprise .vignette svg { height: 56px; }
+.reprise-texte { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.reprise-texte small { font-size: 1rem; font-weight: 700; color: var(--theme); }
+.reprise-texte strong { font-size: 1.5rem; line-height: 1.25; }
+.reprise-bouton {
+  flex: none;
+  display: grid;
+  place-items: center;
+  min-height: 56px;
+  padding: 0 24px;
+  border-radius: 14px;
+  background: var(--theme);
+  color: var(--theme-texte);
+  font-size: 1.3rem;
+  font-weight: 700;
+}
 
 /* ---------- Question ---------- */
 
@@ -325,8 +391,8 @@ rt { font-size: max(.6em, 11px); letter-spacing: 0; }
   border-radius: 50%;
 }
 
-.progression li.fait { background: var(--bon); border-color: var(--bon); }
-.progression li.actuel { border-color: var(--action); transform: scale(1.25); }
+.progression li.fait { background: var(--theme); border-color: var(--theme); }
+.progression li.actuel { border-color: var(--theme); transform: scale(1.25); }
 
 .consigne {
   margin: 0;
@@ -1062,9 +1128,30 @@ button.ligne { cursor: pointer; }
   font-weight: 700;
 }
 
-.theme svg { width: 34px; height: 34px; flex: none; color: var(--encre-douce); }
-.theme[aria-pressed="true"] { background: var(--encre); border-color: var(--encre); color: var(--papier); }
-.theme[aria-pressed="true"] svg { color: var(--papier); }
+.theme { border-color: var(--theme); }
+.theme-icone { flex: none; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 11px; background: var(--theme); color: var(--theme-texte); }
+.theme svg { width: 30px; height: 30px; }
+.theme[aria-pressed="true"] { background: var(--theme); color: var(--theme-texte); }
+.theme[aria-pressed="true"] .theme-icone { background: var(--theme-texte); color: var(--theme); }
+
+/* Une couleur par thème. Le texte posé dessus est blanc en clair, bleu nuit en sombre. */
+[data-matiere="kazu"] { --theme: #2453c4; }
+[data-matiere="nagasa"] { --theme: #0f6b78; }
+[data-matiere="omosa"] { --theme: #b0500c; }
+[data-matiere="kasa"] { --theme: #6a3fc0; }
+[data-matiere] { --theme-texte: #ffffff; --theme-fond: color-mix(in srgb, var(--theme) 12%, var(--surface)); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) [data-matiere="kazu"] { --theme: #86a9ff; }
+  :root:not([data-theme="light"]) [data-matiere="nagasa"] { --theme: #4fc3cf; }
+  :root:not([data-theme="light"]) [data-matiere="omosa"] { --theme: #f3a542; }
+  :root:not([data-theme="light"]) [data-matiere="kasa"] { --theme: #b596f5; }
+  :root:not([data-theme="light"]) [data-matiere] { --theme-texte: #0b1430; }
+}
+:root[data-theme="dark"] [data-matiere="kazu"] { --theme: #86a9ff; }
+:root[data-theme="dark"] [data-matiere="nagasa"] { --theme: #4fc3cf; }
+:root[data-theme="dark"] [data-matiere="omosa"] { --theme: #f3a542; }
+:root[data-theme="dark"] [data-matiere="kasa"] { --theme: #b596f5; }
+:root[data-theme="dark"] [data-matiere] { --theme-texte: #0b1430; }
 
 .sous-titre-reglage { flex-basis: 100%; margin: 10px 0 0; font-weight: 700; color: var(--encre-douce); }
 
@@ -1845,7 +1932,14 @@ pu { color: var(--o5); }
   .reserve-piece .cadre10 { --c: 7px; }
   .reserve-nombre { font-size: 1rem; }
   .theme { flex-direction: column; gap: 2px; min-height: 58px; padding: 4px 4px; font-size: 1.05rem; line-height: 1.1; }
-  .theme svg { width: 24px; height: 24px; }
+  .theme-icone { width: 30px; height: 30px; border-radius: 8px; }
+  .theme svg { width: 22px; height: 22px; }
+  .reprise { flex-wrap: wrap; gap: 8px; padding: 10px 12px; }
+  .reprise-texte { flex-basis: 100%; }
+  .reprise-bouton { flex: 1; }
+  .reprise .vignette { display: none; }
+  .reprise-texte strong { font-size: 1.15rem; }
+  .reprise-bouton { min-height: 48px; padding: 0 14px; font-size: 1.1rem; }
   .mesure-mv { font-size: .9rem; padding: 1px 8px; }
   .choix-valeur { min-height: 70px; font-size: 1.7rem; padding: 6px 4px; }
   /* « 1300 mL » tient dans sa colonne sur 320 px : la valeur se resserre au besoin. */
@@ -1887,9 +1981,13 @@ pu { color: var(--o5); }
   :root { --cible: 48px; --etiquette: 5em; }
   .app { padding-block: 6px; }
   .titre { font-size: 1.5rem; }
-  .activite { min-height: 0; padding: 10px 14px; gap: 4px; }
-  .activite svg { height: 40px; }
-  .activite strong { font-size: 1.15rem; }
+  .activite { min-height: 0; }
+  .vignette { padding: 6px 84px 6px 14px; }
+  .vignette svg { height: 40px; }
+  .activite strong { padding: 8px 14px 0; font-size: 1.15rem; }
+  .activite .pied { padding: 4px 14px 10px; }
+  .reprise { min-height: 0; }
+  .reprise .vignette svg { height: 40px; }
 
   #ecran-question {
     display: grid;

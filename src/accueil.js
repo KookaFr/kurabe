@@ -5,6 +5,7 @@
 import { balanceNumerique } from './dessins.js';
 import { demarrerEtude } from './etude/etude.js';
 import { $ } from './outils.js';
+import { commencer, estFaite } from './progres.js';
 import { demarrer } from './questions/session.js';
 import { ecrireReglages, reglages } from './reglages.js';
 import { activable } from './tactile.js';
@@ -107,7 +108,20 @@ export const LIENS = {
 };
 // Jamais une activité que l'adulte a masquée dans l'espace parents.
 export const activiteLiee = (n) => ACTIVITES.find((a) => a.n === LIENS[n] && reglages.activites.includes(a.n)) || null;
-export const lancerActivite = (a) => (a.etude ? demarrerEtude(a.etude) : demarrer(a.n));
+// Difficulté des もんだい (1 à 3 points sur la carte).
+const NIVEAUX = {
+  1: 1, 2: 2, 3: 2, 4: 2, 5: 2, 6: 3, 7: 3, 8: 3, 9: 3,
+  35: 1, 36: 1, 37: 2, 38: 2, 42: 3,
+  25: 1, 14: 2, 15: 2, 29: 3, 16: 3, 17: 3, 13: 1,
+  19: 1, 20: 2, 21: 2, 22: 3, 23: 3,
+};
+// La couleur du thème (かず bleu, ながさ vert d'eau, おもさ orange, かさ violet) : [data-matiere] dans kurabe.css.
+const colorer = (cle) => { document.querySelector('.app').dataset.matiere = cle; };
+export function lancerActivite(a) {
+  colorer(themeDe(a));
+  commencer(a.n);
+  return a.etude ? demarrerEtude(a.etude) : demarrer(a.n);
+}
 // Numéro affiché : 1, 2, 3… dans chaque onglet (les もんだい, puis les べんきょう).
 // Trois groupes : もんだい, べんきょう, puis ね、しっていた？ (la culture : むかしは…).
 const groupeDe = (a) => a.groupe || (a.etude ? 'etude' : 'probleme');
@@ -297,8 +311,9 @@ export function rendreAccueil() {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'theme';
+    b.dataset.matiere = th.cle;
     b.setAttribute('aria-pressed', String(th === actif));
-    b.innerHTML = `${th.icone}<span>${html(th.titre)}</span>`;
+    b.innerHTML = `<span class="theme-icone">${th.icone}</span><span>${html(th.titre)}</span>`;
     activable(b, () => {
       if (th === actif) return;
       ecrireReglages({ theme: th.cle });
@@ -307,9 +322,32 @@ export function rendreAccueil() {
     });
     nav.append(b);
   });
+  colorer(actif.cle);
   const zone = $('activites');
   zone.replaceChildren();
   zone.scrollTop = 0;
+  // Où il en est : « 9この うち 3こ できた », et la prochaine activité pas encore finie.
+  const visiblesTheme = ordreTheme(actif.cle).filter((a) => reglages.activites.includes(a.n));
+  const nbFaites = visiblesTheme.filter((a) => estFaite(a.n)).length;
+  if (visiblesTheme.length > 1) {
+    const avancement = document.createElement('p');
+    avancement.className = 'avancement';
+    avancement.innerHTML = `<span>${visiblesTheme.length}この うち ${nbFaites}こ できた</span>`
+      + `<span class="avancement-barre" aria-hidden="true"><i style="width:${(nbFaites / visiblesTheme.length) * 100}%"></i></span>`;
+    zone.append(avancement);
+    const suivante = visiblesTheme.find((a) => !estFaite(a.n));
+    if (suivante && nbFaites > 0) {
+      const reprise = document.createElement('button');
+      reprise.type = 'button';
+      reprise.className = 'reprise';
+      reprise.innerHTML = `<span class="vignette">${svgActivite(suivante.barres)}</span>`
+        + `<span class="reprise-texte"><small>つぎは これ</small><strong>${numeroAffiche(suivante)}\u3000${html(suivante.titre)}</strong></span>`
+        + '<span class="reprise-bouton">はじめる</span>';
+      reprise.setAttribute('aria-label', `つぎは これ。 ${numeroAffiche(suivante)}. ${lecture(suivante.titre)}`);
+      activable(reprise, () => lancerActivite(suivante));
+      zone.append(reprise);
+    }
+  }
   const duTheme = ACTIVITES.filter((a) => themeDe(a) === actif.cle);
   const groupes = [
     { titre: ['もんだい'], liste: duTheme.filter((a) => groupeDe(a) === 'probleme') },
@@ -328,9 +366,13 @@ export function rendreAccueil() {
       carte.type = 'button';
       carte.className = 'activite';
       carte.dataset.n = String(a.n);
-      carte.innerHTML = `<span class="numero">${numeroAffiche(a)}</span>${svgActivite(a.barres)}`
-        + `<strong>${html(a.titre)}</strong><span class="sous">${html(a.sous)}</span>`;
-      carte.setAttribute('aria-label', `${numeroAffiche(a)}. ${lecture(a.titre)} ${lecture(a.sous)}`);
+      const niv = NIVEAUX[a.n];
+      const points = niv ? `<span class="niveau" aria-hidden="true">${[1, 2, 3].map((k) => `<i${k <= niv ? ' class="plein"' : ''}></i>`).join('')}</span>` : '';
+      const fait = estFaite(a.n);
+      carte.innerHTML = `<span class="vignette">${svgActivite(a.barres)}</span><span class="numero">${numeroAffiche(a)}</span>`
+        + (fait ? '<span class="fait" aria-hidden="true"></span>' : '')
+        + `<strong>${html(a.titre)}</strong><span class="pied"><span class="sous">${html(a.sous)}</span>${points}</span>`;
+      carte.setAttribute('aria-label', `${numeroAffiche(a)}. ${lecture(a.titre)} ${lecture(a.sous)}${fait ? ' できた' : ''}`);
       activable(carte, () => lancerActivite(a));
       zone.append(carte);
     });

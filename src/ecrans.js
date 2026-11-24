@@ -5,6 +5,7 @@
 import { arreterVersement, versementEnCours } from './lecons/versement.js';
 import { $ } from './outils.js';
 import { plateforme } from './plateforme.js';
+import { finir } from './progres.js';
 import { reglages } from './reglages.js';
 import { htmlMots, lecture, PHRASES, versParole } from './texte.js';
 import { parler, sons } from './voix.js';
@@ -60,6 +61,7 @@ export function definirLiens(fn) { fournisseurLien = fn; }
 
 export function terminer(de, texte) {
   finDe = de;
+  finir();
   montrer('fin');
   $('fin-titre').innerHTML = htmlMots(PHRASES.otsukare);
   $('fin-texte').innerHTML = htmlMots(texte);

@@ -9,7 +9,7 @@ const FICHIERS = [
   './polices/BIZUDPGothic-Regular.woff2', './polices/BIZUDPGothic-Bold.woff2',
   './src/accueil.js', './src/app.js', './src/dessins.js', './src/ecrans.js', './src/etude/etude.js',
   './src/etude/ruban.js', './src/etude/verre.js', './src/explications.js', './src/lecons/etapes-culture.js', './src/lecons/etapes-kazu.js',
-  './src/lecons/etapes-masses.js', './src/lecons/etapes-oto.js', './src/lecons/moteur.js', './src/lecons/versement.js', './src/outils.js',
+  './src/lecons/etapes-masses.js', './src/lecons/etapes-oto.js', './src/lecons/moteur.js', './src/lecons/versement.js', './src/outils.js', './src/progres.js',
   './src/parents.js', './src/photos.js', './src/plateforme.js', './src/questions/kazu.js', './src/questions/longueurs.js',
   './src/questions/mv.js', './src/questions/session.js', './src/reglages.js', './src/tactile.js',
   './src/texte.js', './src/textes-perso.js', './src/voix.js',

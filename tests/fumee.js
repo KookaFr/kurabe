@@ -80,13 +80,13 @@ async function jouer(page) {
     for (let onglet = 0; onglet < ONGLETS; onglet++) {
       await page.goto(URL, { waitUntil: 'load' });
       await page.click(`#themes button >> nth=${onglet}`);
-      const cartes = await page.locator('#activites button').count();
+      const cartes = await page.locator('#activites button.activite').count();
       for (let carte = 0; carte < cartes; carte++) {
         await page.goto(URL, { waitUntil: 'load' });
         await page.click(`#themes button >> nth=${onglet}`);
-        const titre = (await page.locator('#activites button strong').nth(carte).textContent()).trim();
+        const titre = (await page.locator('#activites button.activite strong').nth(carte).textContent()).trim();
         contexte = `onglet ${onglet} · ${titre}`;
-        await page.locator('#activites button').nth(carte).click();
+        await page.locator('#activites button.activite').nth(carte).click();
         await page.waitForTimeout(500);
         for (let pas = 0; pas < 2; pas++) {
           const c = await controler(page);

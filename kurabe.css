@@ -46,6 +46,8 @@
   --the: #9cc265;
   --lait: #d9c184;
 
+  --table: #ecd2ac;         /* la table des scènes おもさ・かさ, et son bord éclairé */
+  --table-bord: #f6e6cb;
   /* Couleur du thème en cours (onglet, cartes, progression) : voir [data-matiere] plus bas. */
   --theme: var(--action);
   --theme-texte: var(--action-texte);
@@ -81,6 +83,8 @@
     --o6: #ee6ca5;
     --gomme: #e78ba0;
     --bois: #d8b27b;
+    --table: #3a3128;
+    --table-bord: #4d4236;
     --mine: #2a2a2a;
     --metal: #8f989c;
     --prise: #9ba3a6;
@@ -114,6 +118,8 @@
   --o6: #ee6ca5;
   --gomme: #e78ba0;
   --bois: #d8b27b;
+  --table: #3a3128;
+  --table-bord: #4d4236;
   --mine: #2a2a2a;
   --metal: #8f989c;
   --prise: #9ba3a6;
@@ -1158,6 +1164,15 @@ button.ligne { cursor: pointer; }
 /* ---------- おもさ / かさ : scène commune ---------- */
 
 .etabli.scene-mv { padding: 12px; justify-content: center; align-items: stretch; }
+/* おもさ・かさ : les balances et les verres sont posés sur une table (le quart bas de la scène), le mur reste quadrillé.
+   Pas de table quand on compare seulement des nombres (300 g ou 250 g ?). */
+.etabli.scene-mv:not(:has(.choix-valeur)) {
+  background-image:
+    linear-gradient(to top, var(--table) 0, var(--table) 24%, var(--table-bord) 24%, var(--table-bord) calc(24% + 8px), transparent calc(24% + 8px)),
+    linear-gradient(var(--grille) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grille) 1px, transparent 1px);
+  background-size: 100% 100%, 24px 24px, 24px 24px;
+}
 
 .scene {
   position: relative;
@@ -2389,3 +2404,6 @@ html[data-motion="reduce"] .dessin-memori *, html[data-motion="reduce"] .btn-mem
 
 /* Le mot 目もり touchable : une zone de toucher d'au moins 44 px de haut autour du mot. */
 aide-memori::before { content: ""; position: absolute; left: -4px; right: -4px; top: 50%; height: 44px; transform: translateY(-50%); }
+
+/* Les objets dessinés (src/objets.js) prennent la taille du texte, comme les emoji qu'ils remplacent. */
+.objet-dessin { display: inline-block; width: 1em; height: 1em; vertical-align: -.125em; overflow: visible; }

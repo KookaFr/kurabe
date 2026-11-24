@@ -3,6 +3,7 @@
    (programme « 数の学習 » : compter, associer chiffre et quantité, grouper par 10, les rangs).
    ====================================================================== */
 
+import { dessinObjet } from '../objets.js';
 import { $, aleatoire, choisir, entier, melanger } from '../outils.js';
 import { cible } from './mv.js';
 import { reglages } from '../reglages.js';
@@ -368,7 +369,7 @@ export function rendreKazuQ(q, scene, W, H) {
     for (let k = 0; k < q.valeur; k++) {
       const o = document.createElement('span');
       o.className = 'objet-compte';
-      o.textContent = q.emoji;
+      o.innerHTML = dessinObjet(q.emoji);
       if (q.desordre) {
         const p = q.places[k];
         o.style.gridColumn = String((p.c % 5) + 1);

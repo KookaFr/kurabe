@@ -7,6 +7,7 @@
    (じゅういっぽん, にじゅっぽん).
    ====================================================================== */
 
+import { dessinObjet } from '../objets.js';
 import { explicationSon, fautesLecture } from '../questions/kazu.js';
 import { echapper, melanger } from '../outils.js';
 import { activable } from '../tactile.js';
@@ -136,7 +137,7 @@ export function creerOtoLecon(W, H, et) {
     const table = document.createElement('table');
     table.className = 'oto-table';
     table.style.setProperty('--colonnes', String(resume.length));
-    const tete = resume.map((k) => `<th scope="col"><span aria-hidden="true">${CHOSES[k].emoji}</span>${echapper(k)}</th>`).join('');
+    const tete = resume.map((k) => `<th scope="col"><span aria-hidden="true">${dessinObjet(CHOSES[k].emoji)}</span>${echapper(k)}</th>`).join('');
     table.innerHTML = `<thead><tr><td></td>${tete}</tr></thead><tbody></tbody>`;
     const corps = table.querySelector('tbody');
     nombres.forEach((n) => {
@@ -163,7 +164,7 @@ export function creerOtoLecon(W, H, et) {
     tas.setAttribute('aria-hidden', 'true');
     // Jusqu'à 10 : les choses, en rangées de 5. Au-delà, une seule (le nombre suffit, et 31 crayons ne tiennent pas).
     const montres = question <= 10 ? question : 1;
-    tas.innerHTML = Array.from({ length: montres }, () => `<span>${CHOSES[c].emoji}</span>`).join('');
+    tas.innerHTML = Array.from({ length: montres }, () => `<span>${dessinObjet(CHOSES[c].emoji)}</span>`).join('');
     tas.style.setProperty('--n', String(Math.min(5, montres)));
     el.append(tas, caseLecture(question, c, { cachee: true }));
   } else {
@@ -173,7 +174,7 @@ export function creerOtoLecon(W, H, et) {
     el.style.setProperty('--lignes', String(Math.ceil(nombres.length / 2)));
     const chose = document.createElement('div');
     chose.className = 'oto-entete';
-    chose.innerHTML = `<span aria-hidden="true">${CHOSES[c].emoji}</span> ${echapper(CHOSES[c].nom)}：「${echapper(c)}」`;
+    chose.innerHTML = `<span aria-hidden="true">${dessinObjet(CHOSES[c].emoji)}</span> ${echapper(CHOSES[c].nom)}：「${echapper(c)}」`;
     el.append(chose);
     const grille = document.createElement('div');
     grille.className = 'oto-grille';

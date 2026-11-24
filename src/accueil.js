@@ -2,6 +2,7 @@
    Accueil : les onglets (かず・ながさ・おもさ・かさ), la liste des activités et leurs cartes
    ====================================================================== */
 
+import { dessinDans } from './objets.js';
 import { balanceNumerique } from './dessins.js';
 import { demarrerEtude } from './etude/etude.js';
 import { $ } from './outils.js';
@@ -175,7 +176,7 @@ function contenuActiviteMV(code) {
         + `<text x="83" y="51" text-anchor="middle" style="${texte};font-size:10px">10g</text><text x="136" y="46" text-anchor="middle" style="${texte};font-size:12px">100g</text>`
         + `<text x="206" y="40" text-anchor="middle" style="${texte};font-size:16px">1kg</text>`;
     case 'k-compter':
-      return [0, 1, 2, 3, 4].map((k) => `<text x="${20 + k * 30}" y="44" style="font-size:24px">🍎</text>`).join('')
+      return [0, 1, 2, 3, 4].map((k) => dessinDans('🍎', 14 + k * 30, 20, 28)).join('')
         + `<text x="185" y="46" style="${texte};font-size:30px">5</text>`;
     case 'k-lire':
       return `<text x="20" y="48" style="${texte};font-size:40px">7</text><path d="M60 34h40M92 26l8 8-8 8" style="${trait}"/>`
@@ -185,10 +186,10 @@ function contenuActiviteMV(code) {
         + '<circle cx="200" cy="27" r="6" style="fill:var(--o5)"/><circle cx="216" cy="27" r="6" style="fill:var(--o5)"/>'
         + `<text x="80" y="60" style="${texte};font-size:18px">10 10 10 ＋ 2</text>`;
     case 'k-compteur':
-      return [0, 1, 2].map((k) => `<text x="${8 + k * 30}" y="44" style="font-size:24px">🐟</text>`).join('')
+      return [0, 1, 2].map((k) => dessinDans('🐟', 6 + k * 30, 20, 28)).join('')
         + `<text x="104" y="44" style="${texte};font-size:26px">3びき</text>`;
     case 'k-oto':
-      return `<text x="8" y="44" style="font-size:24px">✏️</text><text x="40" y="30" style="${texte};font-size:18px">1 3 6 8 10</text>`
+      return `${dessinDans('✏️', 4, 18, 30)}<text x="40" y="30" style="${texte};font-size:18px">1 3 6 8 10</text>`
         + `<text x="40" y="56" style="fill:var(--o5);font-size:20px;font-weight:700">っぽん ぼん</text>`;
     case 'k-comparer':
       return `<text x="20" y="46" style="${texte};font-size:32px">21</text><text x="88" y="46" style="${texte};font-size:30px">12</text>${question}`;
@@ -214,11 +215,11 @@ function contenuActiviteMV(code) {
         + `<text x="110" y="44" style="${texte}">＝ 1もんめ</text>`;
     case 'lecon-corps':
       return '<rect x="10" y="10" width="236" height="12" rx="3" style="fill:var(--bois)"/>'
-        + [0, 1, 2, 3].map((k) => `<path d="M${14 + k * 58} 34h52" style="stroke:var(--o2);stroke-width:3"/><text x="${30 + k * 58}" y="60" style="font-size:22px">✋</text>`).join('');
+        + [0, 1, 2, 3].map((k) => `<path d="M${14 + k * 58} 34h52" style="stroke:var(--o2);stroke-width:3"/>${dessinDans('✋', 28 + k * 58, 38, 24)}`).join('');
     case 'lecon-shaku':
       return '<rect x="10" y="20" width="236" height="34" rx="4" style="fill:var(--bois)"/>'
         + Array.from({ length: 11 }, (_, k) => `<path d="M${10 + k * 22.4} 20v12" style="stroke:var(--encre);stroke-width:2"/>`).join('')
-        + '<rect x="10" y="20" width="22.4" height="34" style="fill:var(--o5);opacity:.4"/><text x="12" y="16" style="font-size:16px">🧒</text>';
+        + '<rect x="10" y="20" width="22.4" height="34" style="fill:var(--o5);opacity:.4"/>' + dessinDans('🧒', 10, 0, 19);
     case 'lecon-gou':
       return `${verre(60, 44, 'var(--eau)', 40)}<text x="62" y="20" style="${texte};font-size:14px">1ごう</text>`
         + `<path d="M110 34h30M132 26l8 8-8 8" style="${trait}"/><text x="152" y="44" style="${texte}">180 mL</text>`;

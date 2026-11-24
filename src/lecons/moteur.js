@@ -13,6 +13,7 @@
    puis une explication ; つぎへ passe à l'étape suivante.
    ====================================================================== */
 
+import { dessinObjet } from '../objets.js';
 import { ACTIVITES } from '../accueil.js';
 import {
   angleBalance, creerBalance, creerChose, creerHakari, creerVerreGradue, incliner, tournerAiguille,
@@ -403,7 +404,7 @@ function creerPiece(p, taille, s) {
   if (vis.genre === 'main') {
     el.className = 'main-piece';
     el.style.fontSize = `${s * 1.3 * vis.taille}px`;
-    el.textContent = '✋';
+    el.innerHTML = dessinObjet('✋');
     return el;
   }
   if (vis.genre === 'yen') {

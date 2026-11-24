@@ -3,6 +3,7 @@
    balance à plateaux, はかり (cadran), verres, verres doseurs et récipients
    ====================================================================== */
 
+import { dessinObjet } from './objets.js';
 import { animationsReduites } from './ecrans.js';
 import { melanger } from './outils.js';
 import { photos, urlPhoto } from './photos.js';
@@ -121,7 +122,7 @@ export function creerChose(o, px) {
     img.style.height = `${Math.round(Math.min(px * 1.2, (px * 1.8) / r))}px`;
     el.append(img);
   } else {
-    el.textContent = o.emoji;
+    el.innerHTML = dessinObjet(o.emoji);
     el.style.fontSize = `${Math.round(px * (o.taille || 1))}px`;
   }
   return el;

@@ -2,6 +2,7 @@
    ね、しっていた？ : からだで はかる (あた, ひろ), しゃくと すん, ごうと しょう
    ====================================================================== */
 
+import { dessinObjet } from '../objets.js';
 import { P, somme } from './moteur.js';
 import { CHIISA, ME, MI, NAGA, ONAJI, OOKI, segU, SUJI } from '../texte.js';
 
@@ -138,7 +139,7 @@ export function majCorpsLecon(el, e) {
       empan.className = `empan ${v}`;
       empan.style.left = `${x}px`;
       empan.style.width = `${p.m * ppc}px`;
-      empan.innerHTML = `<span class="main" style="font-size:${Math.min(hRang * 0.5, p.m * ppc * 0.8)}px">✋</span><span class="numero-empan">${k + 1}</span>`;
+      empan.innerHTML = `<span class="main" style="font-size:${Math.min(hRang * 0.5, p.m * ppc * 0.8)}px">${dessinObjet('✋')}</span><span class="numero-empan">${k + 1}</span>`;
       rang.append(empan);
       x += p.m * ppc;
     });

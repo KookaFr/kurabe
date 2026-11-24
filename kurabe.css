@@ -2220,11 +2220,23 @@ html[data-motion="reduce"] .dessin-memori *, html[data-motion="reduce"] .btn-mem
 .case-mini b { color: var(--o5); font-weight: 800; }
 .case-mini.change { border-color: var(--o5); background: color-mix(in srgb, var(--o5) 12%, var(--surface)); color: var(--encre); }
 .case-mini.en-appui { transform: scale(.96); }
+/* Le tableau ne dépasse jamais de la scène : s'il est plus haut qu'elle (5 compteurs, petit téléphone),
+   il part du haut et défile ; « safe » empêche le centrage de rogner l'en-tête. */
+.oto-lecon.oto-resume { justify-content: safe center; max-height: 100%; overflow-y: auto; touch-action: pan-y; }
+.oto-resume .oto-table { flex: none; }
 @media (max-width: 480px) {
-  .oto-table { border-spacing: 4px; }
-  .oto-table th { font-size: 1rem; }
-  .oto-table tbody th { width: 1.9em; font-size: 1.2rem; }
-  .case-mini { font-size: .95rem; padding: 3px 1px; }
+  .oto-table { border-spacing: 3px; width: 100%; }
+  /* La police suit le nombre de colonnes : avec 5 compteurs sur 320 px, さんにん reste entier. */
+  .oto-table th { font-size: clamp(.72rem, calc(17vw / var(--colonnes, 3)), 1rem); }
+  .oto-table thead th span { display: block; margin: 0; }
+  .oto-table tbody th { width: 1.5em; font-size: 1.1rem; padding-right: 2px; }
+  .case-mini { min-height: 40px; font-size: clamp(.72rem, calc(17vw / var(--colonnes, 3)), .95rem); line-height: 1.1; padding: 2px 0; border-width: 1.5px; }
+}
+/* Très petit téléphone (320 px) : les 7 lignes tiennent sans défiler. */
+@media (max-width: 340px) {
+  .oto-table { border-spacing: 3px 2px; }
+  .oto-table thead th span { display: none; }
+  .case-mini { min-height: 36px; line-height: 1.05; padding: 1px 0; letter-spacing: -.02em; overflow-wrap: anywhere; word-break: normal; }
 }
 @media (orientation: landscape) and (max-height: 520px) {
   .oto-table { border-spacing: 3px 2px; }

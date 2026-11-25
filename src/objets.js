@@ -66,16 +66,22 @@ DESSINS['🍽'] = DESSINS['🍽️'];
 
 const CADRE = `fill="none" stroke="${N}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"`;
 
-export const aUnDessin = (emoji) => Boolean(DESSINS[emoji]);
+// Les dessins sont en attente : plusieurs n'étaient pas compréhensibles. En attendant de meilleurs dessins,
+// l'appli affiche les emoji du système. Pour remettre les dessins : ACTIF = true.
+const ACTIF = false;
 
-// Le dessin, à la taille du texte (font-size de l'élément qui le reçoit). Sans dessin connu : l'emoji tel quel.
+export const aUnDessin = (emoji) => ACTIF && Boolean(DESSINS[emoji]);
+
+// Le dessin, à la taille du texte (font-size de l'élément qui le reçoit). Sans dessin : l'emoji tel quel.
 export function dessinObjet(emoji) {
-  const d = DESSINS[emoji];
+  const d = ACTIF && DESSINS[emoji];
   return d ? `<svg class="objet-dessin" viewBox="0 0 64 64" ${CADRE} aria-hidden="true">${d}</svg>` : emoji;
 }
 
 // Le même dessin, posé dans un autre SVG (les vignettes des cartes) : coin haut-gauche et côté, en unités du SVG.
+// Sans dessin : l'emoji, en texte, à la même place.
 export function dessinDans(emoji, x, y, cote) {
-  const d = DESSINS[emoji];
-  return d ? `<svg x="${x}" y="${y}" width="${cote}" height="${cote}" viewBox="0 0 64 64" ${CADRE}>${d}</svg>` : '';
+  const d = ACTIF && DESSINS[emoji];
+  if (d) return `<svg x="${x}" y="${y}" width="${cote}" height="${cote}" viewBox="0 0 64 64" ${CADRE}>${d}</svg>`;
+  return `<text x="${x + cote * 0.08}" y="${y + cote * 0.86}" style="font-size:${cote * 0.86}px">${emoji}</text>`;
 }
